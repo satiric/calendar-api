@@ -6,23 +6,32 @@
  */
 
 module.exports = {
-  connection: 'localMysqlServer',
+    connection: 'localMysqlServer',
+    attributes: {
+        name: {
+            type: "string",
+            required: true,
+            minLength: 2
+        },
+        email: {
+            type: "email",
+            required: true,
+            unique: true
+        },
+        password: {
+            required: true,
+            type: 'string',
+            password: true // << defined below
+        }
+    },
 
-  attributes: {
-    name:{
-      type:"string",
-      required:true,
-      minLength: 2
-    },
-    empnum:{
-      type:"string",
-      required:true
-    },
-    email:{
-      type:"email",
-      required:"true",
-      unique: true
+    // Custom types / validation rules
+    // (available for use in this model's attribute definitions above)
+    types: {
+        password: function (value) {
+            'use strict';
+            return _.isString(value) && value.length >= 8;
+        }
     }
-  }
 };
 
