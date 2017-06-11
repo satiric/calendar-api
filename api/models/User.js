@@ -32,6 +32,26 @@ module.exports = {
             'use strict';
             return _.isString(value) && value.length >= 8;
         }
+    },
+
+    login: function (inputs, cb) {
+        // Create a user
+        User.findOne({
+            email: inputs.email,
+            // TODO: But encrypt the password first
+            password: inputs.password
+        })
+            .exec(cb);
     }
+    // signup: function (inputs, cb) {
+    //     // Create a user
+    //     User.create({
+    //         name: inputs.name,
+    //         email: inputs.email,
+    //         // TODO: But encrypt the password first
+    //         password: inputs.password
+    //     })
+    //         .exec(cb);
+    // },
 };
 
