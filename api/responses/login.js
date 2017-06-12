@@ -1,18 +1,12 @@
 /**
  * Created by decadal on 10.06.17.
  */
-module.exports = function login(inputs) {
-    inputs = inputs || {};
-
+module.exports = function login(email, pass) {
     // Get access to `req` and `res`
     var req = this.req;
     var res = this.res;
-
     // Look up the user
-    User.login({
-        email: inputs.email,
-        password: inputs.password
-    }, function (err, user) {
+    User.login(email, pass, function (err, user) {
         if (err) return res.negotiate(err);
         if (!user) {
 
@@ -28,7 +22,7 @@ module.exports = function login(inputs) {
 
         // "Remember" the user in the session
         // Subsequent requests from this user agent will have `req.session.me` set.
-        req.session.me = user.id;
+        req.session.me = user;
 
         // If this is not an HTML-wanting browser, e.g. AJAX/sockets/cURL/etc.,
         // send a 200 response letting the user agent know the login was successful.

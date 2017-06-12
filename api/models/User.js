@@ -22,6 +22,11 @@ module.exports = {
             required: true,
             type: 'string',
             password: true // << defined below
+        },
+        phone: {
+            required: false,
+            type: 'string',
+            phone: true
         }
     },
 
@@ -31,27 +36,42 @@ module.exports = {
         password: function (value) {
             'use strict';
             return _.isString(value) && value.length >= 8;
+        },
+        phone: function (value) {
+            'use strict';
+            return _.isString(value) && value.length >= 8;
         }
     },
 
-    login: function (inputs, cb) {
-        // Create a user
+    login: function (email, pass, cb) {
+
         User.findOne({
-            email: inputs.email,
-            // TODO: But encrypt the password first
-            password: inputs.password
-        })
-            .exec(cb);
+            email: email
+        }).exec(function (err, result) {
+            if (err) {
+                sails.log(err);
+                return cb(err);
+            }
+            if (!result) {
+                err = new Error('User not found');
+                return cb(err);
+            }
+
+            PasswordEncoder.bcryptCheck(pass, result.password, function (err, res) {
+                if (err) {
+                    sails.log(err);
+                }
+                if(!res) {
+                    err = new Error('Password invalid');
+                }
+                return cb(err, result);
+            });
+        });
+        // Create a user
+    },
+
+    beforeCreate: function (values, next) {
+        PasswordEncoder.bcrypt(values, next);
     }
-    // signup: function (inputs, cb) {
-    //     // Create a user
-    //     User.create({
-    //         name: inputs.name,
-    //         email: inputs.email,
-    //         // TODO: But encrypt the password first
-    //         password: inputs.password
-    //     })
-    //         .exec(cb);
-    // },
 };
 

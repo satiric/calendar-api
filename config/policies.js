@@ -29,6 +29,7 @@ module.exports.policies = {
     '*': 'hasValidHeaders',
     UserController: {
         logout: 'sessionAuth',
+        login: 'sessionAnon',
         resetPassword: 'sessionAuth'
     }
 
