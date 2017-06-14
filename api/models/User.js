@@ -82,7 +82,7 @@ module.exports = {
     },
 
     beforeCreate: function (values, next) {
-        PasswordEncoder.bcrypt(values, next);
+        PasswordEncoder.bcryptEncode(values, next);
     }
 };
 
