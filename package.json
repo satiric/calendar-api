@@ -24,7 +24,8 @@
     "sails": "~0.12.13",
     "sails-disk": "~0.10.9",
     "sails-hook-email": "^0.12.1",
-    "sails-mysql": "^0.11.5"
+    "sails-mysql": "^0.11.5",
+    "twilio": "^3.3.0"
   },
   "scripts": {
     "debug": "node debug app.js",

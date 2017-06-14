@@ -45,5 +45,14 @@ module.exports = {
             Mailer.sendResetMail(req.session.me);
         }
         return res.ok('ResetPassword' + req.session.me.id);
+    },
+    sendMessage: function (req, res) {
+        'use strict';
+        User.sendMessage(req.session.me, function(err, result) {
+            if(err) {
+                return res.negotiate(err);
+            }
+            return res.ok(result);
+        });
     }
 };

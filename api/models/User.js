@@ -56,18 +56,29 @@ module.exports = {
                 err = new Error('User not found');
                 return cb(err);
             }
-
             PasswordEncoder.bcryptCheck(pass, result.password, function (err, res) {
                 if (err) {
                     sails.log(err);
                 }
-                if(!res) {
+                if (!res) {
                     err = new Error('Password invalid');
                 }
                 return cb(err, result);
             });
         });
         // Create a user
+    },
+    sendMessage: function (user, cb) {
+        if (!user || !user.phone) {
+            return cb(new Error('invalid user or phone'));
+        }
+        var message = _.random(10, 99) + ' ' + _.random(10, 99);
+        return Twilio.sendMessage(message, user.phone, function (err) {
+            if (err) {
+                return cb(err);
+            }
+            return cb(null, message);
+        });
     },
 
     beforeCreate: function (values, next) {
