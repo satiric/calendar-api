@@ -50,6 +50,7 @@ module.exports = {
         },
         phone: function (value) {
             'use strict';
+            //todo make normal validation
             return _.isString(value) && value.length >= 8;
         }
     },
@@ -80,14 +81,15 @@ module.exports = {
         // Create a user
     },
     sendMessage: function (phone, cb) {
-        var firstPart = _.random(10, 99);
-        var secondPart = _.random(10, 99);
-        return Twilio.sendMessage(firstPart + ' ' + secondPart, phone, function (err) {
-            if (err) {
-                return cb(err);
-            }
-            return cb(null, firstPart.toString() + secondPart.toString());
-        });
+        return cb(null, "0000");
+        // var firstPart = _.random(10, 99);
+        // var secondPart = _.random(10, 99);
+        // return Twilio.sendMessage(firstPart + ' ' + secondPart, phone, function (err) {
+        //     if (err) {
+        //         return cb(err);
+        //     }
+        //     return cb(null, firstPart.toString() + secondPart.toString());
+        // });
     },
 
     beforeCreate: function (values, next) {
