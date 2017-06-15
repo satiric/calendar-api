@@ -68,12 +68,9 @@ module.exports = {
         });
         // Create a user
     },
-    sendMessage: function (user, cb) {
-        if (!user || !user.phone) {
-            return cb(new Error('invalid user or phone'));
-        }
+    sendMessage: function (phone, cb) {
         var message = _.random(10, 99) + ' ' + _.random(10, 99);
-        return Twilio.sendMessage(message, user.phone, function (err) {
+        return Twilio.sendMessage(message, phone, function (err) {
             if (err) {
                 return cb(err);
             }

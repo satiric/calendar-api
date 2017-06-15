@@ -46,13 +46,45 @@ module.exports = {
         }
         return res.ok('ResetPassword' + req.session.me.id);
     },
-    sendMessage: function (req, res) {
-        'use strict';
-        User.sendMessage(req.session.me, function(err, result) {
-            if(err) {
-                return res.negotiate(err);
+
+    checkEmail: function(req, res) {
+        User.find({'email':req.param('email')}).exec(function (err, user){
+            if (err) {
+                return res.serverError(err);
             }
-            return res.ok(result);
+            sails.log(user);
+            return (!user.length) ? res.ok({"status":"success"}) : res.ok({
+                "status":"error",
+                "message" : "this email is exists"
+            });
+        });
+    },
+
+    checkPhone: function(req, res) {
+        User.find({'phone':req.param('phone')}).exec(function (err, user){
+            if (err) {
+                return res.serverError(err);
+            }
+            sails.log(user);
+            if(user.length) {
+                return res.ok({
+                    "status":"error",
+                    "message" : "this phone is exists"
+                });
+            }
+            User.sendMessage(req.param('phone'), function(err, result) {
+                if(err) {
+                    return res.negotiate(err);
+                }
+                return res.ok({
+                    "status":"success",
+                    "code": result
+                });
+            });
+
+
         });
     }
+
+
 };
