@@ -28,7 +28,7 @@ module.exports = {
     logout: function (req, res) {
         'use strict';
         if (!req.session.me) {
-            return res.json(403, {err: "You must be authorized for logout"});
+            return res.json(403, {"err": "You must be authorized for logout"});
         }
         // "Forget" the user from the session.
         // Subsequent requests from this user agent will NOT have `req.session.me`.
@@ -37,7 +37,7 @@ module.exports = {
         // If this is not an HTML-wanting browser, e.g. AJAX/sockets/cURL/etc.,
         // send a simple response letting the user agent know they were logged out
         // successfully.
-        return res.ok('Logged out successfully for user: ' + meId);
+        return res.ok({"message": 'Logged out successfully for user: ' + meId, "status": "success"});
     },
     resetPassword: function (req, res) {
         'use strict';
