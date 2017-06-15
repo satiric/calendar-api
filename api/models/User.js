@@ -25,6 +25,7 @@ module.exports = {
         },
         password: {
             required: true,
+            unique: true,
             type: 'string',
             password: true // << defined below
         },
@@ -79,12 +80,13 @@ module.exports = {
         // Create a user
     },
     sendMessage: function (phone, cb) {
-        var message = _.random(10, 99) + ' ' + _.random(10, 99);
-        return Twilio.sendMessage(message, phone, function (err) {
+        var firstPart = _.random(10, 99);
+        var secondPart = _.random(10, 99);
+        return Twilio.sendMessage(firstPart + ' ' + secondPart, phone, function (err) {
             if (err) {
                 return cb(err);
             }
-            return cb(null, message);
+            return cb(null, firstPart.toString() + secondPart.toString());
         });
     },
 
