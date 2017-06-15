@@ -13,6 +13,11 @@ module.exports = {
             required: true,
             minLength: 2
         },
+        second_name: {
+            type: "string",
+            required: true,
+            minLength: 2
+        },
         email: {
             type: "email",
             required: true,
