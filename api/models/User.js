@@ -24,9 +24,14 @@ module.exports = {
             password: true // << defined below
         },
         phone: {
-            required: false,
+            required: true,
             type: 'string',
             phone: true
+        },
+        toJSON: function() {
+            var obj = this.toObject();
+            delete obj.password;
+            return obj;
         }
     },
 
