@@ -7,14 +7,14 @@ module.exports = function login(email, pass) {
     var res = this.res;
     // Look up the user
     User.login(email, pass, function (err, user) {
-        if (err) return res.negotiate(err);
+        if (err) return res.negotiate({"status": "error", "message": err});
         if (!user) {
 
             // If this is not an HTML-wanting browser, e.g. AJAX/sockets/cURL/etc.,
             // send a 200 response letting the user agent know the login was successful.
             // (also do this if no `invalidRedirect` was provided)
             if (req.wantsJSON || !inputs.invalidRedirect) {
-                return res.badRequest('Invalid username/password combination.');
+                return res.badRequest({"status":"error", "message": 'Invalid username/password combination.'});
             }
             // Otherwise if this is an HTML-wanting browser, redirect to /login.
             return res.redirect(inputs.invalidRedirect);

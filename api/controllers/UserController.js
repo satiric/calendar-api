@@ -9,7 +9,7 @@ module.exports = {
     signup: function (req, res) {
         User.create(req.body).exec(function (err, user) {
             if (err) {
-                return res.negotiate(err);
+                return res.negotiate({"message": err.message, "status": "error"});
 //                return res.json(err.status, {err: err});
             }
             req.session.me = user;
@@ -17,8 +17,8 @@ module.exports = {
             // send a 200 response letting the user agent know the signup was successful.
             //  if (req.wantsJSON) {
             //  }
-            //Mailer.sendWelcomeMail(user);
-            return res.ok({user: user});
+            Mailer.sendWelcomeMail(user);
+            return res.ok({user: user, "status" : "success" });
         });
     },
     login: function (req, res) {
