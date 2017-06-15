@@ -7,17 +7,17 @@ module.exports = function login(email, pass) {
     var res = this.res;
     // Look up the user
     User.login(email, pass, function (err, user) {
-        if (err) return res.negotiate({"status": "error", "message": err});
-        if (!user) {
-
+        if (err) return res.negotiate({"status": "error", "message": err.message});
+        if (!user.length) {
+            return res.badRequest({"status":"error", "message": 'Invalid username/password combination.'});
             // If this is not an HTML-wanting browser, e.g. AJAX/sockets/cURL/etc.,
             // send a 200 response letting the user agent know the login was successful.
             // (also do this if no `invalidRedirect` was provided)
-            if (req.wantsJSON || !inputs.invalidRedirect) {
-                return res.badRequest({"status":"error", "message": 'Invalid username/password combination.'});
-            }
+            // if (req.wantsJSON || !inputs.invalidRedirect) {
+
+//            }
             // Otherwise if this is an HTML-wanting browser, redirect to /login.
-            return res.redirect(inputs.invalidRedirect);
+            // return res.redirect(inputs.invalidRedirect);
         }
 
         // "Remember" the user in the session
@@ -27,15 +27,15 @@ module.exports = function login(email, pass) {
         // If this is not an HTML-wanting browser, e.g. AJAX/sockets/cURL/etc.,
         // send a 200 response letting the user agent know the login was successful.
         // (also do this if no `successRedirect` was provided)
-        if (req.wantsJSON || ! inputs.successRedirect) {
+        // if (req.wantsJSON || ! inputs.successRedirect) {
             return res.ok({
                 "status" : "success",
                 "user" : req.session.me
             });
-        }
+        // }
 
         // Otherwise if this is an HTML-wanting browser, redirect to /.
-        return res.redirect(inputs.successRedirect);
+//        return res.redirect(inputs.successRedirect);
     });
 
 };
