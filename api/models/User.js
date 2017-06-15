@@ -60,6 +60,7 @@ module.exports = {
         User.findOne({
             email: email
         }).exec(function (err, result) {
+
             if (err) {
                 sails.log(err);
                 return cb(err);
@@ -68,7 +69,9 @@ module.exports = {
                 err = new Error('User not found');
                 return cb(err);
             }
+
             PasswordEncoder.bcryptCheck(pass, result.password, function (err, res) {
+                console.log(res);
                 if (err) {
                     sails.log(err);
                 }

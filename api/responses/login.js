@@ -8,7 +8,8 @@ module.exports = function login(email, pass) {
     // Look up the user
     User.login(email, pass, function (err, user) {
         if (err) return res.negotiate({"status": "error", "message": err.message});
-        if (!user.length) {
+
+        if (!user) {
             return res.badRequest({"status":"error", "message": 'Invalid username/password combination.'});
             // If this is not an HTML-wanting browser, e.g. AJAX/sockets/cURL/etc.,
             // send a 200 response letting the user agent know the login was successful.
