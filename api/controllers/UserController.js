@@ -59,10 +59,6 @@ module.exports = {
             });
         });
     },
-    red: function(req, res) {
-        console.log ('--------');
-        res.redirect("vlife://reset?token=" + req.param('token'));
-    },
     checkEmail: function(req, res) {
         User.find({'email':req.param('email')}).exec(function (err, user){
             if (err) {
