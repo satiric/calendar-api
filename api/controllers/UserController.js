@@ -42,10 +42,12 @@ module.exports = {
     resetPassword: function (req, res) {
         'use strict';
         if (req.session.me) {
-            Mailer.sendResetMail(req.session.me);
+            Mailer.sendResetMail(req.session.me, req.param('link'));
         }
-        return res.ok('ResetPassword' + req.session.me.id);
+        return res.ok({"status":"success", "message": 'ResetPassword' + req.session.me.id});
     },
+
+    changePassword
 
     checkEmail: function(req, res) {
         User.find({'email':req.param('email')}).exec(function (err, user){

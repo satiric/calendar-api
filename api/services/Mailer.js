@@ -14,12 +14,13 @@ module.exports = {
             console.log(err || "Mail Sent!");
         });
     },
-    "sendResetMail": function (obj) {
+    "sendResetMail": function (user, link) {
         'use strict';
         sails.hooks.email.send("resetEmail", {
-            Name: obj.name
+            Name: user.name,
+            link: link
         }, {
-            to: obj.email,
+            to: user.email,
             subject: "Reset password Email"
         }, function (err) {
             console.log(err || "Mail Sent!");
