@@ -39,6 +39,9 @@ module.exports = {
         // successfully.
         return res.ok({"message": 'Logged out successfully for user: ' + meId, "status": "success"});
     },
+    changePassword: function (req, res) {
+
+    },
     resetPassword: function (req, res) {
         'use strict';
         var hash = require("randomstring").generate(45);
