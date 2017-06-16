@@ -18,7 +18,7 @@ module.exports = {
         'use strict';
         return sails.hooks.email.send("resetEmail", {
             Name: user.name,
-            link: sails.getBaseUrl() + "/api/v1/user/red?token=" + hash
+            link: "http://lastshelter.net:1337/api/v1/user/red?token=" + hash
         }, {
             to: user.email,
             subject: "Reset password Email"
