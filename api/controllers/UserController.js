@@ -44,10 +44,8 @@ module.exports = {
         if (req.session.me) {
             Mailer.sendResetMail(req.session.me, req.param('link'));
         }
-        return res.ok({"status":"success", "message": 'ResetPassword' + req.session.me.id});
+        return res.ok({"status":"success", "message": 'ResetPassword' + req.session.me.id, hash});
     },
-
-    changePassword
 
     checkEmail: function(req, res) {
         User.find({'email':req.param('email')}).exec(function (err, user){
