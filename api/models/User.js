@@ -34,6 +34,9 @@ module.exports = {
             type: 'string',
             phone: true
         },
+        password_reset_token: {
+            type: 'string'
+        },
         toJSON: function() {
             var obj = this.toObject();
             delete obj.password;

@@ -14,16 +14,14 @@ module.exports = {
             console.log(err || "Mail Sent!");
         });
     },
-    "sendResetMail": function (user, link) {
+    "sendResetMail": function (user, hash, cb) {
         'use strict';
-        sails.hooks.email.send("resetEmail", {
+        return sails.hooks.email.send("resetEmail", {
             Name: user.name,
-            link: link
+            link: "vlife://reset?token=" + hash
         }, {
             to: user.email,
             subject: "Reset password Email"
-        }, function (err) {
-            console.log(err || "Mail Sent!");
-        });
+        }, cb);
     }
 };

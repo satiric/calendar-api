@@ -41,10 +41,20 @@ module.exports = {
     },
     resetPassword: function (req, res) {
         'use strict';
-        if (req.session.me) {
-            Mailer.sendResetMail(req.session.me, req.param('link'));
-        }
-        return res.ok({"status":"success", "message": 'ResetPassword' + req.session.me.id, hash});
+        var hash = require("randomstring").generate(45);
+
+        User.update({'email':req.param('email')}, {"password_reset_token":hash})
+            .exec(function (err, users){
+            if (err) {
+                return res.badRequest(err.message);
+            }
+            return Mailer.sendResetMail(users[0], hash, function(err, resp) {
+                return (resp) ? res.ok({"status":"success"}) : res.badRequest({
+                    "status":"error",
+                    "message" : err
+                });
+            });
+        });
     },
 
     checkEmail: function(req, res) {
