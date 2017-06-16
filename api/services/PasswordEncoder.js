@@ -15,5 +15,10 @@ module.exports = {
     },
     "bcryptCheck": function(pass, hash, cb) {
         require('bcrypt').compare(pass, hash, cb);
-    }
+    },
+    "bcryptEncodeValue": function (value, cb) {
+        require('bcrypt').hash(value, 10, function (err, encryptedPassword) {
+            return cb(err, encryptedPassword);
+        });
+    },
 };

@@ -40,7 +40,20 @@ module.exports = {
         return res.ok({"message": 'Logged out successfully for user: ' + meId, "status": "success"});
     },
     changePassword: function (req, res) {
-
+        var token = req.param('token');
+        if (token) {
+            return 
+        }
+        User.find({'email':req.param('email')}).exec(function (err, user){
+            if (err) {
+                return res.serverError(err);
+            }
+            sails.log(user);
+            return (!user.length) ? res.ok({"status":"success"}) : res.ok({
+                "status":"error",
+                "message" : "this email is exists"
+            });
+        });
     },
     resetPassword: function (req, res) {
         'use strict';

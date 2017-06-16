@@ -87,15 +87,15 @@ module.exports = {
         // Create a user
     },
     sendMessage: function (phone, cb) {
-        return cb(null, "0000");
-        // var firstPart = _.random(10, 99);
-        // var secondPart = _.random(10, 99);
-        // return Twilio.sendMessage(firstPart + ' ' + secondPart, phone, function (err) {
-        //     if (err) {
-        //         return cb(err);
-        //     }
-        //     return cb(null, firstPart.toString() + secondPart.toString());
-        // });
+   //     return cb(null, "1111");
+        var firstPart = _.random(10, 99);
+        var secondPart = _.random(10, 99);
+        return Twilio.sendMessage(firstPart + ' ' + secondPart, phone, function (err) {
+            if (err) {
+                return cb(err);
+            }
+            return cb(null, firstPart.toString() + secondPart.toString());
+        });
     },
 
     beforeCreate: function (values, next) {
