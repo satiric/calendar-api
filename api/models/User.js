@@ -79,6 +79,7 @@ module.exports = {
             if (value.length < 2) {
                 return false;
             }
+            return true;
 
         }
     },
