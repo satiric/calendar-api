@@ -78,6 +78,40 @@ module.exports.http = {
         // bodyParser: require('skipper')({strict: true})
 
     },
+    bodyParser: function () {
+        var opts = {
+            limit: '10mb'
+        };
+        return require('./../node_modules/sails/node_modules/skipper')(opts);
+    },
+    // customMiddleware: function (app) {
+    //     var swagger = require('sails-swagr');
+    //     var express = require('express');
+    //
+    //     app.use(swagger.init(express, app, {
+    //         apiVersion: '1.0',
+    //         swaggerVersion: '2.0',
+    //         swaggerURL: '/api/docs',
+    //         swaggerJSON: '/api-docs.json',
+    //         basePath: sails.config.appUrl,
+    //         info: {
+    //             title: ' App API Documentation',
+    //             description: 'Full API Test Harness'
+    //         },
+    //         custom: {
+    //             folder: sails.config.appPath + '/assets/docs'
+    //         },
+    //         apis: [
+    //             './api/docs/User.yml',
+    //         ]
+    //     }));
+    //     sails.on('ready', function() {
+    //         swagger.sailsGenerate({
+    //             routes: sails.router._privateRouter.routes,
+    //             models: sails.models
+    //         });
+    //     });
+    // },
 
     /***************************************************************************
      *                                                                          *

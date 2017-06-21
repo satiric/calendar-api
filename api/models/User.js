@@ -11,12 +11,16 @@ module.exports = {
         name: {
             type: "string",
             required: true,
-            minLength: 2
+            minLength: 2,
+            maxLength: 25,
+            validName: true
         },
         second_name: {
             type: "string",
             required: true,
-            minLength: 2
+            minLength: 2,
+            maxLength: 25,
+            validName: true
         },
         email: {
             type: "email",
@@ -27,6 +31,7 @@ module.exports = {
             required: true,
             unique: true,
             type: 'string',
+            minLength: 8,
             password: true // << defined below
         },
         phone: {
@@ -37,7 +42,19 @@ module.exports = {
         password_reset_token: {
             type: 'string'
         },
-        toJSON: function() {
+        reset_token_created: {
+            type: 'datetime'
+        },
+        state: {
+            type: 'string',
+            enum: ''
+        },
+        // auth_tokens: {
+        //     collection: 'AuthToken',
+        //     via: 'owner'
+        // },
+        toJSON: function () {
+            'use strict';
             var obj = this.toObject();
             delete obj.password;
             return obj;
@@ -55,6 +72,14 @@ module.exports = {
             'use strict';
             //todo make normal validation
             return _.isString(value) && value.length >= 8;
+        },
+        validName: function (value) {
+            'use strict';
+            value = value.trim();
+            if (value.length < 2) {
+                return false;
+            }
+
         }
     },
 
@@ -69,7 +94,7 @@ module.exports = {
                 return cb(err);
             }
             if (!result) {
-                err = new Error('User not found');
+                err = new Error('Incorrect email or password.');
                 return cb(err);
             }
 
@@ -95,6 +120,21 @@ module.exports = {
                 return cb(err);
             }
             return cb(null, firstPart.toString() + secondPart.toString());
+        });
+    },
+
+    changePassword: function (user, value, cb) {
+        console.log(user);
+        PasswordEncoder.bcryptEncodeValue(value, function (err, encoded) {
+            if (err) {
+                return cb(err, false);
+            }
+            User.update({'id': user.id}, {'password' : encoded}).exec(function (err, updated) {
+                if (!updated.length) {
+                    return cb(new Error("isnt updated: token is not active"));
+                }
+                return cb(err, updated);
+            });
         });
     },
 

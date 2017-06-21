@@ -6,10 +6,23 @@
  */
 
 module.exports = {
+    _config: {
+        actions: false,
+        shortcuts: false,
+        rest: false
+    },
+    find: function (req, res) {
+        User.find({"id":req.param('id')}, function (err, user) {
+            if(!user.length) {
+                return res.badRequest({"status": "error", "message": "User not found."});
+            }
+            return res.ok({"status": "success", "user":user[0]});
+        });
+    },
     signup: function (req, res) {
         User.create(req.body).exec(function (err, user) {
             if (err) {
-                return res.negotiate({"message": err.message, "status": "error"});
+                return res.badRequest({"message": err.message, "status": "error"});
 //                return res.json(err.status, {err: err});
             }
             req.session.me = user;
@@ -41,29 +54,56 @@ module.exports = {
     },
     changePassword: function (req, res) {
         var token = req.param('token');
+        var value = req.param('value');
         if (token) {
-            return 
+            return User.find({'password_reset_token': token}).exec(function (err, user){
+                if (err) {
+                    return res.serverError(err);
+                }
+                if(!user.length){
+                    return res.badRequest({"status":"error", "message":"token is not active"});
+                }
+
+                User.changePassword(user[0], value, function (err, changed) {
+                    if (err) {
+                        return res.serverError(err);
+                    }
+                    (changed) ? res.ok({"status":"success"})
+                        : res.badRequest({
+                        "status":"error",
+                        "message" : "This email is already registered to a vlife account"
+                    });
+                });
+                sails.log(user);
+            });
         }
-        User.find({'email':req.param('email')}).exec(function (err, user){
-            if (err) {
-                return res.serverError(err);
-            }
-            sails.log(user);
-            return (!user.length) ? res.ok({"status":"success"}) : res.ok({
+        if(!req.session.me) {
+            return  res.badRequest({
                 "status":"error",
-                "message" : "this email is exists"
+                "message" : "you're not logged"
+            });
+        }
+        User.changePassword(req.session.me, value, function (err, changed) {
+            (changed) ? res.ok({"status":"success"})
+                : res.badRequest({
+                "status":"error",
+                "message" : "This email is already registered to a vlife account"
             });
         });
     },
+
     resetPassword: function (req, res) {
         'use strict';
         var hash = require("randomstring").generate(45);
 
-        User.update({'email':req.param('email')}, {"password_reset_token":hash})
+        User.update({'email':req.param('email')}, {"password_reset_token":hash, "reset_token_created": new Date()})
             .exec(function (err, users){
-            if (err) {
-                return res.badRequest(err.message);
-            }
+                if (err) {
+                    return res.serverError(err.message);
+                }
+                if(!users.length) {
+                    return res.badRequest({"status" : "error", "message": "User by this email is not found"});
+                }
             return Mailer.sendResetMail(users[0], hash, function(err, resp) {
                 return (resp) ? res.ok({"status":"success"}) : res.badRequest({
                     "status":"error",
@@ -75,12 +115,12 @@ module.exports = {
     checkEmail: function(req, res) {
         User.find({'email':req.param('email')}).exec(function (err, user){
             if (err) {
-                return res.serverError(err);
+                return res.badRequest(err);
             }
             sails.log(user);
-            return (!user.length) ? res.ok({"status":"success"}) : res.ok({
+            return (!user.length) ? res.ok({"status":"success"}) : res.badRequest({
                 "status":"error",
-                "message" : "this email is exists"
+                "message" : "This email is already registered to a vlife account"
             });
         });
     },
@@ -88,18 +128,18 @@ module.exports = {
     checkPhone: function(req, res) {
         User.find({'phone':req.param('phone')}).exec(function (err, user){
             if (err) {
-                return res.serverError(err);
+                return res.badRequest(err);
             }
             sails.log(user);
             if(user.length) {
-                return res.ok({
+                return res.badRequest({
                     "status":"error",
-                    "message" : "this phone is exists"
+                    "message" : "This mobile number is already registered to a vlife account"
                 });
             }
             User.sendMessage(req.param('phone'), function(err, result) {
                 if(err) {
-                    return res.negotiate(err);
+                    return res.badRequest(err);
                 }
                 return res.ok({
                     "status":"success",

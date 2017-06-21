@@ -22,28 +22,260 @@
 
 module.exports.routes = {
 
-  /***************************************************************************
-  *                                                                          *
-  * Make the view located at `views/homepage.ejs` (or `views/homepage.jade`, *
-  * etc. depending on your default view engine) your home page.              *
-  *                                                                          *
-  * (Alternatively, remove this and add an `index.html` file in your         *
-  * `assets` directory)                                                      *
-  *                                                                          *
-  ***************************************************************************/
+    /***************************************************************************
+     *                                                                          *
+     * Make the view located at `views/homepage.ejs` (or `views/homepage.jade`, *
+     * etc. depending on your default view engine) your home page.              *
+     *                                                                          *
+     * (Alternatively, remove this and add an `index.html` file in your         *
+     * `assets` directory)                                                      *
+     *                                                                          *
+     ***************************************************************************/
 
-  '/': {
-    view: 'homepage'
-  }
+    'get /': {
+        view: 'homepage'
+    },
 
-  /***************************************************************************
-  *                                                                          *
-  * Custom routes here...                                                    *
-  *                                                                          *
-  * If a request to a URL doesn't match any of the custom routes above, it   *
-  * is matched against Sails route blueprints. See `config/blueprints.js`    *
-  * for configuration options and examples.                                  *
-  *                                                                          *
-  ***************************************************************************/
+    'post /api/v1/user/signup': {
+        controller: 'UserController',
+        action: 'signup',
+        skipAssets: 'true',
+        //swagger path object
+        swagger: {
+            methods: ['POST'],
+            summary: ' Signup user ',
+            description: 'Signup user',
+            produces: [
+                'application/json'
+            ],
+            tags: [
+                'Signup'
+            ],
+            responses: {
+                '200': {
+                    description: 'List of Groups',
+                    schema: 'User', // api/model/Group.js,
+                    type: 'array'
+                }
+            },
+            parameters: [
+                'User'
+            ]
+        }
+    },
+
+    'post /api/v1/user/login': {
+        controller: 'UserController',
+        action: 'login',
+        skipAssets: 'true',
+        //swagger path object
+        swagger: {
+            methods: ['POST'],
+            summary: 'Login user',
+            description: 'Login user',
+            produces: [
+                'application/json'
+            ],
+            tags: [
+                'Login'
+            ],
+            responses: {
+                '200': {
+                    description: 'List of Groups',
+                    schema: 'User', // api/model/Group.js,
+                    type: 'array'
+                }
+            },
+            parameters: [
+                'User'
+            ]
+        }
+    },
+    'post /api/v1/file': {
+        controller: 'FileController',
+        action: 'create',
+        skipAssets: 'true',
+        //swagger path object
+        swagger: {
+            methods: ['POST'],
+            summary: 'Upload file',
+            description: 'Upload file',
+            produces: [
+                'application/json'
+            ],
+            tags: [
+                'Upload'
+            ],
+            responses: {
+                '200': {
+                    description: 'List of Groups',
+                    schema: 'User', // api/model/Group.js,
+                    type: 'array'
+                }
+            },
+            parameters: [
+                'File'
+            ]
+        }
+    },
+    'get /api/v1/user/logout': {
+        controller: 'UserController',
+        action: 'logout',
+        skipAssets: 'true',
+        //swagger path object
+        swagger: {
+            methods: ['GET'],
+            summary: 'Logout user ',
+            description: 'Logout user',
+            produces: [
+                'application/json'
+            ],
+            tags: [
+                'Logout'
+            ],
+            parameters: [
+                'User'
+            ],
+            responses: {
+                '200': {
+                    description: 'List of Groups',
+                    schema: 'User', // api/model/Group.js,
+                    type: 'array'
+                }
+            }
+        }
+    },
+    'get /api/v1/user/:id?': {
+        controller: 'UserController',
+        action: 'find',
+        //swagger path object
+        swagger: {
+            methods: ['GET'],
+            summary: 'Logout user ',
+            description: 'Logout user',
+            produces: [
+                'application/json'
+            ],
+            tags: [
+                'Logout'
+            ],
+            parameters: [
+                'User'
+            ],
+            responses: {
+                '200': {
+                    description: 'List of Groups',
+                    schema: 'User', // api/model/Group.js,
+                    type: 'array'
+                }
+            }
+        }
+    },
+
+    'get /redirect': {
+        controller: 'RedirectController',
+        action: 'deepLink',
+        //swagger path object
+        swagger: {
+            methods: ['GET'],
+            summary: 'DeepLinking redirect',
+            description: 'DeepLinking redirect',
+            produces: [
+                'application/json'
+            ],
+            tags: [
+                'Deep link'
+            ]
+        }
+    },
+    'put /api/v1/user/changePassword': {
+        controller: 'UserController',
+        action: 'changePassword',
+        //swagger path object
+        swagger: {
+            methods: ['PUT'],
+            summary: 'change password',
+            description: 'change password',
+            produces: [
+                'application/json'
+            ],
+            tags: [
+                'change password'
+            ],
+            parameters: [
+                'User'
+            ],
+            responses: {
+                '200': {
+                    description: 'List of Groups',
+                    schema: 'User', // api/model/Group.js,
+                    type: 'array'
+                }
+            }
+        }
+    },
+
+    'get /api/v1/user/checkEmail': {
+        controller: 'UserController',
+        action: 'checkEmail',
+        //swagger path object
+        swagger: {
+            methods: ['GET'],
+            summary: 'DeepLinking redirect',
+            description: 'DeepLinking redirect',
+            produces: [
+                'application/json'
+            ],
+            tags: [
+                'Deep link'
+            ]
+        }
+    },
+    'get /api/v1/user/checkPhone': {
+        controller: 'UserController',
+        action: 'checkPhone',
+        //swagger path object
+        swagger: {
+            methods: ['GET'],
+            summary: 'DeepLinking redirect',
+            description: 'DeepLinking redirect',
+            produces: [
+                'application/json'
+            ],
+            tags: [
+                'Deep link'
+            ]
+        }
+    },
+
+    'post /api/v1/user/resetPassword': {
+        controller: 'UserController',
+        action: 'resetPassword',
+        //swagger path object
+        swagger: {
+            methods: ['POST'],
+            summary: 'DeepLinking redirect',
+            description: 'DeepLinking redirect',
+            produces: [
+                'application/json'
+            ],
+            tags: [
+                'Deep link'
+            ]
+        }
+    }
+
+
+
+
+    /***************************************************************************
+     *                                                                          *
+     * Custom routes here...                                                    *
+     *                                                                          *
+     * If a request to a URL doesn't match any of the custom routes above, it   *
+     * is matched against Sails route blueprints. See `config/blueprints.js`    *
+     * for configuration options and examples.                                  *
+     *                                                                          *
+     ***************************************************************************/
 
 };

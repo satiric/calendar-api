@@ -7,12 +7,9 @@
 
 module.exports = {
     _config: {
-        actions: true,
+        actions: false,
         shortcuts: false,
         rest: false
-    },
-    red: function(req, res) {
-        res.redirect("vlife://reset?token=" + req.param('token'));
     }
 };
 
