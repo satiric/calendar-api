@@ -23,13 +23,8 @@ module.exports = {
         User.create(req.body).exec(function (err, user) {
             if (err) {
                 return res.badRequest({"message": err.message, "status": "error"});
-//                return res.json(err.status, {err: err});
             }
             req.session.me = user;
-            // If this is not an HTML-wanting browser, e.g. AJAX/sockets/cURL/etc.,
-            // send a 200 response letting the user agent know the signup was successful.
-            //  if (req.wantsJSON) {
-            //  }
             Mailer.sendWelcomeMail(user);
             return res.ok({user: user, "status" : "success" });
         });
@@ -40,23 +35,25 @@ module.exports = {
     },
     logout: function (req, res) {
         'use strict';
-        if (!req.session.me) {
-            return res.json(403, {"err": "You must be authorized for logout"});
-        }
-        // "Forget" the user from the session.
-        // Subsequent requests from this user agent will NOT have `req.session.me`.
-        let meId = req.session.me.id;
-        req.session.me = null;
-        // If this is not an HTML-wanting browser, e.g. AJAX/sockets/cURL/etc.,
-        // send a simple response letting the user agent know they were logged out
-        // successfully.
-        return res.ok({"message": 'Logged out successfully for user: ' + meId, "status": "success"});
+        var authKey = Auth.extractAuthKey(req);
+        Auth.logout(authKey, function(err, result) {
+            if(err) {
+                return res.serverError({"status":"error", "details":err});
+            }
+            if(!result) {
+                return res.badRequest({"status":"error", "message":"This token isn't found."});
+            }
+            return res.ok({"status": "success"});
+        });
     },
     changePassword: function (req, res) {
         var token = req.param('token');
         var value = req.param('value');
         if (token) {
-            return User.find({'password_reset_token': token}).exec(function (err, user){
+            return User.find({
+                'password_reset_token': token,
+                'reset_token_created': {'>': new Date()} //todo check it
+            }).exec(function (err, user){
                 if (err) {
                     return res.serverError(err);
                 }
@@ -71,7 +68,7 @@ module.exports = {
                     (changed) ? res.ok({"status":"success"})
                         : res.badRequest({
                         "status":"error",
-                        "message" : "This email is already registered to a vlife account"
+                        "message" : "Password doesn't changed"
                     });
                 });
                 sails.log(user);
@@ -148,6 +145,4 @@ module.exports = {
             });
         });
     }
-
-
 };

@@ -49,6 +49,10 @@ module.exports = {
             type: 'string',
             enum: ''
         },
+        token: {
+            collection:'AuthToken',
+            via: 'owner'
+        },
         // auth_tokens: {
         //     collection: 'AuthToken',
         //     via: 'owner'
@@ -57,6 +61,7 @@ module.exports = {
             'use strict';
             var obj = this.toObject();
             delete obj.password;
+            delete obj.password_reset_token;
             return obj;
         }
     },
@@ -88,26 +93,27 @@ module.exports = {
 
         User.findOne({
             email: email
-        }).exec(function (err, result) {
-
+        }).exec(function (err, user) {
             if (err) {
                 sails.log(err);
                 return cb(err);
             }
-            if (!result) {
+            if (!user) {
                 err = new Error('Incorrect email or password.');
                 return cb(err);
             }
-
-            PasswordEncoder.bcryptCheck(pass, result.password, function (err, res) {
-                console.log(res);
-                if (err) {
-                    sails.log(err);
-                }
+            PasswordEncoder.bcryptCheck(pass, user.password, function (err, res) {
                 if (!res) {
                     err = new Error('Password invalid');
                 }
-                return cb(err, result);
+                if(err) {
+                    return cb(err);
+                }
+                
+                Auth.login(user, 60 * 60 * 24 * 30 * 1000, function(err, token) {
+                    user.token = token;
+                    return cb(err, user);
+                });
             });
         });
         // Create a user

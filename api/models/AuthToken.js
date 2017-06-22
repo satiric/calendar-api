@@ -6,7 +6,7 @@
 /**
  * User.js
  *
- * @description :: model is unused 
+ * @description :: model is unused
  * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
  */
 
@@ -14,21 +14,21 @@ module.exports = {
     attributes: {
         value: {
             type: "string",
-            required: true,
+//            required: true, // coz generation binded to beforecreate action
             minLength: 40
         },
-        expire_time: {
-            type: 'int'
-        },
-        expire_metric: {
-            type: 'string',
-            enum: ['s', 'm', 'h', 'd']
+        expire_date: {
+            type: 'datetime'
         },
         is_active: {
             type: 'boolean',
             defaultsTo: function () {
                 return true;
             }
+        },
+        owner:{
+            model:'User',
+            unique: true
         }
     },
 

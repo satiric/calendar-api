@@ -8,14 +8,17 @@
  *
  */
 module.exports = function(req, res, next) {
-
-    // User is allowed, proceed to the next policy,
-    // or if this is the last policy, the controller
-    if (!req.session.me) { //req.session.authenticated
+    Auth.checkToken(req, function(err, result) {
+        if (err) {
+            return res.serverError({"status": "error", "detail": err});
+        }
+        if (result) {
+            return res.forbidden({
+                "status": "error",
+                "message": 'You are not permitted to perform this action. Please, log out.',
+                "user": result
+            });
+        }
         return next();
-    }
-
-    // User is not allowed
-    // (default res.forbidden() behavior can be overridden in `config/403.js`)
-    return res.forbidden({"status":"error", "message":'You are not permitted to perform this action. Please, log out.'});
+    });
 };
