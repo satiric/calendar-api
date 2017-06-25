@@ -13,7 +13,7 @@ module.exports = {
     },
     find: function (req, res) {
         User.find({"id":req.param('id')}, function (err, user) {
-            if(!user.length) {
+            if(!user || !user.length) {
                 return res.badRequest({"status": "error", "message": "User not found."});
             }
             return res.ok({"status": "success", "user":user[0]});
@@ -24,9 +24,14 @@ module.exports = {
             if (err) {
                 return res.badRequest({"message": err.message, "status": "error"});
             }
-            req.session.me = user;
             Mailer.sendWelcomeMail(user);
-            return res.ok({user: user, "status" : "success" });
+            Auth.login(user, 60 * 60 * 24 * 30 * 1000, function(err, token) {
+                if(err) {
+                    return res.serverError({"status":"error", "details": err});
+                }
+                user.token = token;
+                res.ok({user: user, "status" : "success" });
+            });
         });
     },
     login: function (req, res) {
@@ -57,7 +62,7 @@ module.exports = {
                 if (err) {
                     return res.serverError(err);
                 }
-                if(!user.length){
+                if(!user || !user.length){
                     return res.badRequest({"status":"error", "message":"token is not active"});
                 }
 
@@ -98,7 +103,7 @@ module.exports = {
                 if (err) {
                     return res.serverError(err.message);
                 }
-                if(!users.length) {
+                if(!users || !users.length) {
                     return res.badRequest({"status" : "error", "message": "User by this email is not found"});
                 }
             return Mailer.sendResetMail(users[0], hash, function(err, resp) {
@@ -115,7 +120,7 @@ module.exports = {
                 return res.badRequest(err);
             }
             sails.log(user);
-            return (!user.length) ? res.ok({"status":"success"}) : res.badRequest({
+            return (!user || !user.length) ? res.ok({"status":"success"}) : res.badRequest({
                 "status":"error",
                 "message" : "This email is already registered to a vlife account"
             });
@@ -128,7 +133,7 @@ module.exports = {
                 return res.badRequest(err);
             }
             sails.log(user);
-            if(user.length) {
+            if(user && user.length) {
                 return res.badRequest({
                     "status":"error",
                     "message" : "This mobile number is already registered to a vlife account"

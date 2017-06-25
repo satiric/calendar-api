@@ -29,6 +29,7 @@
     "sails-hook-email": "^0.12.1",
     "sails-mysql": "^0.11.5",
     "sails-swagger": "^0.5.1",
+    "skipper-s3": "^0.5.9",
     "twilio": "^3.3.0"
   },
   "scripts": {

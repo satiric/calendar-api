@@ -15,8 +15,7 @@ module.exports = function(req, res, next) {
         if (result) {
             return res.forbidden({
                 "status": "error",
-                "message": 'You are not permitted to perform this action. Please, log out.',
-                "user": result
+                "message": 'You are not permitted to perform this action. Please, log out.'
             });
         }
         return next();

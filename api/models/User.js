@@ -109,10 +109,11 @@ module.exports = {
                 if(err) {
                     return cb(err);
                 }
-                
                 Auth.login(user, 60 * 60 * 24 * 30 * 1000, function(err, token) {
-                    user.token = token;
-                    return cb(err, user);
+                    sails.log(user);
+                    var result = user.toJSON();
+                    result.token = token;
+                    return cb(err, result);
                 });
             });
         });

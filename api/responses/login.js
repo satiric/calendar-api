@@ -12,32 +12,12 @@ module.exports = function login(email, pass) {
         }
 
         if (!user) {
-            return res.json(401, {"status":"error", "message": 'Invalid username/password combination.'});
-            // If this is not an HTML-wanting browser, e.g. AJAX/sockets/cURL/etc.,
-            // send a 200 response letting the user agent know the login was successful.
-            // (also do this if no `invalidRedirect` was provided)
-            // if (req.wantsJSON || !inputs.invalidRedirect) {
-//            }
-            // Otherwise if this is an HTML-wanting browser, redirect to /login.
-            // return res.redirect(inputs.invalidRedirect);
+            return res.json(401, {"status": "error", "message": 'Invalid username/password combination.'});
         }
 
-        // "Remember" the user in the session
-        // Subsequent requests from this user agent will have `req.session.me` set.
-        req.session.me = user;
-
-        // If this is not an HTML-wanting browser, e.g. AJAX/sockets/cURL/etc.,
-        // send a 200 response letting the user agent know the login was successful.
-        // (also do this if no `successRedirect` was provided)
-        // if (req.wantsJSON || ! inputs.successRedirect) {
-            return res.ok({
-                "status" : "success",
-                "user" : req.session.me
-            });
-        // }
-
-        // Otherwise if this is an HTML-wanting browser, redirect to /.
-//        return res.redirect(inputs.successRedirect);
+        return res.ok({
+            "status": "success",
+            "user": user
+        });
     });
-
 };

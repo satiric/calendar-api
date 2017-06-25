@@ -145,7 +145,7 @@ module.exports.routes = {
             }
         }
     },
-    'get /api/v1/user/:id?': {
+    'get /api/v1/user/info/:id?': {
         controller: 'UserController',
         action: 'find',
         //swagger path object
@@ -264,9 +264,6 @@ module.exports.routes = {
             ]
         }
     }
-
-
-
 
     /***************************************************************************
      *                                                                          *
