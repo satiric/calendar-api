@@ -25,13 +25,16 @@ module.exports = {
                 return res.badRequest({"message": err.message, "status": "error"});
             }
             Mailer.sendWelcomeMail(user);
+
             Auth.login(user, 60 * 60 * 24 * 30 * 1000, function(err, token) {
                 if(err) {
                     return res.serverError({"status":"error", "details": err});
                 }
-                user.token = token;
-                res.ok({user: user, "status" : "success" });
+                var result = user.toJSON();
+                result.token = token;
+                return res.ok({user: result, "status" : "success" });
             });
+
         });
     },
     login: function (req, res) {

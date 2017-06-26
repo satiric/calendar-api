@@ -4,20 +4,23 @@
 
 module.exports = {
     "bcryptEncode": function(values, next) {
-        require('bcrypt').hash(values.password, 10, function (err, encryptedPassword) {
+        console.log('1');
+        require('bcrypt-nodejs').hash(values.password, null, null, function (err, encryptedPassword) {
             if (err) {
                 return next(err);
             }
             sails.log(encryptedPassword);
             values.password = encryptedPassword;
-            next();
+            return next();
         });
     },
     "bcryptCheck": function(pass, hash, cb) {
-        require('bcrypt').compare(pass, hash, cb);
+        console.log('2');
+        require('bcrypt-nodejs').compare(pass, hash, cb);
     },
     "bcryptEncodeValue": function (value, cb) {
-        require('bcrypt').hash(value, 10, function (err, encryptedPassword) {
+        console.log('3');
+        require('bcrypt-nodejs').hash(value, null, null, function (err, encryptedPassword) {
             return cb(err, encryptedPassword);
         });
     },
