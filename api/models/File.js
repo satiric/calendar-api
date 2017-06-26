@@ -13,13 +13,16 @@ module.exports = {
             required: true,
             minLength: 1
         },
+        size: {
+            type: "integer"
+        },
         ext: {
             type: "string"
         },
         caption: {
             type: "string"
         },
-        storage: {
+        url: {
             required: true,
             type: 'string'
         }

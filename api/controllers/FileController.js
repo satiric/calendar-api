@@ -13,11 +13,37 @@ module.exports = {
     },
 	create: function (req, res) {
         FileManager.uploadFileToS3(req.file('file'), function(err, uploadedFiles) {
-                if (err) return res.serverError(err);
+            if (err) {
+                return res.serverError({"details":err, "status":"error"});
+            }
+            if(!uploadedFiles || !uploadedFiles.length) {
                 return res.json({
-                    message: uploadedFiles.length + ' file(s) uploaded successfully!',
-                    files: uploadedFiles
+                    "status": "error",
+                    "message": "file isn't uploaded"
                 });
+            }
+            var files = [];
+            for( let i = 0, size = uploadedFiles.length; i < size; i++ ) {
+                let fileInfo = uploadedFiles[i];
+                let splittedFile = fileInfo.fd.split(".");
+                files.push({
+                    "size" : fileInfo.size,
+                    "caption" : fileInfo.filename,
+                    "name" : splittedFile[0],
+                    "ext" : splittedFile[1],
+                    "url" : fileInfo.extra.Location
+                });
+            }
+            File.create(files).exec(function (err, created){
+                if (err) {
+                    return res.serverError({"details":err, "status":"error"});
+                }
+                return res.ok({"status":"success", "files": created});
+            });
+            // return res.json({
+            //     message: uploadedFiles.length + ' file(s) uploaded successfully!',
+            //     files: uploadedFiles
+            // });
         } );
         // return req.file('file').upload({
         //
