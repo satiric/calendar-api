@@ -23,8 +23,14 @@ module.exports = {
                 });
             }
             var files = [];
+            var allowedTypes = ['image/jpeg', 'image/png'];
+            sails.log(uploadedFiles);
             for( let i = 0, size = uploadedFiles.length; i < size; i++ ) {
                 let fileInfo = uploadedFiles[i];
+                //todo make this before upload
+                if(allowedTypes.indexOf(fileInfo.type) === -1) {
+                    return res.badRequest({"status":"error", "message": "wrong file type."});
+                }
                 let splittedFile = fileInfo.fd.split(".");
                 files.push({
                     "size" : fileInfo.size,
