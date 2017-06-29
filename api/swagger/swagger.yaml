@@ -131,6 +131,35 @@ definitions:
         
   UserEditable:
     type: object
+    properties:
+      name:
+        type: string
+        example: Jhon
+        minLength: 2
+        maxLength: 25
+      second_name:
+        type: string
+        example: Statham
+        minLength: 2
+        maxLength: 25
+      email:
+        type: string
+        example: jhonstatham@gmail.com
+      password:
+        type: string
+        minLength: 8
+        maxLength: 25
+        example: mycoolpassword
+      avatar_id:
+        type: integer
+        example: 4
+      phone:
+        type: string
+        example: "+1234567899"
+        pattern: "\\+([0-9]){9,13}"    
+        
+  UserSignup:
+    type: object
     required:
       - name
       - second_name
@@ -216,7 +245,7 @@ paths:
           description: "Объект User"
           required: true
           schema:
-            "$ref": "#/definitions/UserEditable"
+            "$ref": "#/definitions/UserSignup"
       responses:
         "200":
           description: Success
@@ -382,6 +411,12 @@ paths:
       operationId: update
       parameters:
         - $ref: "#/parameters/vlife-key"
+        - in: body
+          name: body
+          description: "Объект User"
+          required: true
+          schema:
+            "$ref": "#/definitions/UserEditable"
       responses:
         "200":
           description: Success
@@ -469,18 +504,15 @@ paths:
       description: загружает файл в Амазон и создаёт запись с информацией о файле в БД
       # used as the method name of the controller
       operationId: create
+      consumes: 
+        - "multipart/form-data"
       parameters:
         - $ref: "#/parameters/vlife-key"
-        - name: password
-          in: query
-          description: phone for user
+        - name: file
+          in: formData
+          description: новое значение пароля
           required: true
-          type: string
-        - name: email
-          in: query
-          description: phone for user
-          required: true
-          type: string
+          type: file
       responses:
         "200":
           description: Success
