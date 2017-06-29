@@ -530,27 +530,18 @@ paths:
     post:
       tags:
       - auth
-      description: загружает файл в Амазон и создаёт запись с информацией о файле в БД
+      description: возвращает новый токен для последнего истекшего токена
       # used as the method name of the controller
       operationId: refresh
       parameters:
         - $ref: "#/parameters/vlife-key"
-        - name: password
-          in: query
-          description: phone for user
-          required: true
-          type: string
-        - name: email
-          in: query
-          description: phone for user
-          required: true
-          type: string
+        - $ref: "#/parameters/auth-token-required"
       responses:
         "200":
           description: Success
           schema:
             # a pointer to a definition
-            $ref: "#/definitions/File"
+            $ref: "#/definitions/SuccessResponse"
         # responses may fall through to errors
         default:
           description: Error
@@ -563,21 +554,15 @@ paths:
     get:
       tags: 
       - user
-      description: загружает файл в Амазон и создаёт запись с информацией о файле в БД
+      description: отправляет смс с кодом для подтверждения на указанный номер без проверки наличия этого номера в БД. Обязательно использовать этот метод перед тем как изменить телефон в профиле пользователя.
       # used as the method name of the controller
       operationId: verifyPhone
       parameters:
         - $ref: "#/parameters/vlife-key"
-        - name: password
-          in: query
-          description: phone for user
-          required: true
+        - in: query
+          name: phone
           type: string
-        - name: email
-          in: query
-          description: phone for user
-          required: true
-          type: string
+          pattern: "\\+([0-9]){9,13}"
       responses:
         "200":
           description: Success
