@@ -22,6 +22,13 @@ module.exports = function sendOK (data, options) {
 
   // Set status code
   res.status(200);
+  if(!data) {
+    data = {};
+  }
+  //for body of response
+  if(!data.status) {
+    data.status = "success";
+  }
 
   // If appropriate, serve data as JSON(P)
   // If views are disabled, revert to json

@@ -31,6 +31,9 @@ module.exports.policies = {
         '*': 'hasValidHeaders',
         logout: 'sessionAuth',
         login: 'sessionAnon',
+        signup: 'sessionAnon',
+        update: 'sessionAuth',
+        resetPassword: 'sessionAnon'
     }
 
     /***************************************************************************

@@ -12,7 +12,6 @@
  *
  */
 module.exports = function (req, res, next) {
-
     let key = req.headers['vlife-access-key'] || '';
 
     // Check the database to see if a permission record exists which matches both the
@@ -24,7 +23,7 @@ module.exports = function (req, res, next) {
             return res.serverError(err);
         }
         if (!apiKey) {
-            return res.forbidden('You have no valid vlife access token in headers');
+            return res.json(401,{"status":"error","message": 'You have no valid vlife access token in headers'});
         }
         // If we made it all the way down here, looks like everything's ok, so we'll let the user through.
         // (from here, the next policy or the controller action will run)

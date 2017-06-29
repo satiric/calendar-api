@@ -39,230 +39,60 @@ module.exports.routes = {
     'post /api/v1/user/signup': {
         controller: 'UserController',
         action: 'signup',
-        skipAssets: 'true',
-        //swagger path object
-        swagger: {
-            methods: ['POST'],
-            summary: ' Signup user ',
-            description: 'Signup user',
-            produces: [
-                'application/json'
-            ],
-            tags: [
-                'Signup'
-            ],
-            responses: {
-                '200': {
-                    description: 'List of Groups',
-                    schema: 'User', // api/model/Group.js,
-                    type: 'array'
-                }
-            },
-            parameters: [
-                'User'
-            ]
-        }
+        skipAssets: 'true'
     },
 
     'post /api/v1/user/login': {
         controller: 'UserController',
         action: 'login',
-        skipAssets: 'true',
-        //swagger path object
-        swagger: {
-            methods: ['POST'],
-            summary: 'Login user',
-            description: 'Login user',
-            produces: [
-                'application/json'
-            ],
-            tags: [
-                'Login'
-            ],
-            responses: {
-                '200': {
-                    description: 'List of Groups',
-                    schema: 'User', // api/model/Group.js,
-                    type: 'array'
-                }
-            },
-            parameters: [
-                'User'
-            ]
-        }
+        skipAssets: 'true'
     },
     'post /api/v1/file': {
         controller: 'FileController',
         action: 'create',
-        skipAssets: 'true',
-        //swagger path object
-        swagger: {
-            methods: ['POST'],
-            summary: 'Upload file',
-            description: 'Upload file',
-            produces: [
-                'application/json'
-            ],
-            tags: [
-                'Upload'
-            ],
-            responses: {
-                '200': {
-                    description: 'List of Groups',
-                    schema: 'User', // api/model/Group.js,
-                    type: 'array'
-                }
-            },
-            parameters: [
-                'File'
-            ]
-        }
+        skipAssets: 'true'
     },
     'get /api/v1/user/logout': {
         controller: 'UserController',
         action: 'logout',
-        skipAssets: 'true',
-        //swagger path object
-        swagger: {
-            methods: ['GET'],
-            summary: 'Logout user ',
-            description: 'Logout user',
-            produces: [
-                'application/json'
-            ],
-            tags: [
-                'Logout'
-            ],
-            parameters: [
-                'User'
-            ],
-            responses: {
-                '200': {
-                    description: 'List of Groups',
-                    schema: 'User', // api/model/Group.js,
-                    type: 'array'
-                }
-            }
-        }
+        skipAssets: 'true'
     },
     'get /api/v1/user/info/:id?': {
         controller: 'UserController',
-        action: 'find',
-        //swagger path object
-        swagger: {
-            methods: ['GET'],
-            summary: 'Logout user ',
-            description: 'Logout user',
-            produces: [
-                'application/json'
-            ],
-            tags: [
-                'Logout'
-            ],
-            parameters: [
-                'User'
-            ],
-            responses: {
-                '200': {
-                    description: 'List of Groups',
-                    schema: 'User', // api/model/Group.js,
-                    type: 'array'
-                }
-            }
-        }
+        action: 'find'
     },
-
+    'put /api/v1/user/info': {
+        controller: 'UserController',
+        action: 'update'
+    },
     'get /redirect': {
         controller: 'RedirectController',
-        action: 'deepLink',
-        //swagger path object
-        swagger: {
-            methods: ['GET'],
-            summary: 'DeepLinking redirect',
-            description: 'DeepLinking redirect',
-            produces: [
-                'application/json'
-            ],
-            tags: [
-                'Deep link'
-            ]
-        }
+        action: 'deepLink'
     },
     'put /api/v1/user/changePassword': {
         controller: 'UserController',
-        action: 'changePassword',
-        //swagger path object
-        swagger: {
-            methods: ['PUT'],
-            summary: 'change password',
-            description: 'change password',
-            produces: [
-                'application/json'
-            ],
-            tags: [
-                'change password'
-            ],
-            parameters: [
-                'User'
-            ],
-            responses: {
-                '200': {
-                    description: 'List of Groups',
-                    schema: 'User', // api/model/Group.js,
-                    type: 'array'
-                }
-            }
-        }
+        action: 'changePassword'
     },
-
     'get /api/v1/user/checkEmail': {
         controller: 'UserController',
-        action: 'checkEmail',
-        //swagger path object
-        swagger: {
-            methods: ['GET'],
-            summary: 'DeepLinking redirect',
-            description: 'DeepLinking redirect',
-            produces: [
-                'application/json'
-            ],
-            tags: [
-                'Deep link'
-            ]
-        }
+        action: 'checkEmail'
     },
     'get /api/v1/user/checkPhone': {
         controller: 'UserController',
-        action: 'checkPhone',
-        //swagger path object
-        swagger: {
-            methods: ['GET'],
-            summary: 'DeepLinking redirect',
-            description: 'DeepLinking redirect',
-            produces: [
-                'application/json'
-            ],
-            tags: [
-                'Deep link'
-            ]
-        }
+        action: 'checkPhone'
     },
 
     'post /api/v1/user/resetPassword': {
         controller: 'UserController',
-        action: 'resetPassword',
-        //swagger path object
-        swagger: {
-            methods: ['POST'],
-            summary: 'DeepLinking redirect',
-            description: 'DeepLinking redirect',
-            produces: [
-                'application/json'
-            ],
-            tags: [
-                'Deep link'
-            ]
-        }
+        action: 'resetPassword'
+    },
+    'post /api/v1/user/refreshToken': {
+        controller: 'UserController',
+        action: 'refresh'
+    },
+    'get /api/v1/user/verifyPhone': {
+        controller: 'UserController',
+        action: 'verifyPhone'
     }
 
     /***************************************************************************

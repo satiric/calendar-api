@@ -16,5 +16,10 @@ _.merge(exports, {
         actions: false,
         shortcuts: false,
         rest: false
+    },
+    doc: function doc(req, res) {
+        var YAML = require('yamljs');
+        var nativeObject = YAML.load('./api/swagger/swagger.yaml');
+        res.status(200).jsonx(nativeObject);
     }
 });

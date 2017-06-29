@@ -1,42 +1,557 @@
 swagger: "2.0"
 info:
-  version: "0.0.1"
+  version: "0.1.1"
   title: "V-life backend"
+  description: "vlife backend application "
+  contact:
+    name: "Konstantin Maruhnich"
+    email: "nocturneumbra@gmail.com"
 # during dev, should point to your local machine
 host: localhost:1337
 # basePath prefixes all resource paths
 basePath: /api/v1
+tags: 
+  - name: auth
+    description: Авторизация и регистрация
+  - name: user 
+    description: Работа с пользователем
+  - name: file
+    description: Работа с файлами
 #
 schemes:
   # tip: remove http to make production-grade
   - http
-  - https
 # format of bodies a client can send (Content-Type)
 consumes:
   - application/json
 # format of the responses to the client (Accepts)
 produces:
   - application/json
+parameters:
+  vlife-key:
+    in: header
+    name: "vlife-access-key"
+    description: an authorization header
+    required: true
+    type: string
+  auth-token: 
+    in: header
+    name: "auth-token"
+    description: авторизационный токен, закреплённый за пользователем
+    type: string
+  auth-token-required: 
+    in: header
+    name: "auth-token"
+    description: авторизационный токен, закреплённый за пользователем
+    type: string
+    required: true
+definitions:
+
+  AuthTokenReadable:
+    type: object
+    properties:
+      id: 
+        type: integer
+      is_active: 
+        type: integer
+      value:
+        type: string
+        minLength: 40
+      date_expire: 
+        type: string 
+        format: date-time
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+        
+  File: 
+    type: object
+    properties:
+      name:
+        type: string
+        minLength: 40
+      size: 
+        type: string 
+        format: date-time
+      ext: 
+        type: string
+      caption: 
+        type: string
+      url: 
+        type: string
+
+  UserReadable:
+    type: object
+    required:
+      - name
+      - second_name
+      - email
+      - password
+      - phone
+    properties:
+      name:
+        type: string
+        example: Jhon
+        minLength: 2
+        maxLength: 25
+      second_name:
+        type: string
+        example: Statham
+        minLength: 2
+        maxLength: 25
+      email:
+        type: string
+        example: jhonstatham@gmail.com
+      password:
+        type: string
+        minLength: 8
+        maxLength: 25
+        example: mycoolpassword
+      avatar_url: 
+        type: string
+        example: "http://amazon.com/1.jpg"
+      avatar_id:
+        type: integer
+        example: 4
+      phone:
+        type: string
+        example: "+1234567899"
+        pattern: "\\+([0-9]){9,13}"
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+      token: 
+        "$ref": "#/definitions/AuthTokenReadable"
+        
+  UserEditable:
+    type: object
+    required:
+      - name
+      - second_name
+      - email
+      - password
+      - phone
+    properties:
+      name:
+        type: string
+        example: Jhon
+        minLength: 2
+        maxLength: 25
+      second_name:
+        type: string
+        example: Statham
+        minLength: 2
+        maxLength: 25
+      email:
+        type: string
+        example: jhonstatham@gmail.com
+      password:
+        type: string
+        minLength: 8
+        maxLength: 25
+        example: mycoolpassword
+      avatar_id:
+        type: integer
+        example: 4
+      phone:
+        type: string
+        example: "+1234567899"
+        pattern: "\\+([0-9]){9,13}"
+
+  AuthResponse:
+    required:
+      - status
+      - user
+    properties:
+      status:
+        type: integer
+      user: 
+        "$ref": "#/definitions/UserReadable"
+  ErrorResponse:
+    required:
+      - status
+    properties:
+      message:
+        type: string
+      status: 
+        type: string
+  SuccessResponse:
+    required:
+      - status
+    properties:
+      message:
+        type: string
+      status: 
+        type: string
+  PhoneSuccessResponse:
+    required:
+      - status
+      - code
+    properties:
+      status: 
+        type: string
+      code: 
+        type: integer
 paths:
-  /hello:
+  /user/signup:
     # binds a127 app logic to a route
-    x-swagger-router-controller: hello_world
-    get:
-      description: Returns 'Hello' to the caller
+    x-swagger-router-controller: UserController
+    post:
+      tags: 
+        - auth
+        - user
+      description: Регистрирует пользователя, отправляет приветственное сообщение по почте и логинит его. В объекте user находится объект token, содержащий expire_date (дата, после которой токен перестанет работать), и value - значение самого токена. Ко всем последующим запросам необходимо добавлять заголовок auth-token либо одноименный GET-параметр
       # used as the method name of the controller
-      operationId: hello
+      operationId: signup
       parameters:
-        - name: name
+        - $ref: "#/parameters/vlife-key"
+        - in: body
+          name: body
+          description: "Объект User"
+          required: true
+          schema:
+            "$ref": "#/definitions/UserEditable"
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/AuthResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /user/login:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: UserController
+    post:
+      tags: 
+        - auth
+      description: Создает авторизационный токен
+      # used as the method name of the controller
+      operationId: login
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - name: password
           in: query
-          description: The name of the person to whom to say hello
-          required: false
+          description: password
+          required: true
+          type: string
+        - name: email
+          in: query
+          description: email
+          required: true
           type: string
       responses:
         "200":
           description: Success
           schema:
             # a pointer to a definition
-            $ref: "#/definitions/HelloWorldResponse"
+            $ref: "#/definitions/AuthResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /user/checkEmail:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: UserController
+    get:
+      tags:
+      - user
+      description: не проверяет валидность email, только наличие такого email в базе
+      # used as the method name of the controller
+      operationId: checkEmail
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - name: email
+          in: query
+          description: email for user
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+        #  schema:
+            # a pointer to a definition
+          
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /user/checkPhone:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: UserController
+    get:
+      tags: 
+      - user
+      description: "phone должен быть предварительно url-encoded из-за плюсика. Формат номера: интернациональный; всё слитно; с упреждающим плюсиком. Этот метод не проверяет валидность телефона, он проверяет только наличие такого телефона в базе. Если его нет, отправляет sms"
+      # used as the method name of the controller
+      operationId: checkPhone
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - in: query
+          name: "phone"
+          description: url-encoded телефон
+          required: true
+          type: string
+        - in: query
+          name: "noVerify"
+          description: Если не нужно отправлять смс для верификации, передать любое не-null значение
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/PhoneSuccessResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /user/logout:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: UserController
+    get:
+      tags: 
+      - auth
+      description: Этот метод удаляет авторизационный токен для текущего пользователя
+      # used as the method name of the controller
+      operationId: logout
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - $ref: "#/parameters/auth-token-required"
+         
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /user/info/{id}:
+    x-swagger-router-controller: UserController
+    get:
+      tags: 
+      - user
+      description: Этот метод выгружает информацию о пользователе
+      # used as the method name of the controller
+      operationId: find
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - name: id
+          in: path
+          description: ID пользователя
+          required: true
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Success
+        #  schema:
+            # a pointer to a definition
+           # $ref: "#/definitions/HelloWorldResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /user/info:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: UserController
+    put:
+      tags:
+      - user
+      description: редактирует информацию об авторизованном пользователе
+      # used as the method name of the controller
+      operationId: update
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+      responses:
+        "200":
+          description: Success
+        #  schema:
+            # a pointer to a definition
+           # $ref: "#/definitions/HelloWorldResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /user/resetPassword:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: UserController
+    post:
+      tags:
+      - auth
+      - user
+      description: Этот метод отправляет письмо cо сгенерированным токеном на почту, указанную в запросе, если существует юзер с такой почтой. В письме есть ссылка на сервер, на action который редиректит в ваше приложение вместе с токеном
+      # used as the method name of the controller
+      operationId: resetPassword
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - name: password
+          in: query
+          description: phone for user
+          required: true
+          type: string
+        - name: email
+          in: query
+          description: phone for user
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/AuthResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /user/changePassword:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: UserController
+    put:
+      tags:
+      - auth
+      - user
+      description: изменяет пароль пользователя на value. Пользователь определяется по авторизационному заголовку (для авторизованного пользователя) или по токену, переданному в поле token в теле запроса. 
+      # used as the method name of the controller
+      operationId: changePassword
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - $ref: "#/parameters/auth-token"
+        - name: value
+          in: query
+          description: новое значение пароля
+          required: true
+          type: string
+        - name: token
+          in: query
+          description: токен для переназначения пароля без авторизации, должен прийти в письме из метода resetPassword
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/AuthResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"       
+  /file:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: FileController
+    post:
+      tags: 
+      - file
+      description: загружает файл в Амазон и создаёт запись с информацией о файле в БД
+      # used as the method name of the controller
+      operationId: create
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - name: password
+          in: query
+          description: phone for user
+          required: true
+          type: string
+        - name: email
+          in: query
+          description: phone for user
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/File"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /user/refreshToken:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: UserController
+    post:
+      tags:
+      - auth
+      description: загружает файл в Амазон и создаёт запись с информацией о файле в БД
+      # used as the method name of the controller
+      operationId: refresh
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - name: password
+          in: query
+          description: phone for user
+          required: true
+          type: string
+        - name: email
+          in: query
+          description: phone for user
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/File"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+            
+  /user/verifyPhone:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: UserController
+    get:
+      tags: 
+      - user
+      description: загружает файл в Амазон и создаёт запись с информацией о файле в БД
+      # used as the method name of the controller
+      operationId: verifyPhone
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - name: password
+          in: query
+          description: phone for user
+          required: true
+          type: string
+        - name: email
+          in: query
+          description: phone for user
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/File"
         # responses may fall through to errors
         default:
           description: Error
@@ -45,16 +560,3 @@ paths:
   /swagger:
     x-swagger-pipe: swagger_raw
 # complex objects have schema definitions
-definitions:
-  HelloWorldResponse:
-    required:
-      - message
-    properties:
-      message:
-        type: string
-  ErrorResponse:
-    required:
-      - message
-    properties:
-      message:
-        type: string

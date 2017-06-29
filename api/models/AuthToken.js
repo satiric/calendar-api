@@ -26,7 +26,7 @@ module.exports = {
                 return true;
             }
         },
-        owner:{
+        owner:{ //for avatar
             model:'User',
             unique: true
         }

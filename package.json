@@ -27,10 +27,12 @@
     "sails-custom-swagger-hook": "^1.0.3",
     "sails-disk": "~0.10.9",
     "sails-hook-email": "^0.12.1",
+    "sails-hook-validation": "^0.4.6",
     "sails-mysql": "^0.11.5",
     "sails-swagger": "^0.5.1",
     "skipper-s3": "^0.5.9",
-    "twilio": "^3.3.0"
+    "twilio": "^3.3.0",
+    "yamljs": "^0.3.0"
   },
   "scripts": {
     "debug": "node debug app.js",

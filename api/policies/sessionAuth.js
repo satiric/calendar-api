@@ -13,12 +13,13 @@ module.exports = function (req, res, next) {
 
     // Check the database to see if a permission record exists which matches both the
     // target folder id, the appropriate "type", and the id of the logged-in user.
-    AuthToken.findOne({"value": key}).exec(function (err, result) {
+    //todo make checking for is_active
+    AuthToken.findOne({"value": key, "expire_date": {'>': new Date()} }).exec(function (err, result) {
         if (err) {
             return res.serverError({"status": "error", "detail": err});
         }
         if (!result) {
-            return res.forbidden({
+            return res.unauthorized({
                 "status": "error",
                 "message": 'You are not permitted to perform this action. Please, log in.'
             });

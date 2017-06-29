@@ -4,12 +4,13 @@
 
 module.exports = {
     "bcryptEncode": function(values, next) {
-        console.log('1');
+        if(!values.password) {
+            return next();
+        }
         require('bcrypt-nodejs').hash(values.password, null, null, function (err, encryptedPassword) {
             if (err) {
                 return next(err);
             }
-            sails.log(encryptedPassword);
             values.password = encryptedPassword;
             return next();
         });
