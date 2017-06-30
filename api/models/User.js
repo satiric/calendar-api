@@ -30,7 +30,7 @@ module.exports = {
             type: 'string',
             minLength: 8,
             maxLength: 25,
-            password: true // << defined below
+            password: true
         },
         phone: {
             required: true,

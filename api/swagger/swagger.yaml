@@ -12,11 +12,11 @@ host: localhost:1337
 basePath: /api/v1
 tags: 
   - name: auth
-    description: Авторизация и регистрация
+    description: Authorization
   - name: user 
-    description: Работа с пользователем
+    description: User personal information
   - name: file
-    description: Работа с файлами
+    description: Files
 #
 schemes:
   # tip: remove http to make production-grade
@@ -37,12 +37,12 @@ parameters:
   auth-token: 
     in: header
     name: "auth-token"
-    description: авторизационный токен, закреплённый за пользователем
+    description: Authorization token, binded to unique user.
     type: string
   auth-token-required: 
     in: header
     name: "auth-token"
-    description: авторизационный токен, закреплённый за пользователем
+    description: Authorization token, binded to unique user.
     type: string
     required: true
 definitions:
@@ -104,7 +104,7 @@ definitions:
         maxLength: 25
       email:
         type: string
-        example: jhonstatham@gmail.com
+        example: jhonstatham@gmail.com2
       password:
         type: string
         minLength: 8
@@ -235,7 +235,7 @@ paths:
       tags: 
         - auth
         - user
-      description: Регистрирует пользователя, отправляет приветственное сообщение по почте и логинит его. В объекте user находится объект token, содержащий expire_date (дата, после которой токен перестанет работать), и value - значение самого токена. Ко всем последующим запросам необходимо добавлять заголовок auth-token либо одноименный GET-параметр
+      description: Create user record, send hello-message to email and log in the user. User's object contain token with expire_date and value of this token. This value must be attached to each one next query as header auth-token or GET-parameter with same caption.
       # used as the method name of the controller
       operationId: signup
       parameters:
@@ -263,7 +263,7 @@ paths:
     post:
       tags: 
         - auth
-      description: Создает авторизационный токен
+      description: Create auth token
       # used as the method name of the controller
       operationId: login
       parameters:
@@ -296,7 +296,7 @@ paths:
     get:
       tags:
       - user
-      description: не проверяет валидность email, только наличие такого email в базе
+      description: Note - does not validate email, just check it in database
       # used as the method name of the controller
       operationId: checkEmail
       parameters:
@@ -325,19 +325,19 @@ paths:
     get:
       tags: 
       - user
-      description: "phone должен быть предварительно url-encoded из-за плюсика. Формат номера: интернациональный; всё слитно; с упреждающим плюсиком. Этот метод не проверяет валидность телефона, он проверяет только наличие такого телефона в базе. Если его нет, отправляет sms"
+      description: "phone must be url-encoded. Format for phone: international phone number; without any special chars (dots, brackets, etc) except fronted plus(+). The method does not validate phone number, only check it in database. If phone is not exists in database, the method will send sms. For restricting this behaviour you must attach noVerify parameter to requests"
       # used as the method name of the controller
       operationId: checkPhone
       parameters:
         - $ref: "#/parameters/vlife-key"
         - in: query
           name: "phone"
-          description: url-encoded телефон
+          description: url-encoded phone number
           required: true
           type: string
         - in: query
           name: "noVerify"
-          description: Если не нужно отправлять смс для верификации, передать любое не-null значение
+          description: For restricting sms-sending this parameter must contain any not-null value
           type: string
       responses:
         "200":
@@ -355,7 +355,7 @@ paths:
     get:
       tags: 
       - auth
-      description: Этот метод удаляет авторизационный токен для текущего пользователя
+      description: Remove auth token for current authorized user
       # used as the method name of the controller
       operationId: logout
       parameters:
@@ -378,14 +378,14 @@ paths:
     get:
       tags: 
       - user
-      description: Этот метод выгружает информацию о пользователе
+      description: Get info about user by id
       # used as the method name of the controller
       operationId: find
       parameters:
         - $ref: "#/parameters/vlife-key"
         - name: id
           in: path
-          description: ID пользователя
+          description: User id.
           required: true
           type: integer
           format: int64
@@ -406,11 +406,12 @@ paths:
     put:
       tags:
       - user
-      description: редактирует информацию об авторизованном пользователе
+      description: Edit info for current authorized user
       # used as the method name of the controller
       operationId: update
       parameters:
         - $ref: "#/parameters/vlife-key"
+        - $ref: "#/parameters/auth-token-required"
         - in: body
           name: body
           description: "Объект User"
@@ -436,7 +437,7 @@ paths:
       tags:
       - auth
       - user
-      description: Этот метод отправляет письмо cо сгенерированным токеном на почту, указанную в запросе, если существует юзер с такой почтой. В письме есть ссылка на сервер, на action который редиректит в ваше приложение вместе с токеном
+      description: Send email with generated password-reset token to user. 
       # used as the method name of the controller
       operationId: resetPassword
       parameters:
@@ -469,20 +470,20 @@ paths:
       tags:
       - auth
       - user
-      description: изменяет пароль пользователя на value. Пользователь определяется по авторизационному заголовку (для авторизованного пользователя) или по токену, переданному в поле token в теле запроса. 
+      description: Changes password for authorized user or for user, finded by incoming password-reset token in body of query. 
       # used as the method name of the controller
       operationId: changePassword
       parameters:
         - $ref: "#/parameters/vlife-key"
         - $ref: "#/parameters/auth-token"
-        - name: value
+        - name: password
           in: query
-          description: новое значение пароля
+          description: New password value
           required: true
           type: string
         - name: token
           in: query
-          description: токен для переназначения пароля без авторизации, должен прийти в письме из метода resetPassword
+          description: For anonymous user password-reset token must be sent by resetPassword method in email.
           type: string
       responses:
         "200":
@@ -501,7 +502,7 @@ paths:
     post:
       tags: 
       - file
-      description: загружает файл в Амазон и создаёт запись с информацией о файле в БД
+      description: Upload file to S3 Amazon and create record with information about the file in database.
       # used as the method name of the controller
       operationId: create
       consumes: 
@@ -510,7 +511,7 @@ paths:
         - $ref: "#/parameters/vlife-key"
         - name: file
           in: formData
-          description: новое значение пароля
+          description: Uplodaed file.
           required: true
           type: file
       responses:
@@ -530,7 +531,7 @@ paths:
     post:
       tags:
       - auth
-      description: возвращает новый токен для последнего истекшего токена
+      description: Return new token for last expired token.
       # used as the method name of the controller
       operationId: refresh
       parameters:
@@ -554,7 +555,7 @@ paths:
     get:
       tags: 
       - user
-      description: отправляет смс с кодом для подтверждения на указанный номер без проверки наличия этого номера в БД. Обязательно использовать этот метод перед тем как изменить телефон в профиле пользователя.
+      description: Send sms with code without checking phone in database. Use before changing phone number in user profile.
       # used as the method name of the controller
       operationId: verifyPhone
       parameters:

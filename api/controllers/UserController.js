@@ -7,6 +7,7 @@
 var LogicE = require('../exceptions/Logic');
 var ValidationE = require('../exceptions/Validation');
 var UserAuth = require("../utils/UserAuth");
+
 module.exports = {
     _config: {
         actions: false,
@@ -19,11 +20,9 @@ module.exports = {
      * @param res
      */
     find: function (req, res) {
-        User.find({"id": req.param('id')}, function (err, user) {
-            if (!user || !user.length) {
-                return res.badRequest({"status": "error", "message": "User not found."});
-            }
-            return res.ok({"status": "success", "user": user[0]});
+        User.findOne({"id": req.param('id')}, function (err, user) {
+            return (user) ? res.ok({"status": "success", "user": user})
+                : res.badRequest({"message": "User not found."});
         });
     },
 
@@ -34,6 +33,7 @@ module.exports = {
      */
     update: function (req, res) {
         var authKey = Auth.extractAuthKey(req);
+        //todo refactor it
         UserAuth.getUserByAuthToken(authKey, function (err, user) {
             if (err) {
                 return res.serverError({"details": err});
@@ -67,6 +67,7 @@ module.exports = {
         User.create(req.body).exec(function (err, user) {
             if (err) {
                 return (err.Errors)
+                    //todo refactor it
                     ? res.badRequest({"message": _.values(err.Errors)[0][0].message, "status": "error"})
                     : res.serverError({"details": err, "status": "error"});
             }
@@ -88,9 +89,12 @@ module.exports = {
         // See `api/responses/login.js`
         return res.login(req.param('email'), req.param('password'));
     },
-
+    /**
+     *
+     * @param req
+     * @param res
+     */
     logout: function (req, res) {
-        'use strict';
         var authKey = Auth.extractAuthKey(req);
         Auth.logout(authKey, function (err, result) {
             if (err) {
@@ -99,12 +103,12 @@ module.exports = {
             if (!result) {
                 return res.badRequest({"status": "error", "message": "This token isn't found."});
             }
-            return res.ok({"status": "success"});
+            return res.ok();
         });
     },
     changePassword: function (req, res) {
         var token = req.param('token');
-        var value = req.param('value');
+        var value = req.param('password');
         var authKey = Auth.extractAuthKey(req);
         if (token) {
             return UserAuth.getUserByResetToken(token, function (err, user) {
