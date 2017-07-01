@@ -29,7 +29,7 @@ module.exports = {
                     ? res.badRequest({"message": _.values(err.Errors)[0][0].message, "status": "error"})
                     : res.serverError({"details": err, "status": "error"});
             }
-            require('../utils/UserSignup').signup(user, function (err, result) {
+            require('../../utils/UserSignup').signup(user, function (err, result) {
                 if (err) {
                     return res.serverError({"status": "error", "details": err});
                 }
