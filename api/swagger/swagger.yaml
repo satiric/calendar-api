@@ -70,6 +70,14 @@ definitions:
   File: 
     type: object
     properties:
+      id: 
+        type: integer
+      createdAt: 
+        type: string
+        format: date-time
+      udatedAt: 
+        type: string
+        format: date-time
       name:
         type: string
         minLength: 40
