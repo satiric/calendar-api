@@ -54,6 +54,16 @@ module.exports = {
         avatar_id: {
             type: 'integer'
         },
+        phoneContacts: {
+            collection: 'Phone',
+            via: 'subscribers',
+            dominant: true
+        },
+        emailContacts: {
+            collection: 'Email',
+            via: 'subscribers',
+            dominant: true
+        },
         
         // auth_tokens: {
         //     collection: 'AuthToken',

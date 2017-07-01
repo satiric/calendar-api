@@ -14,15 +14,33 @@ module.exports = {
             type: "string",
             enum: ['Personal', 'Work']
         },
-        description: {
+        event_date: {
+            type: "datetime"
+        },
+        time_start: {
+            type: "time"
+        },
+        time_end: {
+            type: "time"
+        },
+        repeat: {
+            type: "string",
+            enum: ['Never', 'Day', 'Week', 'Fortnight', 'Month']
+        },
+        repeat_option: {
             type: "string"
+        },
+        end_repeat: {
+            type: "datetime",
         },
         location: {
             type: "string"
         },
-        url: {
-            required: true,
-            type: 'string'
+        description: {
+            type: "string"
+        },
+        remind: {
+            type: "int"
         }
     }
 };

@@ -41,12 +41,23 @@ module.exports.routes = {
         action: 'signup',
         skipAssets: 'true'
     },
+    'post /api/v2/user/signup': {
+        controller: 'v2/UserController',
+        action: 'signup',
+        skipAssets: 'true'
+    },
 
     'post /api/v1/user/login': {
         controller: 'UserController',
         action: 'login',
         skipAssets: 'true'
     },
+    'post /api/v2/user/login': {
+        controller: 'v2/UserController',
+        action: 'login',
+        skipAssets: 'true'
+    },
+    
     'post /api/v1/file': {
         controller: 'FileController',
         action: 'create',
