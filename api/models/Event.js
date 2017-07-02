@@ -43,6 +43,9 @@ module.exports = {
         },
         remind: {
             type: "int"
+        },
+        founder: {
+            model: 'User'
         }
     },
     // validationMessages: { //hand for i18n & l10n

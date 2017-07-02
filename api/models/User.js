@@ -54,6 +54,10 @@ module.exports = {
         avatar_id: {
             type: 'integer'
         },
+        events: {
+            collection: 'Event',
+            via: 'founder'
+        },
         // phoneContacts: {
         //     collection: 'Phone',
         //     via: 'subscribers',
