@@ -108,8 +108,11 @@ module.exports.routes = {
     'post /api/v1/contacts': {
         controller: 'ContactsController',
         action: 'create'
+    },
+    'post /api/v1/events': {
+        controller: 'EventsController',
+        action: 'create'
     }
-
     /***************************************************************************
      *                                                                          *
      * Custom routes here...                                                    *

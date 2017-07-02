@@ -19,11 +19,11 @@ module.exports = {
         },
         time_start: {
             required: true,
-            type: "time"
+            type: "string"
         },
         time_end: {
             required: true,
-            type: "time"
+            type: "string"
         },
         repeat: {
             type: "string",
