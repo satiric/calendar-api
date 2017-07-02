@@ -104,6 +104,10 @@ module.exports.routes = {
     'get /api/v1/user/verifyPhone': {
         controller: 'UserController',
         action: 'verifyPhone'
+    },
+    'post /api/v1/contacts': {
+        controller: 'ContactsController',
+        action: 'create'
     }
 
     /***************************************************************************

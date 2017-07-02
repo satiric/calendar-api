@@ -17,6 +17,8 @@ tags:
     description: User personal information
   - name: file
     description: Files
+  - name: event
+    description: Events 
 #
 schemes:
   # tip: remove http to make production-grade
@@ -201,6 +203,42 @@ definitions:
         example: "+1234567899"
         pattern: "\\+([0-9]){9,13}"
 
+  Event:
+    type: object
+    required:
+      - title
+    properties:
+      title:
+        type: string
+        example: Meeting near the caffe
+        maxLength: 25
+      sphere: 
+        type: string
+        enum: [Personal, Work]
+      event_date: 
+        type: string
+        format: datetime
+      time_start: 
+        type: string
+        format: time
+      time_end: 
+        type: string
+        format: time
+      repeat: 
+        type: string
+        enum: [Never, Day, Week, Fortnight, Month]
+      repeat_option: 
+        type: array
+        items: 
+          type: string
+      end_repeat: 
+        type: string
+        format: date
+      description: 
+        type: string
+      reminds: 
+        type: integer
+        description: Reminds before x minutes. Probably useless, needed only for app-logic
   AuthResponse:
     required:
       - status
@@ -250,7 +288,7 @@ paths:
         - $ref: "#/parameters/vlife-key"
         - in: body
           name: body
-          description: "Объект User"
+          description: "Object User"
           required: true
           schema:
             "$ref": "#/definitions/UserSignup"
@@ -572,6 +610,34 @@ paths:
           name: phone
           type: string
           pattern: "\\+([0-9]){9,13}"
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/File"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /events:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: EventsController
+    post:
+      tags: 
+      - event
+      description: Send sms with code without checking phone in database. Use before changing phone number in user profile.
+      # used as the method name of the controller
+      operationId: createEvent
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - in: body
+          name: body
+          description: "Object User"
+          required: true
+          schema:
+            "$ref": "#/definitions/Event"
       responses:
         "200":
           description: Success
