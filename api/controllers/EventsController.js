@@ -58,5 +58,30 @@ module.exports = {
                 return res.ok({"event": event});
             });
         });
+    },
+
+    /**
+     *
+     * @param req
+     * @param res
+     */
+    update: function (req, res) {
+        var token = Auth.extractAuthKey(req);
+        var eventId = req.param('id');
+        UserAuth.getUserByAuthToken(token, function(err, user) {
+            if(err) {
+                return res.serverError({"details": err});
+            }
+            if(!user) {
+                return res.badRequest({"message": "User not found"});
+            }
+            req.body.founder = user.id;
+            Event.update({id: eventId, "founder": user.id}, req.body).exec(function (err, event) {
+                if(err) {
+                    return res.serverError({"details":err});
+                }
+                return res.ok({"event": event});
+            });
+        });
     }
 };

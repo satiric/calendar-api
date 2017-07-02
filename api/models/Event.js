@@ -44,6 +44,10 @@ module.exports = {
         remind: {
             type: "int"
         },
+        active: {
+            type: "boolean",
+            defaultsTo: true
+        },
         founder: {
             model: 'User'
         }

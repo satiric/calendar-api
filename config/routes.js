@@ -116,7 +116,12 @@ module.exports.routes = {
     'post /api/v1/events': {
         controller: 'EventsController',
         action: 'create'
-    }
+    },
+    'put /api/v1/events/:id': {
+        controller: 'EventsController',
+        action: 'update'
+    },
+
     /***************************************************************************
      *                                                                          *
      * Custom routes here...                                                    *
