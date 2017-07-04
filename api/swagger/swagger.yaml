@@ -209,6 +209,7 @@ definitions:
       - title
       - time_start
       - time_end
+      - event_date
     properties:
       title:
         type: string
@@ -226,7 +227,7 @@ definitions:
       time_end: 
         type: string
         format: time
-      repeat: 
+      repeat_type: 
         type: string
         enum: [Never, Day, Week, Fortnight, Month]
       repeat_option: 
@@ -497,11 +498,6 @@ paths:
       operationId: resetPassword
       parameters:
         - $ref: "#/parameters/vlife-key"
-        - name: password
-          in: query
-          description: phone for user
-          required: true
-          type: string
         - name: email
           in: query
           description: phone for user
@@ -512,7 +508,7 @@ paths:
           description: Success
           schema:
             # a pointer to a definition
-            $ref: "#/definitions/AuthResponse"
+            $ref: "#/definitions/SuccessResponse"
         # responses may fall through to errors
         default:
           description: Error
@@ -545,7 +541,7 @@ paths:
           description: Success
           schema:
             # a pointer to a definition
-            $ref: "#/definitions/AuthResponse"
+            $ref: "#/definitions/SuccessResponse"
         # responses may fall through to errors
         default:
           description: Error
@@ -652,8 +648,9 @@ paths:
         "200":
           description: Success
           schema:
-            # a pointer to a definition
-            "$ref": "#/definitions/Event"
+            type: array
+            items:
+              "$ref": "#/definitions/Event"
         # responses may fall through to errors
         default:
           description: Error
@@ -668,6 +665,14 @@ paths:
       parameters:
         - $ref: "#/parameters/vlife-key"
         - $ref: "#/parameters/auth-token-required"
+        - in: query
+          name: "page"
+          description: page, default 1
+          type: integer
+        - in: query
+          name: "pageSize"
+          description: pagesize, default 10
+          type: integer
       responses:
         "200":
           description: Success

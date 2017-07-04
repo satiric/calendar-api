@@ -3,7 +3,6 @@
  */
 
 module.exports = {
-
     attributes: {
         title: {
             type: "string",
@@ -15,6 +14,7 @@ module.exports = {
             enum: ['Personal', 'Work']
         },
         event_date: {
+            required: true,
             type: "datetime"
         },
         time_start: {
@@ -25,7 +25,7 @@ module.exports = {
             required: true,
             type: "string"
         },
-        repeat: {
+        repeat_type: {
             type: "string",
             enum: ['Never', 'Day', 'Week', 'Fortnight', 'Month']
         },
@@ -51,7 +51,7 @@ module.exports = {
         founder: {
             model: 'User'
         }
-    },
+    }
     // validationMessages: { //hand for i18n & l10n
     //     email: {
     //         required: 'Email is required',
