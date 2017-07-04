@@ -520,7 +520,7 @@ paths:
         - $ref: "#/parameters/vlife-key"
         - name: email
           in: query
-          description: phone for user
+          description: email for user
           required: true
           type: string
       responses:
@@ -702,6 +702,7 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
+  /events/{id}:
     put:
       tags: 
       - event
@@ -709,9 +710,14 @@ paths:
       # used as the method name of the controller
       operationId: putEvent
       parameters:
-      
         - $ref: "#/parameters/vlife-key"
         - $ref: "#/parameters/auth-token-required"
+        - name: id
+          in: path
+          description: User id.
+          required: true
+          type: integer
+          format: int64
         - in: body
           name: body
           description: "Object Event"
