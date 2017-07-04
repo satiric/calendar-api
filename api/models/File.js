@@ -25,6 +25,9 @@ module.exports = {
         url: {
             required: true,
             type: 'string'
+        }, 
+        mini_url: {
+            type: 'string'
         }
     }
 };

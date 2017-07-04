@@ -23,6 +23,7 @@
     "include-all": "^1.0.0",
     "randomstring": "^1.1.5",
     "rc": "1.0.1",
+    "s3-uploader": "^2.0.3",
     "sails": "~0.12.13",
     "sails-custom-swagger-hook": "^1.0.3",
     "sails-disk": "~0.10.9",

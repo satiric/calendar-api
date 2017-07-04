@@ -63,6 +63,11 @@ module.exports.routes = {
         action: 'create',
         skipAssets: 'true'
     },
+    'post /api/v2/file': {
+        controller: 'v2/FileController',
+        action: 'create',
+        skipAssets: 'true'
+    },
     'get /api/v1/user/logout': {
         controller: 'UserController',
         action: 'logout',
