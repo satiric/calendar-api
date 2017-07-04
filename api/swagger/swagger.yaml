@@ -466,6 +466,8 @@ paths:
       responses:
         "200":
           description: Success
+          schema: 
+           $ref: "#/definitions/UserReadable"
         #  schema:
             # a pointer to a definition
            # $ref: "#/definitions/HelloWorldResponse"
