@@ -249,6 +249,24 @@ definitions:
       active: 
         type: boolean
         description: Status for the event. Default is true. 
+  EventResponse: 
+    required: 
+      - data
+      - page 
+      - pageSize
+      - total
+    properties:
+      data:
+        type: array
+        items: 
+          "$ref": "#/definitions/Event"
+      page: 
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+  
   AuthResponse:
     required:
       - status
@@ -648,9 +666,7 @@ paths:
         "200":
           description: Success
           schema:
-            type: array
-            items:
-              "$ref": "#/definitions/Event"
+            "$ref": "#/definitions/Event"
         # responses may fall through to errors
         default:
           description: Error
@@ -677,8 +693,8 @@ paths:
         "200":
           description: Success
           schema:
-            # a pointer to a definition
-            $ref: "#/definitions/Event"
+            "$ref": "#/definitions/EventResponse"
+              
         # responses may fall through to errors
         default:
           description: Error
