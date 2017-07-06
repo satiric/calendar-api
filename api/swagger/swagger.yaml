@@ -266,11 +266,14 @@ definitions:
   Event:
     type: object
     required:
+      - id
       - title
       - time_start
       - time_end
       - event_date
     properties:
+      id: 
+        type: integer
       title:
         type: string
         example: Meeting near the caffe
@@ -531,7 +534,12 @@ paths:
         "200":
           description: Success
           schema: 
-           $ref: "#/definitions/UserProfile"
+            type: object
+            required: 
+            - data
+            properties: 
+              data:
+                $ref: "#/definitions/UserReadable"
         #  schema:
             # a pointer to a definition
            # $ref: "#/definitions/HelloWorldResponse"

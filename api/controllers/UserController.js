@@ -21,25 +21,25 @@ module.exports = {
      * @param res
      */
     find: function (req, res) {
-        User.findOne({"id": req.param('id')}, function (err, user) {
+        User.findOne({"id": req.param('id')}).populate('avatar').exec(function (err, user) {
             if(err) {
                 return res.serverError({"data": err});
             }
             if(!user) {
                 return res.badRequest({"message": "User not found."});
             }
-            if(user.avatar_id){
+            // if(user.avatar){
+            //
+            //     return File.findOne({"id": user.avatar_id }, function(err, file) {
+            //         if(err) {
+            //             return res.serverError({"data": err});
+            //         }
+            //         user.avatar = file;
+            //         return res.ok({"status": "success", "user": user});
+            //     });
+            // }
 
-                return File.findOne({"id": user.avatar_id }, function(err, file) {
-                    if(err) {
-                        return res.serverError({"data": err});
-                    }
-                    user.image = file;
-                    return res.ok({"status": "success", "user": user});
-                });
-            }
-
-            return res.ok({"status": "success", "user": user});
+            return res.ok({ "data": user});
 
         });
     },
