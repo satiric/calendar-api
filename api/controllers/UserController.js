@@ -21,8 +21,25 @@ module.exports = {
      */
     find: function (req, res) {
         User.findOne({"id": req.param('id')}, function (err, user) {
-            return (user) ? res.ok({"status": "success", "user": user})
-                : res.badRequest({"message": "User not found."});
+            if(err) {
+                return res.serverError({"data": err});
+            }
+            if(!user) {
+                return res.badRequest({"message": "User not found."});
+            }
+            if(user.avatar_id){
+
+                return File.findOne({"id": user.avatar_id }, function(err, file) {
+                    if(err) {
+                        return res.serverError({"data": err});
+                    }
+                    user.image = file;
+                    return res.ok({"status": "success", "user": user});
+                });
+            }
+
+            return res.ok({"status": "success", "user": user});
+
         });
     },
 
@@ -64,20 +81,15 @@ module.exports = {
      * @param res
      */
     signup: function (req, res) {
-        User.create(req.body).exec(function (err, user) {
+        require('../utils/UserSignup').signup(req.body, function (err, result) {
             if (err) {
-                return (err.Errors)
-                    //todo refactor it
-                    ? res.badRequest({"message": _.values(err.Errors)[0][0].message, "status": "error"})
-                    : res.serverError({"details": err, "status": "error"});
+                return (err instanceof ValidationE)
+                    ? res.badRequest({"message": err.message})
+                    : res.serverError({"data": err});
             }
-            require('../utils/UserSignup').signup(user, function (err, result) {
-                if (err) {
-                    return res.serverError({"status": "error", "details": err});
-                }
-                return res.ok({user: result, "status": "success"});
-            });
+            return res.ok({data: result});
         });
+
     },
     /**
      *
@@ -86,8 +98,20 @@ module.exports = {
      * @returns {*}
      */
     login: function (req, res) {
-        // See `api/responses/login.js`
-        return res.login(req.param('email'), req.param('password'));
+        User.login(req.param('email'), req.param('password'), function (err, result) {
+            if (err) {
+                return res.json(401, {"status": "error", "message": err.message});
+            }
+
+            if (!result) {
+                return res.json(401, {"status": "error", "message": 'Invalid username/password combination.'});
+            }
+
+            return res.ok({"data":result});
+        });
+        
+        
+        
     },
     /**
      *
@@ -109,6 +133,8 @@ module.exports = {
     changePassword: function (req, res) {
         var token = req.param('token');
         var value = req.param('password');
+        var oldValue = req.param('old_password');
+
         var authKey = Auth.extractAuthKey(req);
         if (token) {
             return UserAuth.getUserByResetToken(token, function (err, user) {
@@ -128,7 +154,7 @@ module.exports = {
                     }
                     return User.update({"id": user.id}, {"password_reset_token": null}, function (err, updated) {
                         if(err) {
-                            return res.serverError({"details": err});
+                            return res.serverError({"data": err});
                         }
                         return res.ok();
                     });
@@ -137,17 +163,25 @@ module.exports = {
         }
         return UserAuth.getUserByAuthToken(authKey, function (err, user) {
             if (err) {
-                return res.serverError({"details": err});
+                return res.serverError({"data": err});
             }
             if (!user) {
-                return res.badRequest({"status": "error", "message": "User not found"});
+                return res.badRequest({"message": "User not found"});
             }
-            return User.changePassword(user, value, function (err, result) {
+            PasswordEncoder.bcryptCheck(oldValue, user.password, function(err, result) {
                 if (err) {
-                    return (err instanceof ValidationE) ? res.badRequest({"message": err.message})
-                        : res.serverError({"details": err});
+                    return res.serverError({"data": err});
                 }
-                return (!result) ? res.badRequest({"message": "User not found"}) : res.ok();
+                if(!result) {
+                    return res.badRequest({"message": "Old password does not match."});
+                }
+                return User.changePassword(user, value, function (err, result) {
+                    if (err) {
+                        return (err instanceof ValidationE) ? res.badRequest({"message": err.message})
+                            : res.serverError({"details": err});
+                    }
+                    return (!result) ? res.badRequest({"message": "User not found"}) : res.ok();
+                });
             });
         });
     },
@@ -162,16 +196,10 @@ module.exports = {
                     return res.serverError(err.message);
                 }
                 if (!users || !users.length) {
-                    return res.badRequest({
-                        "status": "error",
-                        "message": "This email is not linked to a vlife account"
-                    });
+                    return res.badRequest({"message": "This email is not linked to a vlife account"});
                 }
                 return Mailer.sendResetMail(users[0], hash, function (err, resp) {
-                    return (resp) ? res.ok({"status": "success"}) : res.badRequest({
-                        "status": "error",
-                        "message": err
-                    });
+                    return (resp) ? res.ok() : res.badRequest({"message": err});
                 });
             });
     },
@@ -196,53 +224,66 @@ module.exports = {
             }
             if (user) {
                 return res.badRequest({
-                    "status": "error",
                     "message": "This mobile number is already registered to a vlife account"
                 });
             }
             if (noVerify) {
-                return res.ok({
-                    "status": "success",
-                    "code": "0000"
+                return PhoneVerification.create({"phone": req.param('phone'), "code": "0000"}).exec(function(err, result){
+                    if (err) {
+                        return res.badRequest({"data":err});
+                    }
+                    return res.ok();
                 });
             }
             User.sendMessage(req.param('phone'), function (err, result) {
                 if (err) {
                     return res.badRequest(err);
                 }
-                return res.ok({
-                    "status": "success",
-                    "code": result
+                PhoneVerification.create({"phone": req.param('phone'), "code": result}).exec(function(err, result){
+                    if (err) {
+                        return res.badRequest({"data":err});
+                    }
+                    return res.ok();
                 });
             });
         });
     },
 
-    verifyPhone: function () {
-        User.sendMessage(req.param('phone'), function (err, result) {
+    /**
+     * verificate phone number and save some token for it
+     * @param req
+     * @param res
+     */
+    verifyPhone: function (req, res) {
+        var secKey = require("randomstring").generate(60);
+        PhoneVerification.update({
+            "phone": req.param('phone'),
+            "code": req.param('code')
+        }, {"security_hash":secKey}).exec(function (err, result) {
             if (err) {
-                return res.badRequest(err);
+                return res.serverError({"data": err});
             }
-            return res.ok({
-                "status": "success",
-                "code": result
-            });
+            if(!result || !result.length) {
+                return res.badRequest({"message": "Code or phone number is invalid"});
+            }
+            return res.ok({"data": secKey});
         });
     },
     /**
-     *
+     * for auth key
      * @param req
      * @param res
      */
     refresh: function (req, res) {
+        //todo add refresh token
         var token = Auth.extractAuthKey(req);
         UserAuth.refreshToken(token, 60 * 60 * 24 * 30 * 1000, function (err, token) {
             if (err) {
                 return (err instanceof LogicE)
-                    ? res.badRequest({"status": "error", "message": err.message})
-                    : res.serverError({"status": "error", "details": err});
+                    ? res.badRequest({"message": err.message})
+                    : res.serverError({"details": err});
             }
-            return res.ok({"status": "success", "token": token});
+            return res.ok({"data": token});
         });
     }
 };

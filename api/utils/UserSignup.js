@@ -1,10 +1,145 @@
 /**
  * Created by decadal on 27.06.17.
  */
+var ValidateE = require("../exceptions/Validation");
+var LogicE = require("../exceptions/Logic");
+/**
+ * register user phone to our dictionary for watchers of contacts.
+ * @param user
+ * @param cb
+ */
+function preparePhone (user, cb) {
+    var phoneId = PhoneIdentifier.extract(user.phone);
+    Phone.findOne({"id":phoneId}).exec(function(err, result) {
+        if(err) {
+            return cb(err);
+        }
+        if(result) {
+            return Phone.update({"id":phoneId}, {"user_id": user.id}).exec(function(err, resultUpd){
+                if(err) {
+                    return cb(err);
+                }
+                return cb();
+            });
+            //call subscribers - this user in contacts
+        }
+        Phone.create({"id": phoneId, "phone":user.phone, "user_id": user.id}).exec(function(err, resultCrt) {
+            if(err) {
+                return cb(err);
+            }
+            return cb();
+        });
+    });
+}
+/**
+ *
+ * @param key
+ * @param phone
+ * @param cb
+ */
+function checkSecurityKey(key, phone, cb) {
+    var tenMinutesBefore = new Date((new Date()).getTime() - 10 * 60001);
+    PhoneVerification.destroy({
+        "security_hash": key,
+        "phone": phone,
+        "updatedAt": {'>': tenMinutesBefore }
+    }).exec(function(err, result) {
+        if(err) {
+            return cb(err);
+        }
+        if(!result || ! result.length) {
+            return cb(new LogicE("Did you verify your phone number? Security key is invalid or expired."));
+        }
+        return cb();
+    });
+}
 
-module.exports = {
-    signup: function(user, cb) {
+/**
+ * create user
+ * @param data
+ * @param cb
+ */
+function signupUser(data, cb) {
+    User.create(data).exec(function (err, user) {
+        if (err) {
+            return (err.Errors)
+                ? cb(new ValidateE(err))
+                : cb(err);
+        }
+        if(!user) {
+            return cb(new LogicE("User not saved"));
+        }
+        //todo make error callback for email
         Mailer.sendWelcomeMail(user);
-        return require('./UserAuth').login(user, 60 * 60 * 24 * 30 * 1000, cb);
+        return cb(null, user);
+    });
+}
+
+/**
+ * register user email to our dictionary for watchers of contacts.
+ * @param user
+ * @param cb
+ */
+function prepareEmail(user, cb) {
+    Email.findOne({"email":user.email}).exec(function(err, result) {
+        if(result) {
+            return Email.update({"email":user.email}, {"user_id": user.id}).exec(function(err, result) {
+                if(err) {
+                    return cb(err);
+                }
+                if(!result) {
+                    return cb(
+                        new LogicE("This user was not been register as email-owner for this email in Email-dictionary")
+                    );
+                }
+                return cb();
+            });
+            //call subscribers - this user in contacts
+        }
+        return Email.create({"email":user.email, "user_id": user.id}).exec(function (err, result) {
+            if(err) {
+                return cb(err);
+            }
+            if(!result) {
+                return cb(new LogicE("This email was not been register in Email-dictionary"));
+            }
+            return cb();
+        });
+    });
+}
+/** todo make as class
+ *  todo make with transaction
+ * Main cascade of steps for signup.
+ * @type {{signup: module.exports.signup}}
+ */
+module.exports = {
+    signup: function(data, cb, timeLogin) {
+        timeLogin = timeLogin || 60 * 60 * 24 * 30 * 1000;
+        // 1. for guarantee that verification of email was completed
+        checkSecurityKey(data.security_key, data.phone, function(err) {
+            if(err) {
+                return cb(err);
+            }
+            // 2. create user and send email for him
+            signupUser(data, function(err, user){
+                if(err) {
+                    return cb(err);
+                }
+                // 3. register his email in dictionary
+                prepareEmail(user, function(err) {
+                    if(err) {
+                        return cb(err);
+                    }
+                    // 4. register his phone in dictionary
+                    preparePhone(user, function(err) {
+                        if(err) {
+                            return cb(err);
+                        }
+                        // 5. login
+                        return require('./UserAuth').login(user, timeLogin, cb);
+                    });
+                });
+            });
+        });
     }
 };

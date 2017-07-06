@@ -2,16 +2,13 @@
  * Created by decadal on 27.06.17.
  */
 module.exports = {
-    getProfile: function(user, cb) {
-
-        return File.find({'id' : user.avatar }, function(err, file) {
-            if(err) {
-                return cb( err );
-            }
-            result.avatar_url = file[0].url;
-            return res.ok({user: result, "status" : "success" });
-        });
+    getFullUser: function(id, cb) {
+        return User.find({"id":id}).populate('avatar').exec(cb);
     },
+    getFullUserByEmail: function(email, cb) {
+        return User.find({"email":email}).populate('avatar').exec(cb);
+    },
+
     getAvatar: function(user, cb) {
         if(! user.avatar_id) {
             return cb();

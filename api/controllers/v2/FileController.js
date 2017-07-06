@@ -66,14 +66,13 @@ module.exports = {
                     if (err) {
                         return res.serverError({"data":err});
                     }
-                    return res.ok({"files": created});
+                    return res.ok({"data": created});
                 });
 
             });
             } );
     },
     destroy: function (req, res) {
-
     }
 };
 

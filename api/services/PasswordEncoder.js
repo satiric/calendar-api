@@ -16,11 +16,9 @@ module.exports = {
         });
     },
     "bcryptCheck": function(pass, hash, cb) {
-        console.log('2');
         require('bcrypt-nodejs').compare(pass, hash, cb);
     },
     "bcryptEncodeValue": function (value, cb) {
-        console.log('3');
         require('bcrypt-nodejs').hash(value, null, null, function (err, encryptedPassword) {
             return cb(err, encryptedPassword);
         });

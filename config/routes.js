@@ -106,13 +106,17 @@ module.exports.routes = {
         controller: 'UserController',
         action: 'refresh'
     },
-    'get /api/v1/user/verifyPhone': {
+    'post /api/v1/user/verifyPhone': {
         controller: 'UserController',
         action: 'verifyPhone'
     },
     'post /api/v1/contacts': {
         controller: 'ContactsController',
         action: 'create'
+    },
+    'get /api/v1/contacts': {
+        controller: 'ContactsController',
+        action: 'find'
     },
     'get /api/v1/events': {
         controller: 'EventsController',
@@ -126,6 +130,10 @@ module.exports.routes = {
         controller: 'EventsController',
         action: 'update'
     },
+    'get /swagger/doc': {
+        controller: 'SwaggerController',
+        action: 'doc'
+    }
 
     /***************************************************************************
      *                                                                          *

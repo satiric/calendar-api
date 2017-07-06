@@ -12,16 +12,11 @@ module.exports = {
             if(err) {
                 return cb( err );
             }
-            var result = user.toJSON();
-            result.token = token;
-            return require('./UserProfile').getAvatar(user, function(err, avatar) {
+            return require('./UserProfile').getFullUser(user.id, function(err, userProfile) {
                 if(err) {
                     return cb( err );
                 }
-                if(avatar) {
-                    result.avatar_url = avatar.url;
-                }
-                return cb(null, result);
+                return cb(null, {"user": userProfile[0], "token": token});
             });
         });
     },

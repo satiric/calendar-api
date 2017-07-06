@@ -8,7 +8,5 @@
  * @see https://github.com/tjwebb/sails-swagger/issues/3
  */
 module.exports.installedHooks = {
-    'sails-swagger': {
-        'name': 'swagger'
-    }
+
 };

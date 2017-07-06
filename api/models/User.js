@@ -30,7 +30,8 @@ module.exports = {
             type: 'string',
             minLength: 8,
             maxLength: 25,
-            password: true
+            password: true,
+            notNum: true
         },
         phone: {
             required: true,
@@ -51,8 +52,8 @@ module.exports = {
             collection:'AuthToken',
             via: 'owner'
         },
-        avatar_id: {
-            type: 'integer'
+        avatar: {
+            model:'File'
         },
         events: {
             collection: 'Event',
@@ -97,9 +98,10 @@ module.exports = {
         },
         password: {
             required: "Password is required",
-            password: "Invalid Password: it contain spaces on start or on end",
+            password: "Password must not contain spaces on the start or on the end",
             minLength: "Invalid Password: it must be more than 7 symbols",
-            maxLength: "Invalid Password: it must be less than 26 symbols"
+            maxLength: "Invalid Password: it must be less than 26 symbols",
+            notNum: "Password must be string"
         },
         phone: {
             required: "Phone is required",
@@ -117,6 +119,9 @@ module.exports = {
             console.log('----------------');
             return (value.length === oldLen);
         },
+        notNum: function(value) {
+            return _.isString(value);
+        },
         validName: function (value) {
             'use strict';
             var oldLen = value.length;
@@ -132,7 +137,7 @@ module.exports = {
 
         User.findOne({
             email: email
-        }).exec(function (err, user) {
+        }).populate('avatar').exec(function (err, user) {
             if (err) {
                 return cb(err);
             }
@@ -151,9 +156,7 @@ module.exports = {
                     if(err) {
                         return res.serverError({"status":"error", "details": err});
                     }
-                    var result = user.toJSON();
-                    result.token = token;
-                    return cb(err, result);
+                    return cb(err, {user: user, token: token});
                 });
             });
         });
@@ -196,4 +199,3 @@ module.exports = {
         PasswordEncoder.bcryptEncode(values, next);
     }
 };
-

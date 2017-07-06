@@ -1,6 +1,7 @@
 /**
  * Created by decadal on 13.06.17.
  */
+//todo move to config
 var accountSid = 'ACdf391cfab28d2d90fefee8fcae27c8f2';
 var authToken = '679fd84fcea59984ecda9c3155004ef3';
 var from = '+14159935359';

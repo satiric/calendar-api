@@ -1,6 +1,6 @@
 swagger: "2.0"
 info:
-  version: "0.1.1"
+  version: "0.2.0"
   title: "V-life backend"
   description: "vlife backend application "
   contact:
@@ -18,6 +18,8 @@ tags:
   - name: file
     description: Files
   - name: event
+    description: Events 
+  - name: contacts
     description: Events 
 #
 schemes:
@@ -68,7 +70,13 @@ definitions:
       updatedAt:
         type: string
         format: date-time
-        
+  Contact:
+    type: object
+    properties:
+      email: 
+        type: string
+      phone: 
+        type: string
   File: 
     type: object
     properties:
@@ -92,7 +100,8 @@ definitions:
         type: string
       url: 
         type: string
-
+      mini_url: 
+        type: string
   UserReadable:
     type: object
     required:
@@ -136,8 +145,8 @@ definitions:
       updatedAt:
         type: string
         format: date-time
-      token: 
-        "$ref": "#/definitions/AuthTokenReadable"
+      avatar: 
+        "$ref": "#/definitions/File"
   UserProfile:
     type: object
     required:
@@ -219,6 +228,7 @@ definitions:
       - email
       - password
       - phone
+      - security_key
     properties:
       name:
         type: string
@@ -245,6 +255,10 @@ definitions:
         type: string
         example: "+1234567899"
         pattern: "\\+([0-9]){9,13}"
+      security_key:
+        type: string
+        description: obtained from verifyPhone
+        example: "sdafsgk23r23io0daod"
 
   Event:
     type: object
@@ -319,6 +333,8 @@ definitions:
         type: integer
       user: 
         "$ref": "#/definitions/UserReadable"
+      token: 
+        "$ref": "#/definitions/AuthTokenReadable"
   ErrorResponse:
     required:
       - status
@@ -334,6 +350,8 @@ definitions:
       message:
         type: string
       status: 
+        type: string
+      data: 
         type: string
   PhoneSuccessResponse:
     required:
@@ -666,10 +684,10 @@ paths:
   /user/verifyPhone:
     # binds a127 app logic to a route
     x-swagger-router-controller: UserController
-    get:
+    post:
       tags: 
       - user
-      description: Send sms with code without checking phone in database. Use before changing phone number in user profile.
+      description: Check sms code 
       # used as the method name of the controller
       operationId: verifyPhone
       parameters:
@@ -678,12 +696,22 @@ paths:
           name: phone
           type: string
           pattern: "\\+([0-9]){9,13}"
+        - in: query
+          name: code
+          type: string
+          minLength: 4
       responses:
         "200":
           description: Success
           schema:
-            # a pointer to a definition
-            $ref: "#/definitions/File"
+            type: "object"
+            required: 
+            - data
+            properties: 
+              data:
+                type: string
+                description: containt security key for next steps of signup. Timelife for security key is 10 minutes
+
         # responses may fall through to errors
         default:
           description: Error
@@ -773,6 +801,47 @@ paths:
           schema:
             # a pointer to a definition
             $ref: "#/definitions/Event"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+            
+  /contacts:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: ContactsController
+    post:
+      tags: 
+      - user
+      - contacts
+      description: Check sms code 
+      # used as the method name of the controller
+      operationId: createContacts
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - $ref: "#/parameters/auth-token-required"
+        - in: body
+          name: body
+          description: "Contacts"
+          required: true
+          schema: 
+            type: array
+            items: 
+              $ref: "#/definitions/Contact"
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: "object"
+            required: 
+            - data
+            properties: 
+              data:
+                type: array
+                description: containt security key for next steps of signup. Timelife for security key is 10 minutes
+                items: 
+                  $ref: "#/definitions/UserReadable"
+
         # responses may fall through to errors
         default:
           description: Error

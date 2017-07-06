@@ -12,6 +12,11 @@ module.exports = {
             unique: true,
             primaryKey: true
         },
+        //owner
+        user_id: {
+            type: "integer",
+            unique: true
+        }
         // subscribers: {
         //     collection: 'EmailContacts',
         //     via: 'email'
@@ -23,6 +28,10 @@ module.exports = {
             required: 'Email is required',
             email: 'Email is not a valid email',
             unique: 'This email is already registered to a vlife account'
+        },
+        user_id: {
+            type: "integer",
+            unique: true
         }
     },
 
