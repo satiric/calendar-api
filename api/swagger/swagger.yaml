@@ -132,12 +132,6 @@ definitions:
         minLength: 8
         maxLength: 25
         example: mycoolpassword
-      avatar_url: 
-        type: string
-        example: "http://amazon.com/1.jpg"
-      avatar_id:
-        type: integer
-        example: 4
       phone:
         type: string
         example: "+1234567899"
@@ -215,7 +209,7 @@ definitions:
         minLength: 8
         maxLength: 25
         example: mycoolpassword
-      avatar_id:
+      avatar:
         type: integer
         example: 4
       phone:
