@@ -430,7 +430,7 @@ paths:
     x-swagger-router-controller: UserController
     get:
       tags:
-      - user
+      - auth
       description: Note - does not validate email, just check it in database
       # used as the method name of the controller
       operationId: checkEmail
@@ -459,7 +459,7 @@ paths:
     x-swagger-router-controller: UserController
     get:
       tags: 
-      - user
+      - auth
       description: "phone must be url-encoded. Format for phone: international phone number; without any special chars (dots, brackets, etc) except fronted plus(+). The method does not validate phone number, only check it in database. If phone is not exists in database, the method will send sms. For restricting this behaviour you must attach noVerify parameter to requests"
       # used as the method name of the controller
       operationId: checkPhone
@@ -686,7 +686,7 @@ paths:
     x-swagger-router-controller: UserController
     post:
       tags: 
-      - user
+      - auth
       description: Check sms code 
       # used as the method name of the controller
       operationId: verifyPhone
