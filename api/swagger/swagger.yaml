@@ -669,6 +669,11 @@ paths:
       parameters:
         - $ref: "#/parameters/vlife-key"
         - $ref: "#/parameters/auth-token-required"
+        - in: body
+          name: refresh_token
+          required: true
+          schema: 
+            type: string
       responses:
         "200":
           description: Success

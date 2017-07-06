@@ -20,9 +20,10 @@ module.exports = {
             });
         });
     },
-    refreshToken: function(token, timeExp, cb) {
+    refreshToken: function(token, rToken, timeExp, cb) {
         AuthToken.findOne({
-            "value": token
+            "value": token,
+            "refresh_token": rToken
         }).populate('owner').exec(function (err, result) {
             if(!result) {
                 var LogicExc = require('../exceptions/Logic');

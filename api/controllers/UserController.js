@@ -277,7 +277,7 @@ module.exports = {
     refresh: function (req, res) {
         //todo add refresh token
         var token = Auth.extractAuthKey(req);
-        UserAuth.refreshToken(token, 60 * 60 * 24 * 30 * 1000, function (err, token) {
+        UserAuth.refreshToken(token, req.body('refresh_token'), 60 * 60 * 24 * 30 * 1000, function (err, token) {
             if (err) {
                 return (err instanceof LogicE)
                     ? res.badRequest({"message": err.message})

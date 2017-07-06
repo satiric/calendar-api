@@ -26,6 +26,11 @@ module.exports = {
                 return true;
             }
         },
+        refresh_token: {
+            type: "string",
+//            required: true, // coz generation binded to beforecreate action
+            maxnLength: 40
+        },
         owner:{ //for avatar
             model:'User',
             unique: true
@@ -34,6 +39,7 @@ module.exports = {
 
     beforeCreate: function (values, next) {
         values.value = require("randomstring").generate(60);
+        values.refresh_token = require("randomstring").generate(40);
         next();
     }
 };

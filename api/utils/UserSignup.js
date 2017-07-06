@@ -47,7 +47,7 @@ function checkSecurityKey(key, phone, cb) {
         if(err) {
             return cb(err);
         }
-        if(!result || ! result.length) {
+        if(!result|| !result.length) {
             return cb(new LogicE("Did you verify your phone number? Security key is invalid or expired."));
         }
         return cb();
