@@ -64,6 +64,9 @@ definitions:
       date_expire: 
         type: string 
         format: date-time
+      refresh_token: 
+        type: string
+        description: for refresh-token request it must be putted to body as refresh_token. It is especially token for correct refresh (it is not an auth-token!)
       createdAt:
         type: string
         format: date-time
@@ -613,6 +616,10 @@ paths:
           description: New password value
           required: true
           type: string
+        - name: old_password
+          in: query
+          description: Old password value
+          type: string
         - name: token
           in: query
           description: For anonymous user password-reset token must be sent by resetPassword method in email.
@@ -679,7 +686,7 @@ paths:
           description: Success
           schema:
             # a pointer to a definition
-            $ref: "#/definitions/SuccessResponse"
+            $ref: "#/definitions/AuthTokenReadable"
         # responses may fall through to errors
         default:
           description: Error

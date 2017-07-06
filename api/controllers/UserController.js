@@ -6,6 +6,7 @@
  */
 var LogicE = require('../exceptions/Logic');
 var ValidationE = require('../exceptions/Validation');
+
 var UserAuth = require("../utils/UserAuth");
 
 module.exports = {
@@ -83,7 +84,7 @@ module.exports = {
     signup: function (req, res) {
         require('../utils/UserSignup').signup(req.body, function (err, result) {
             if (err) {
-                return (err instanceof ValidationE)
+                return (err instanceof ValidationE || err instanceof LogicE)
                     ? res.badRequest({"message": err.message})
                     : res.serverError({"data": err});
             }
@@ -169,10 +170,7 @@ module.exports = {
                 return res.badRequest({"message": "User not found"});
             }
             PasswordEncoder.bcryptCheck(oldValue, user.password, function(err, result) {
-                if (err) {
-                    return res.serverError({"data": err});
-                }
-                if(!result) {
+                if(err || !result) {
                     return res.badRequest({"message": "Old password does not match."});
                 }
                 return User.changePassword(user, value, function (err, result) {
