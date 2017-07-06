@@ -144,50 +144,7 @@ definitions:
         format: date-time
       avatar: 
         "$ref": "#/definitions/File"
-  UserProfile:
-    type: object
-    required:
-      - name
-      - second_name
-      - email
-      - password
-      - phone
-    properties:
-      name:
-        type: string
-        example: Jhon
-        minLength: 2
-        maxLength: 25
-      second_name:
-        type: string
-        example: Statham
-        minLength: 2
-        maxLength: 25
-      email:
-        type: string
-        example: jhonstatham@gmail.com2
-      password:
-        type: string
-        minLength: 8
-        maxLength: 25
-        example: mycoolpassword
-      avatar_url: 
-        type: string
-        example: "http://amazon.com/1.jpg"
-      avatar_id:
-        type: integer
-        example: 4
-      phone:
-        type: string
-        example: "+1234567899"
-        pattern: "\\+([0-9]){9,13}"
-      createdAt:
-        type: string
-        format: date-time
-      updatedAt:
-        type: string
-        format: date-time     
-        
+
   UserEditable:
     type: object
     properties:
@@ -245,7 +202,7 @@ definitions:
         minLength: 8
         maxLength: 25
         example: mycoolpassword
-      avatar_id:
+      avatar:
         type: integer
         example: 4
       phone:
