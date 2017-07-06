@@ -292,7 +292,7 @@ definitions:
         "$ref": "#/definitions/UserReadable"
       token: 
         "$ref": "#/definitions/AuthTokenReadable"
-  ErrorResponse:
+  ErrorResp:
     required:
       - status
     properties:
@@ -348,7 +348,7 @@ paths:
         default:
           description: Error
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            $ref: "#/definitions/ErrorResp"
   /user/login:
     # binds a127 app logic to a route
     x-swagger-router-controller: UserController
@@ -380,7 +380,7 @@ paths:
         default:
           description: Error
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            $ref: "#/definitions/ErrorResp"
 
   /user/checkEmail:
     # binds a127 app logic to a route
@@ -410,7 +410,7 @@ paths:
         default:
           description: Error
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            $ref: "#/definitions/ErrorResp"
   /user/checkPhone:
     # binds a127 app logic to a route
     x-swagger-router-controller: UserController
@@ -440,7 +440,7 @@ paths:
         default:
           description: Error
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            $ref: "#/definitions/ErrorResp"
   /user/logout:
     # binds a127 app logic to a route
     x-swagger-router-controller: UserController
@@ -463,7 +463,7 @@ paths:
         default:
           description: Error
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            $ref: "#/definitions/ErrorResp"
 
   /user/info/{id}:
     x-swagger-router-controller: UserController
@@ -498,7 +498,7 @@ paths:
         default:
           description: Error
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            $ref: "#/definitions/ErrorResp"
   /user/info:
     # binds a127 app logic to a route
     x-swagger-router-controller: UserController
@@ -527,7 +527,7 @@ paths:
         default:
           description: Error
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            $ref: "#/definitions/ErrorResp"
 
   /user/resetPassword:
     # binds a127 app logic to a route
@@ -556,7 +556,7 @@ paths:
         default:
           description: Error
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            $ref: "#/definitions/ErrorResp"
   /user/changePassword:
     # binds a127 app logic to a route
     x-swagger-router-controller: UserController
@@ -593,7 +593,7 @@ paths:
         default:
           description: Error
           schema:
-            $ref: "#/definitions/ErrorResponse"       
+            $ref: "#/definitions/ErrorResp"       
   /file:
     # binds a127 app logic to a route
     x-swagger-router-controller: FileController
@@ -622,7 +622,7 @@ paths:
         default:
           description: Error
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            $ref: "#/definitions/ErrorResp"
   /user/refreshToken:
     # binds a127 app logic to a route
     x-swagger-router-controller: UserController
@@ -650,7 +650,7 @@ paths:
         default:
           description: Error
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            $ref: "#/definitions/ErrorResp"
             
   /user/verifyPhone:
     # binds a127 app logic to a route
@@ -687,7 +687,7 @@ paths:
         default:
           description: Error
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            $ref: "#/definitions/ErrorResp"
   /events:
     # binds a127 app logic to a route
     x-swagger-router-controller: EventsController
@@ -715,7 +715,7 @@ paths:
         default:
           description: Error
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            $ref: "#/definitions/ErrorResp"
     get:
       tags: 
       - event
@@ -743,7 +743,7 @@ paths:
         default:
           description: Error
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            $ref: "#/definitions/ErrorResp"
   /events/{id}:
     put:
       tags: 
@@ -776,7 +776,7 @@ paths:
         default:
           description: Error
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            $ref: "#/definitions/ErrorResp"
             
   /contacts:
     # binds a127 app logic to a route
@@ -817,7 +817,7 @@ paths:
         default:
           description: Error
           schema:
-            $ref: "#/definitions/ErrorResponse"
+            $ref: "#/definitions/ErrorResp"
   /swagger:
     x-swagger-pipe: swagger_raw
 # complex objects have schema definitions
