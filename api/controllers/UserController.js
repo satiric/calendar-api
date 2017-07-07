@@ -6,7 +6,6 @@
  */
 var LogicE = require('../exceptions/Logic');
 var ValidationE = require('../exceptions/Validation');
-
 var UserAuth = require("../utils/UserAuth");
 
 module.exports = {
@@ -28,19 +27,7 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found."});
             }
-            // if(user.avatar){
-            //
-            //     return File.findOne({"id": user.avatar_id }, function(err, file) {
-            //         if(err) {
-            //             return res.serverError({"data": err});
-            //         }
-            //         user.avatar = file;
-            //         return res.ok({"status": "success", "user": user});
-            //     });
-            // }
-
             return res.ok({ "data": user});
-
         });
     },
 
@@ -60,7 +47,7 @@ module.exports = {
                 return res.badRequest({"status": "error", "message": "User not found"});
             }
             var paramsObj = {};
-            var keys = ["name", "second_name", "avatar_id", "phone", "email"];
+            var keys = ["name", "second_name", "avatar", "phone", "email"];
             for (var i = 0, size = keys.length; i < size; i++) {
                 if(req.param(keys[i])) {
                     paramsObj[keys[i]] = req.param(keys[i]);
@@ -90,7 +77,6 @@ module.exports = {
             }
             return res.ok({data: result});
         });
-
     },
     /**
      *
@@ -107,12 +93,8 @@ module.exports = {
             if (!result) {
                 return res.json(401, {"status": "error", "message": 'Invalid username/password combination.'});
             }
-
             return res.ok({"data":result});
         });
-        
-        
-        
     },
     /**
      *
@@ -135,7 +117,6 @@ module.exports = {
         var token = req.param('token');
         var value = req.param('password');
         var oldValue = req.param('old_password');
-
         var authKey = Auth.extractAuthKey(req);
         if (token) {
             return UserAuth.getUserByResetToken(token, function (err, user) {
@@ -187,7 +168,6 @@ module.exports = {
     resetPassword: function (req, res) {
         'use strict';
         var hash = require("randomstring").generate(45);
-
         User.update({'email': req.param('email')}, {"password_reset_token": hash, "reset_token_created": new Date()})
             .exec(function (err, users) {
                 if (err) {
@@ -206,7 +186,6 @@ module.exports = {
             if (err) {
                 return res.badRequest(err);
             }
-            sails.log(user);
             return (!user || !user.length) ? res.ok({"status": "success"}) : res.badRequest({
                 "status": "error",
                 "message": "This email is already registered to a vlife account"
@@ -273,9 +252,8 @@ module.exports = {
      * @param res
      */
     refresh: function (req, res) {
-        //todo add refresh token
         var token = Auth.extractAuthKey(req);
-        UserAuth.refreshToken(token, req.body('refresh_token'), 60 * 60 * 24 * 30 * 1000, function (err, token) {
+        UserAuth.refreshToken(token, req.param('refresh_token'), 60 * 60 * 24 * 30 * 1000, function (err, token) {
             if (err) {
                 return (err instanceof LogicE)
                     ? res.badRequest({"message": err.message})

@@ -108,12 +108,16 @@ definitions:
   UserReadable:
     type: object
     required:
+      - id
       - name
       - second_name
       - email
       - password
       - phone
     properties:
+      id:
+        type: integer
+        example: 1
       name:
         type: string
         example: Jhon
@@ -665,9 +669,11 @@ paths:
         - in: query
           name: phone
           type: string
+          required: true
           pattern: "\\+([0-9]){9,13}"
         - in: query
           name: code
+          required: true
           type: string
           minLength: 4
       responses:
