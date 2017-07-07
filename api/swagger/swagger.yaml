@@ -814,7 +814,36 @@ paths:
             properties: 
               data:
                 type: array
-                description: containt security key for next steps of signup. Timelife for security key is 10 minutes
+                description:  array of users who in contacts
+                items: 
+                  $ref: "#/definitions/UserReadable"
+
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResp"
+    get:
+      tags: 
+      - user
+      - contacts
+      description: Check sms code 
+      # used as the method name of the controller
+      operationId: getContacts
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - $ref: "#/parameters/auth-token-required"
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: "object"
+            required: 
+            - data
+            properties: 
+              data:
+                type: array
+                description: array of users who in contacts
                 items: 
                   $ref: "#/definitions/UserReadable"
 

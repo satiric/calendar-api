@@ -20,6 +20,37 @@ module.exports = {
      */
     find: function (req, res) {
         var token = Auth.extractAuthKey(req);
+        var page = Math.abs(req.param('page', 1));
+        var pageSize = req.param('pageSize', 10);
+        UserAuth.getUserByAuthToken(token, function(err, user) {
+            if(err) {
+                return res.serverError({"data": err});
+            }
+            if(!user) {
+                return res.badRequest({"message": "User not found"});
+            }
+            Event.find({"founder": user.id}).paginate({page: page, limit: pageSize}).exec(function (err, events) {
+                if(err) {
+                    return res.serverError({"data":err});
+                }
+                Event.count({"founder": user.id}).exec(function (err, count) {
+                    if(err) {
+                        return res.serverError({"data":err});
+                    }
+                    return res.ok({"data": events, "page": page, "pageSize": pageSize, "total": count});
+                });
+            });
+        });
+    },
+
+
+    /**
+     *
+     * @param req
+     * @param res
+     */
+    findOne: function (req, res) {
+        var token = Auth.extractAuthKey(req);
         var page = req.param('page', 1);
         if (page < 0 ) {
             page = 1;
@@ -45,6 +76,7 @@ module.exports = {
             });
         });
     },
+
 
     /**
      *

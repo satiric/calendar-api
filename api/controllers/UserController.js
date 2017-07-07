@@ -116,6 +116,10 @@ module.exports = {
     changePassword: function (req, res) {
         var token = req.param('token');
         var value = req.param('password');
+        //VLIF-162
+        if( typeof value === "number") {
+            return res.badRequest({"message": "Password can not be number"});
+        }
         var oldValue = req.param('old_password');
         var authKey = Auth.extractAuthKey(req);
         if (token) {

@@ -3,48 +3,18 @@
  */
 
 module.exports = {
+    autoCreatedAt: false,
+    autoUpdatedAt: false,
+
     attributes: {
-        title: {
+        status: {
             type: "string",
-            required: true,
-            maxLength: 25
+            enum: ['Awaiting', 'Accepted', 'Declined']
         },
-        sphere: {
-            type: "string",
-            enum: ['Personal', 'Work']
+        event_id: {
+            model: 'Event'
         },
-        date_start: {
-            required: true,
-            type: "datetime"
-        },
-        date_end: {
-            required: true,
-            type: "datetime"
-        },
-        repeat_type: {
-            type: "string",
-            enum: ['Never', 'Day', 'Week', 'Fortnight', 'Month']
-        },
-        repeat_option: {
-            type: "array"
-        },
-        end_repeat: {
-            type: "datetime"
-        },
-        location: {
-            type: "string"
-        },
-        description: {
-            type: "string"
-        },
-        remind: {
-            type: "integer"
-        },
-        active: {
-            type: "boolean",
-            defaultsTo: true
-        },
-        founder: {
+        user_id: {
             model: 'User'
         }
     }
