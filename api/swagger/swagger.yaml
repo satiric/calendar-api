@@ -608,10 +608,16 @@ paths:
           type: file
       responses:
         "200":
+        
           description: Success
-          schema:
+          schema: 
+            type: object
+            required: 
+            - data
+            properties: 
+              data:
+                $ref: "#/definitions/File"
             # a pointer to a definition
-            $ref: "#/definitions/File"
         # responses may fall through to errors
         default:
           description: Error
