@@ -42,8 +42,8 @@ module.exports = {
             File.create(files).exec(function (err, created){
                 if (err) {
                     return res.serverError({"details":err, "status":"error"});
-                }
-                return res.ok({"status":"success", "files": created});
+                }//todo not 0
+                return res.ok({"status":"success", "files": created[0]});
             });
             // return res.json({
             //     message: uploadedFiles.length + ' file(s) uploaded successfully!',
