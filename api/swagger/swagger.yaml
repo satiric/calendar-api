@@ -76,10 +76,14 @@ definitions:
   Contact:
     type: object
     properties:
-      email: 
-        type: string
-      phone: 
-        type: string
+      emails: 
+        type: array
+        items: 
+          type: string
+      phones: 
+        type: array
+        items: 
+          type: string
   File: 
     type: object
     properties:

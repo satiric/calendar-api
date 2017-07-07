@@ -36,6 +36,7 @@ function registEmails(emails, emailSubscribe, cb) {
 
 
 
+
 module.exports = {
     create: function(userId, contacts, cb) {
         var emails = []; //for search, just list of emails
@@ -43,12 +44,16 @@ module.exports = {
         var phones = [];
         var phoneSubscribe = [];
         var phonesRecords = [];
-        for(var i = 0, size = contacts.length; i < size; i++) {
-            emails.push({"email": contacts[i].email});
-            emailSubscribe.push({"email": contacts[i].email, "user_id": parseInt(userId)});
-            phones.push({"id": PhoneIdentifier.extract(contacts[i].phone)});
-            phonesRecords.push({"id": PhoneIdentifier.extract(contacts[i].phone), "phone": contacts[i].phone});
-            phoneSubscribe.push({"id": PhoneIdentifier.extract(contacts[i].phone), "phone": contacts[i].phone, "user_id":userId});
+        for(var i = 0, sizeContacts = contacts.length; i < sizeContacts; i++) {
+            for (j = 0, size =  contacts[i].emails.length; j < size; j++) {
+                emails.push({"email":contacts[i].emails[j]});
+                emailSubscribe.push({"email": contacts[i].emails[j], "user_id": parseInt(userId)});
+            }
+            for (j = 0, size =  contacts[i].phones.length; j < size; j++) {
+                phones.push({"id": PhoneIdentifier.extract(contacts[i].phones[j])});
+                phonesRecords.push({"id": PhoneIdentifier.extract(contacts[i].phones[j]), "phone": contacts[i].phones[j]});
+                phoneSubscribe.push({"id": PhoneIdentifier.extract(contacts[i].phones[j]), "phone": contacts[i].phones[j], "user_id":userId});
+            }
         }
 
         registEmails(emails, emailSubscribe, function(err, founded) {
