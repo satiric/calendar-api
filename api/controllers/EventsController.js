@@ -21,6 +21,9 @@ module.exports = {
     find: function (req, res) {
         var token = Auth.extractAuthKey(req);
         var page = req.param('page', 1);
+        if (page < 0 ) {
+            page = 1;
+        }
         var pageSize = req.param('pageSize', 10);
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {

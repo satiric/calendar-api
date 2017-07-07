@@ -14,7 +14,8 @@ module.exports = {
         //owner
         user_id: {
             type: "integer",
-            unique: true
+            unique: true,
+            model: "User"
         }
         // subscribers: {
         //     collection: 'EmailContacts',

@@ -19,13 +19,21 @@ module.exports = {
      * @param res
      */
     find: function (req, res) {
-        Phone.find([{id:"678921291"}, {id:"12432143323"}]).exec(function(err, result){
-            return res.ok({"err":err, "res": result});
+        var token = Auth.extractAuthKey(req);
+        UserAuth.getUserByAuthToken(token, function(err, user) {
+            if(err) {
+                return res.serverError({"data": err});
+            }
+            if(!user) {
+                return res.badRequest({"message": "User not found"});
+            }
+            require('../utils/Contacts').find(user.id, function(err, result) {
+                if(err) {
+                    return res.serverError({"details":err});
+                }
+                return res.ok({"data": result});
+            });
         });
-        //User.findOne({"id": req.param('id')}, function (err, user) {
-     //       return (user) ? res.ok({"status": "success", "user": user})
-       //         : res.badRequest({"message": "User not found."});
-       // });
     },
 
     /**

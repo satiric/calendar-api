@@ -13,7 +13,7 @@ module.exports = {
     autoCreatedAt: false,
     autoUpdatedAt: false,
     attributes: {
-        email: {
+        phone_id: {
             model: "Phone"
         },
         user_id: {

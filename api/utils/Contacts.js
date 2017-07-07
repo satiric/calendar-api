@@ -98,6 +98,18 @@ module.exports = {
 
     },
     find: function(userId, cb) {
-        
+        EmailContacts.find({ select: ['email'], user_id: userId }).exec(function(err, emails) {
+            if(err) {
+                return cb(err);
+            }
+            var emailsList = [];
+            for (var i = 0, size = emails.length; i < size; i++)  {
+                emailsList.push(emails[i].email);
+            }
+            Email.find({"email": emailsList, user_id: {'!': null} }).populate("user_id").exec(function(err, users) {
+                cb (err, users);
+            });
+            
+        });
     }
 };
