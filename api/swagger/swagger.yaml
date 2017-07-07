@@ -524,9 +524,8 @@ paths:
       responses:
         "200":
           description: Success
-        #  schema:
-            # a pointer to a definition
-           # $ref: "#/definitions/HelloWorldResponse"
+          schema:
+            "$ref": "#/definitions/UserReadable"
         # responses may fall through to errors
         default:
           description: Error
@@ -783,7 +782,44 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResp"
             
+  /contacts/invite:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: ContactsController
+    post:
+      tags: 
+      - contacts
+      description: send sms and email
+      # used as the method name of the controller
+      operationId: inviteContact
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - $ref: "#/parameters/auth-token-required"
+        - in: query
+          name: emails
+          type: array
+          description: "array of emails"
+          required: true
+          items: 
+            type: string
+        - in: query
+          name: phones
+          description: "array of phones"
+          required: true
+          type: array
+          items: 
+            type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/ErrorResp"
 
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResp"
+            
   /contacts:
     # binds a127 app logic to a route
     x-swagger-router-controller: ContactsController
