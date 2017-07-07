@@ -58,5 +58,25 @@ module.exports = {
                 return res.ok({"data": result});
             });
         });
+    }, 
+    invite: function (req, res) {
+        var emails = req.param('emails');
+        var phones = req.param('phones');
+
+        var token = Auth.extractAuthKey(req);
+        UserAuth.getUserByAuthToken(token, function(err, user) {
+            if(err) {
+                return res.serverError({"data": err});
+            }
+            for(var i = 0, size = phones.length; i < size; i++) {
+                Twilio.sendMessage("Hello from " + user.name + "!",phones[i]);
+            }
+            for(i = 0, size = emails.length; i < size; i++) {
+                Mailer.sendMessage("Hello from " + user.name + "!", "Invite from vlife", emails[i]);
+            }
+            return res.ok();
+        });
+        
+//        var token = Auth.extractAuthKey(req);
     }
 };

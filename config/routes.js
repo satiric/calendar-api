@@ -114,6 +114,10 @@ module.exports.routes = {
         controller: 'ContactsController',
         action: 'create'
     },
+    'post /api/v1/contacts/invite': {
+        controller: 'ContactsController',
+        action: 'invite'
+    },
     'get /api/v1/contacts': {
         controller: 'ContactsController',
         action: 'find'

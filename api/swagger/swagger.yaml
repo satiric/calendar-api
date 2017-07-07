@@ -783,6 +783,7 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResp"
             
+
   /contacts:
     # binds a127 app logic to a route
     x-swagger-router-controller: ContactsController

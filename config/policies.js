@@ -34,6 +34,10 @@ module.exports.policies = {
         signup: 'sessionAnon',
         update: 'sessionAuth',
         resetPassword: 'sessionAnon'
+    },
+
+    ContactsController: {
+        '*': ['hasValidHeaders','sessionAuth']
     }
 
     /***************************************************************************

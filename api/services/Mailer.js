@@ -23,5 +23,15 @@ module.exports = {
             to: user.email,
             subject: "Reset password Email"
         }, cb);
+    }, 
+    "sendMessage": function (message, subject, email, cb) {
+        'use strict';
+        subject = subject || "Message from vLife";
+        return sails.hooks.email.send("messageEmail", {
+            Message: message
+        }, {
+            to: email,
+            subject: subject
+        }, cb);
     }
 };
