@@ -223,9 +223,9 @@ definitions:
     required:
       - id
       - title
-      - time_start
-      - time_end
-      - event_date
+      - date_start
+      - date_end
+      - sphere
     properties:
       id: 
         type: integer
@@ -234,26 +234,17 @@ definitions:
         example: Meeting near the caffe
         maxLength: 25
       sphere: 
-        type: string
-        enum: [Personal, Work]
-      event_date: 
-        type: string
-        format: datetime
-      time_start: 
+        type: integer
+      date_start: 
         type: string
         format: time
-      time_end: 
+      date_end: 
         type: string
         format: time
       repeat_type: 
-        type: string
-        enum: [Never, Day, Week, Fortnight, Month]
+        type: integer
       repeat_option: 
-        type: array
-        description: Array with days of week, 
-        items: 
-          type: string
-          enum: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        type: integer
       end_repeat: 
         type: string
         format: datetime

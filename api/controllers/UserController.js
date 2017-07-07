@@ -263,7 +263,19 @@ module.exports = {
                     ? res.badRequest({"message": err.message})
                     : res.serverError({"details": err});
             }
-            return res.ok({"data": token});
+            var authKey = Auth.extractAuthKey(req);
+            //todo refactor it
+            UserAuth.getUserByAuthToken(authKey, function (err, user) {
+                if (err) {
+                    return res.serverError({"details": err});
+                }
+                if (!user) {
+                    return res.badRequest({"status": "error", "message": "User not found"});
+                }
+                return res.ok({"data": {"user": user, "token": token}});
+            });
+
+            
         });
     }
 };
