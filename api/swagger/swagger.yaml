@@ -644,7 +644,21 @@ paths:
           description: Success
           schema:
             # a pointer to a definition
-            $ref: "#/definitions/AuthTokenReadable"
+            type: object
+            required: 
+            - data
+            properties:
+              data:
+                type: object
+                required: 
+                - user
+                - token
+                properties: 
+                  user: 
+                    $ref: "#/definitions/UserReadable"                  
+                  token: 
+                    $ref: "#/definitions/AuthTokenReadable"
+                
         # responses may fall through to errors
         default:
           description: Error

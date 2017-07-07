@@ -257,25 +257,31 @@ module.exports = {
      */
     refresh: function (req, res) {
         var token = Auth.extractAuthKey(req);
-        UserAuth.refreshToken(token, req.param('refresh_token'), 60 * 60 * 24 * 30 * 1000, function (err, token) {
+        //todo refactor it
+        UserAuth.getUserByAuthToken(token, function (err, user) {
             if (err) {
-                return (err instanceof LogicE)
-                    ? res.badRequest({"message": err.message})
-                    : res.serverError({"details": err});
+                return res.serverError({"details": err});
             }
-            var authKey = Auth.extractAuthKey(req);
-            //todo refactor it
-            UserAuth.getUserByAuthToken(authKey, function (err, user) {
+            if (!user) {
+                return res.badRequest({"status": "error", "message": "User not found"});
+            }
+            UserAuth.refreshToken(token, req.param('refresh_token'), 60 * 60 * 24 * 30 * 1000, function (err, newToken) {
                 if (err) {
-                    return res.serverError({"details": err});
+                    return (err instanceof LogicE)
+                        ? res.badRequest({"message": err.message})
+                        : res.serverError({"details": err});
                 }
-                if (!user) {
-                    return res.badRequest({"status": "error", "message": "User not found"});
-                }
-                return res.ok({"data": {"user": user, "token": token}});
+                User.findOne({"id": user.id}).populate("avatar").exec(function(err, user) {
+                    if (err) {
+                        return res.serverError({"details": err});
+                    }
+                    res.ok({"data": {"user": user, "token": newToken}});
+                });
             });
-
-            
         });
+
+
+
+
     }
 };
