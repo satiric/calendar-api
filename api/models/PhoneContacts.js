@@ -21,21 +21,24 @@ module.exports = {
         }
     },
 
-    batchInsert: function(emails, cb) {
+    batchInsert: function(phones, cb) {
         var pc = [];
-        for(var i = 0, size = emails.length; i < size; i++) {
-            pc.push(emails[i].email);
-            pc.push(emails[i].user_id);
+
+        if(!phones) {
+            sails.log("-----------");
+            return cb();
         }
-        var placeholders = (new Array(parseInt(pc.length / 2))).join('(?, ?),') + '(?, ?)';
-        var sql = 'INSERT INTO email_subscribe (email, user_id) VALUES '+ placeholders + ' ON DUPLICATE KEY UPDATE email=email, user_id=user_id';
+        for(var i = 0, size = phones.length; i < size; i++) {
+            pc.push(phones[i].id);
+            pc.push(phones[i].phone);
+            pc.push(phones[i].user_id);
+        }
+
+        var placeholders = (new Array(parseInt(pc.length / 3))).join('(?, ?, ?),') + '(?, ?, ?)';
+        var sql = 'INSERT INTO phone_subscribe (id, phone, user_id) VALUES '+ placeholders + ' ON DUPLICATE KEY UPDATE id=id, phone = phone, user_id=user_id';
 
 
-        EmailContacts.query(sql, pc ,function(err, rawResult) {
-            //if (err) { return res.serverError(err); }
-            sails.log(rawResult);
-            // ...grab appropriate data...
-            // (result format depends on the SQL query that was passed in, and the adapter you're using)
+        PhoneContacts.query(sql, pc ,function(err, rawResult) {
             return cb(err, rawResult);
         });
     }

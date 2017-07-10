@@ -34,10 +34,6 @@ module.exports = {
 
 
         EmailContacts.query(sql, pc ,function(err, rawResult) {
-            //if (err) { return res.serverError(err); }
-            sails.log(rawResult);
-            // ...grab appropriate data...
-            // (result format depends on the SQL query that was passed in, and the adapter you're using)
             return cb(err, rawResult);
         });
     }

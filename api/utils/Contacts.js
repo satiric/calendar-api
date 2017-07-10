@@ -47,13 +47,14 @@ function registPhones(phones, phonesRecords, phonesSubscribe, cb) {
             if(err) {
                 return cb(err);
             }
+            return cb(null,result);
             //at second - subcribe to all
-            PhoneContacts.batchInsert(phonesSubscribe, function(err, result){
-                if(err) {
-                    return cb(err);
-                }
-                return cb(null,founded);
-            });
+            // PhoneContacts.batchInsert(phonesSubscribe, function(err, result){
+            //     if(err) {
+            //         return cb(err);
+            //     }
+            //     return cb(null,founded);
+            // });
         });
     });
 }
