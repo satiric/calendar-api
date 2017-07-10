@@ -37,12 +37,15 @@ function registEmails(emails, emailSubscribe, cb) {
 
 module.exports = {
     create: function(userId, contacts, cb) {
+
         var emails = []; //for search, just list of emails
         var emailSubscribe = [];
         var phones = [];
         var phoneSubscribe = [];
         var phonesRecords = [];
         for(var i = 0, sizeContacts = contacts.length; i < sizeContacts; i++) {
+            contacts[i].emails = contacts[i].emails || [];
+            contacts[i].phones = contacts[i].phones || [];
             for (j = 0, size =  contacts[i].emails.length; j < size; j++) {
                 emails.push({"email":contacts[i].emails[j]});
                 emailSubscribe.push({"email": contacts[i].emails[j], "user_id": parseInt(userId)});

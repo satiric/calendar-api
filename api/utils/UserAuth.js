@@ -114,7 +114,6 @@ module.exports = {
             if(err) {
                 return cb(err);
             }
-            sails.log(result);
             return cb(null, (result) ? result.owner : null);
         });
     }

@@ -42,7 +42,7 @@ module.exports = {
      * @param res
      */
     create: function (req, res) {
-        var contacts = req.param('contacts');
+        var contacts = req.body;
         var token = Auth.extractAuthKey(req);
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
