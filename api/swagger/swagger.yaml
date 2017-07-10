@@ -320,11 +320,11 @@ definitions:
           phones: 
             type: array
             items: 
-              type: integer
+              type: string
           emails:
             type: array
             items: 
-              type: integer
+              type: string
         
       
   EventResponse: 
