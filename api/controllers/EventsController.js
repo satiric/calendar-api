@@ -29,11 +29,11 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
-            Event.find({"founder": user.id}).paginate({page: page, limit: pageSize}).exec(function (err, events) {
+            Event.find({"founder": user.id, 'active':true}).paginate({page: page, limit: pageSize}).exec(function (err, events) {
                 if(err) {
                     return res.serverError({"data":err});
                 }
-                Event.count({"founder": user.id}).exec(function (err, count) {
+                Event.count({"founder": user.id, 'active':true}).exec(function (err, count) {
                     if(err) {
                         return res.serverError({"data":err});
                     }
