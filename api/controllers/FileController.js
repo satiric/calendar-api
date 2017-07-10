@@ -14,7 +14,7 @@ module.exports = {
 	create: function (req, res) {
         FileManager.uploadFileToS3(req.file('file'), function(err, uploadedFiles) {
             if (err) {
-                return res.serverError({"details":err, "status":"error"});
+                return res.serverError({"details":err});
             }
             if(!uploadedFiles || !uploadedFiles.length) {
                 return res.json({
@@ -43,7 +43,7 @@ module.exports = {
                 if (err) {
                     return res.serverError({"details":err, "status":"error"});
                 }//todo not 0
-                return res.ok({"data": created[0]});
+                return res.ok({"data": {"file":created[0]}});
             });
             // return res.json({
             //     message: uploadedFiles.length + ' file(s) uploaded successfully!',

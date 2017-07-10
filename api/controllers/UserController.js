@@ -27,7 +27,7 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found."});
             }
-            return res.ok({ "data": user });
+            return res.ok({ "data": {"user":user} });
         });
     },
 
@@ -69,7 +69,7 @@ module.exports = {
                         if (err) {
                             return res.serverError({"data":err});
                         }
-                        return res.ok({"data": result});
+                        return res.ok({"data": {"user":result}});
                     });
 
             });
