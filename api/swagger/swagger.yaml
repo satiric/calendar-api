@@ -234,16 +234,19 @@ definitions:
         maxLength: 25
       sphere: 
         type: integer
+        description: 0 - Personal, 1 - Work
       date_start: 
         type: string
-        format: time
+        format: datetime
       date_end: 
         type: string
-        format: time
+        format: datetime
       repeat_type: 
         type: integer
+        description: bitmask. 1 - Never, 2 - Day, 4 - Week, 8 - Fortnight, 16 - Month. Available values - only one of it. 
       repeat_option: 
         type: integer
+        description: bitmask. 1 - Monday, 2 - Tuesday, 4 - Wednesday, 8 - Thursday, 16 - Friday, 32 - Saturday, 64 - Sunday. For example, 65 is mark for Monday and Sunday, 67 - for Monday, Sunday and Tuesday, 3 - for Monday and Tuesday etc. 
       end_repeat: 
         type: string
         format: datetime
@@ -718,7 +721,7 @@ paths:
     get:
       tags: 
       - event
-      description: Get events each one i created
+      description: Get events, created by authorized user
       # used as the method name of the controller
       operationId: findMyEvents
       parameters:
