@@ -27,7 +27,7 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found."});
             }
-            return res.ok({ "data": user});
+            return res.ok({ "data": user });
         });
     },
 
