@@ -10,8 +10,8 @@ module.exports = {
             maxLength: 25
         },
         sphere: {
-            type: "string",
-            enum: ['Personal', 'Work']
+            type: "integer"
+           // enum: ['Personal', 'Work']
         },
         date_start: {
             required: true,
@@ -22,11 +22,11 @@ module.exports = {
             type: "datetime"
         },
         repeat_type: {
-            type: "string",
-            enum: ['Never', 'Day', 'Week', 'Fortnight', 'Month']
+            type: "integer",
+      //      enum: ['Never', 'Day', 'Week', 'Fortnight', 'Month']
         },
         repeat_option: {
-            type: "array"
+            type: "integer"
         },
         end_repeat: {
             type: "datetime"
@@ -35,9 +35,10 @@ module.exports = {
             type: "string"
         },
         description: {
-            type: "string"
+            type: "string",
+            maxLength: 200
         },
-        remind: {
+        reminds: {
             type: "integer"
         },
         active: {
@@ -47,30 +48,49 @@ module.exports = {
         founder: {
             model: 'User'
         }
+    },
+    validationMessages: { //hand for i18n & l10n
+        date_start: {
+            required: 'Date start is required',
+            datetime: 'Invalid type for Date start. Date start format is UTC',
+        },
+        date_end: {
+            required: 'Date end is required',
+            datetime: 'Invalid type for Date end. Date end format is UTC',
+        },
+        // second_name: {
+        //     required: "Name is required",
+        //     validName: "Invalid Last Name: it must be more than 1 symbol and less than 26, without spaces"
+        // },
+        // password: {
+        //     required: "Password is required",
+        //     password: "Invalid Password: it contain spaces on start or on end",
+        //     minLength: "Invalid Password: it must be more than 7 symbols",
+        //     maxLength: "Invalid Password: it must be less than 26 symbols"
+        // },
+        // phone: {
+        //     required: "Phone is required",
+        //     regex: "Phone must be valid phone like +12341231451"
+        // }
+    },
+
+    beforeCreate: function (values, next) {
+        if(values.description){
+            values.description = values.description.trim();
+        }
+        next();
+    },
+    beforeUpdate: function (values, next) {
+        if(values.description){
+            values.description = values.description.trim();
+        }
+        next();
+    },
+
+    isValid: function(event) {
+        // if(
+        // 2). time_end should be > time_start
+        // 3). end_repeat >= event_date
+
     }
-    // validationMessages: { //hand for i18n & l10n
-    //     email: {
-    //         required: 'Email is required',
-    //         email: 'Email is not a valid email',
-    //         unique: 'This email is already registered to a vlife account'
-    //     },
-    //     name: {
-    //         required: "Name is required",
-    //         validName: "Invalid Name: it must be more than 1 symbol and less than 26, without spaces"
-    //     },
-    //     second_name: {
-    //         required: "Name is required",
-    //         validName: "Invalid Last Name: it must be more than 1 symbol and less than 26, without spaces"
-    //     },
-    //     password: {
-    //         required: "Password is required",
-    //         password: "Invalid Password: it contain spaces on start or on end",
-    //         minLength: "Invalid Password: it must be more than 7 symbols",
-    //         maxLength: "Invalid Password: it must be less than 26 symbols"
-    //     },
-    //     phone: {
-    //         required: "Phone is required",
-    //         regex: "Phone must be valid phone like +12341231451"
-    //     }
-    // },
 };

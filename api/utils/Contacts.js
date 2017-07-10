@@ -8,8 +8,6 @@ function registEmails(emails, emailSubscribe, cb) {
             return cb(err);
         }
         // sails.log(emails);
-        sails.log("RESULTS:");
-        sails.log(results);
 //if founded - we must check exists records
         var founded = results;
         var notFouneded = emails.filter(function(val) {

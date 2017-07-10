@@ -15,7 +15,7 @@ module.exports = {
         rest: false
     },
     /**
-     *
+     * find user with his avatar
      * @param req
      * @param res
      */
@@ -41,23 +41,37 @@ module.exports = {
         //todo refactor it
         UserAuth.getUserByAuthToken(authKey, function (err, user) {
             if (err) {
-                return res.serverError({"details": err});
+                return res.serverError({"data": err});
             }
+            
             if (!user) {
-                return res.badRequest({"status": "error", "message": "User not found"});
+                return res.badRequest({ "message": "User not found"});
             }
             var paramsObj = {};
             var keys = ["name", "second_name", "avatar", "phone", "email"];
+            //todo if phone or email - change ids
             for (var i = 0, size = keys.length; i < size; i++) {
                 if(req.param(keys[i])) {
                     paramsObj[keys[i]] = req.param(keys[i]);
                 }
             }
-            User.update({"id": user.id}, paramsObj, function (err, user) {
-                if (!user || !user.length) {
+            User.update({"id": user.id}, paramsObj, function (err, result) {
+                if(err) {
+                    return (err.Errors) ? res.badRequest({"message": (new ValidationE(err)).message})
+                        : res.serverError({"data": err});
+                }
+                if (!result || !result.length) {
                     return res.badRequest({"message": "User not found."});
                 }
-                return res.ok({"user": user[0]});
+                User.findOne(user.id) // You may try something like User._model(user) instead to avoid another roundtrip to the DB.
+                    .populate('avatar')
+                    .exec(function(err, result) {
+                        if (err) {
+                            return res.serverError({"data":err});
+                        }
+                        return res.ok({"data": result});
+                    });
+
             });
         });
     },
@@ -247,7 +261,7 @@ module.exports = {
             if(!result || !result.length) {
                 return res.badRequest({"message": "Code or phone number is invalid"});
             }
-            return res.ok({"data": secKey});
+            return res.ok({"data": {"security_key":secKey } });
         });
     },
     /**
@@ -258,6 +272,7 @@ module.exports = {
     refresh: function (req, res) {
         var token = Auth.extractAuthKey(req);
         //todo refactor it
+
         UserAuth.getUserByAuthToken(token, function (err, user) {
             if (err) {
                 return res.serverError({"details": err});
@@ -278,6 +293,6 @@ module.exports = {
                     res.ok({"data": {"user": user, "token": newToken}});
                 });
             });
-        });
+        }, true);
     }
 };

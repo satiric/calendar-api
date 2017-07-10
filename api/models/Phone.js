@@ -6,7 +6,7 @@ module.exports = {
     connection: 'localMysqlServer',
     attributes: {
         id: {
-            type: "integer",
+            type: "string",
             required: true,
             unique: true,
             primaryKey: true

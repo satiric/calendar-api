@@ -18,7 +18,7 @@ module.exports = {
      * @param req
      * @param res
      */
-    find: function (req, res) {
+    findMy: function (req, res) {
         var token = Auth.extractAuthKey(req);
         var page = Math.abs(req.param('page', 1));
         var pageSize = req.param('pageSize', 10);
@@ -34,6 +34,36 @@ module.exports = {
                     return res.serverError({"data":err});
                 }
                 Event.count({"founder": user.id}).exec(function (err, count) {
+                    if(err) {
+                        return res.serverError({"data":err});
+                    }
+                    return res.ok({"data": events, "page": page, "pageSize": pageSize, "total": count});
+                });
+            });
+        });
+    },
+
+    /**
+     *
+     * @param req
+     * @param res
+     */
+    find: function (req, res) {
+        var token = Auth.extractAuthKey(req);
+        var page = Math.abs(req.param('page', 1));
+        var pageSize = req.param('pageSize', 10);
+        UserAuth.getUserByAuthToken(token, function(err, user) {
+            if(err) {
+                return res.serverError({"data": err});
+            }
+            if(!user) {
+                return res.badRequest({"message": "User not found"});
+            }
+            EventInvite.find({"user_id": user.id}).populate('user_id').paginate({page: page, limit: pageSize}).exec(function (err, events) {
+                if(err) {
+                    return res.serverError({"data":err});
+                }
+                EventInvite.count({"user_id": user.id}).exec(function (err, count) {
                     if(err) {
                         return res.serverError({"data":err});
                     }
@@ -92,12 +122,11 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
-            req.body.founder = user.id;
-            Event.create(req.body).exec(function (err, event) {
+            require('../utils/Events').create(req.body, user.id, function(err, result) {
                 if(err) {
-                    return res.serverError({"details":err});
+                    return (err instanceof ValidationE) ? res.badRequest({"message": err}) : res.serverError({"data":err});
                 }
-                return res.ok({"event": event});
+                return res.ok({"data": result});
             });
         });
     },
@@ -145,5 +174,5 @@ module.exports = {
                 return res.ok({"event": events});
             }).paginate({page: page, limit: pageSize});
         });
-    },
+    }
 };

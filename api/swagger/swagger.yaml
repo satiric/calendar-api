@@ -258,7 +258,10 @@ definitions:
         description: Description for the event
       reminds: 
         type: integer
-        description: Reminds before x minutes.
+        description: Reminds before x seconds.
+      location: 
+        type: string
+        description: google place id or other text for place identification
       active: 
         type: boolean
         description: Status for the event. Default is true. 
@@ -699,9 +702,47 @@ paths:
             - data
             properties: 
               data:
-                type: string
+                type: "object"
+                required: 
+                - security_key
                 description: containt security key for next steps of signup. Timelife for security key is 10 minutes
+                properties: 
+                  security_key: 
+                    type: string
 
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResp"
+            
+            
+  /myEvents: 
+    # binds a127 app logic to a route
+    x-swagger-router-controller: EventsController
+    get:
+      tags: 
+      - event
+      description: Get events each one i created
+      # used as the method name of the controller
+      operationId: findMyEvents
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - $ref: "#/parameters/auth-token-required"
+        - in: query
+          name: "page"
+          description: page, default 1
+          type: integer
+        - in: query
+          name: "pageSize"
+          description: pagesize, default 10
+          type: integer
+      responses:
+        "200":
+          description: Success
+          schema:
+            "$ref": "#/definitions/EventResponse"
+              
         # responses may fall through to errors
         default:
           description: Error
@@ -738,7 +779,7 @@ paths:
     get:
       tags: 
       - event
-      description: Get events
+      description: Get events each one i was invited
       # used as the method name of the controller
       operationId: findEvent
       parameters:

@@ -31,6 +31,21 @@ function preparePhone (user, cb) {
         });
     });
 }
+
+function checkAvatar(avatar, cb) {
+    if(!avatar) {
+        return cb();
+    }
+    File.findOne({id: avatar}).exec(function(err, result) {
+        if(err) {
+            return cb(err);
+        }
+        if(!result) {
+            return cb(new LogicE("Avatar with id " + avatar + " is not found."));
+        }
+        return cb();
+    });
+}
 /**
  *
  * @param key
@@ -120,26 +135,33 @@ module.exports = {
             if(err) {
                 return cb(err);
             }
-            // 2. create user and send email for him
-            signupUser(data, function(err, user){
+            // 2. check avatar
+            checkAvatar(data.avatar, function(err) {
                 if(err) {
                     return cb(err);
                 }
-                // 3. register his email in dictionary
-                prepareEmail(user, function(err) {
+                // 3. create user and send email for him
+                signupUser(data, function(err, user){
                     if(err) {
                         return cb(err);
                     }
-                    // 4. register his phone in dictionary
-                    preparePhone(user, function(err) {
+                    // 4. register his email in dictionary
+                    prepareEmail(user, function(err) {
                         if(err) {
                             return cb(err);
                         }
-                        // 5. login
-                        return require('./UserAuth').login(user, timeLogin, cb);
+                        // 5. register his phone in dictionary
+                        preparePhone(user, function(err) {
+                            if(err) {
+                                return cb(err);
+                            }
+                            // 6. login
+                            return require('./UserAuth').login(user, timeLogin, cb);
+                        });
                     });
                 });
             });
+
         });
     }
 };

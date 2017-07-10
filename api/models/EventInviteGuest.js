@@ -5,18 +5,20 @@
 module.exports = {
     autoCreatedAt: false,
     autoUpdatedAt: false,
-    tableName: "event_invites",
-    autoId : false,
+    tableName: "event_guest",
+
     attributes: {
-        status: {
-            type: "integer"
-        },
         event_id: {
-            model: 'Event', 
+            model: 'Event',
+            required: true,
             primaryKey: true
         },
-        user_id: {
-            model: 'User',
+        phone_id: {
+            model: 'Phone',
+            primaryKey: true
+        },
+        email: {
+            model: 'Email',
             primaryKey: true
         }
     }

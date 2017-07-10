@@ -103,14 +103,18 @@ module.exports = {
     //         });
     //     });
     // }, 
-    getUserByAuthToken: function(token, cb) {
-        AuthToken.findOne({
-            'value': token,
-            'expire_date': {'>': new Date()}
-        }).populate('owner').exec(function(err, result){
+    getUserByAuthToken: function(token, cb, expired) {
+        var params = {
+            'value': token
+        };
+        if(!expired) {
+            params.expire_date =  {'>': new Date()};
+        } 
+        AuthToken.findOne(params).populate('owner').exec(function(err, result){
             if(err) {
                 return cb(err);
             }
+            sails.log(result);
             return cb(null, (result) ? result.owner : null);
         });
     }

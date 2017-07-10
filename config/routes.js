@@ -122,6 +122,10 @@ module.exports.routes = {
         controller: 'ContactsController',
         action: 'find'
     },
+    'get /api/v1/myEvents': {
+        controller: 'EventsController',
+        action: 'findMy'
+    },
     'get /api/v1/events': {
         controller: 'EventsController',
         action: 'find'

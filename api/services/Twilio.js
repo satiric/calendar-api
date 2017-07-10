@@ -15,5 +15,12 @@ module.exports = {
             to: phone,  // Text this number
             from: from // From a valid Twilio number
         }, cb);
+    },
+    sendMultiMessage: function (message, phones, cb) {
+        message = message || "";
+        for(var i = 0, size = phones.length; i < size; i++) {
+            Twilio.sendMessage(message, phones[i]);
+        }
+        return cb();
     }
 };
