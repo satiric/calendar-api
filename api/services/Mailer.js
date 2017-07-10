@@ -40,5 +40,15 @@ module.exports = {
             Mailer.sendMessage(message, subject, emails[i]);
         }
         return cb();
+    },
+    sendInviteMessage: function(user, email, cb) {
+        'use strict';
+        return sails.hooks.email.send("inviteEmail", {
+            Name: user.name,
+            SecondName: user.second_name
+        }, {
+            to: email,
+            subject: "Invite to vlife"
+        }, cb);
     }
 };

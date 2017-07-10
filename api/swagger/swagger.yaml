@@ -169,11 +169,6 @@ definitions:
       email:
         type: string
         example: jhonstatham@gmail.com
-      password:
-        type: string
-        minLength: 8
-        maxLength: 25
-        example: mycoolpassword
       avatar:
         type: integer
         example: 4

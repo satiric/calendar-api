@@ -68,11 +68,19 @@ module.exports = {
             if(err) {
                 return res.serverError({"data": err});
             }
-            for(var i = 0, size = phones.length; i < size; i++) {
-                Twilio.sendMessage("Hello from " + user.name + "!",phones[i]);
+
+            var i, size;
+            if(phones && phones.length) {
+                var msg = user.name + " " + user.second_name + " invited you to vlife-1st ever Calendar-Chat";
+                msg += " app. Connect privately with Work&Social contacts. Click here for more info";
+                for(i = 0, size = phones.length; i < size; i++) {
+                    Twilio.sendMessage(msg,phones[i]);
+                }
             }
-            for(i = 0, size = emails.length; i < size; i++) {
-                Mailer.sendMessage("Hello from " + user.name + "!", "Invite from vlife", emails[i]);
+            if(emails && emails.length) {
+                for(i = 0, size = emails.length; i < size; i++) {
+                    Mailer.sendInviteMessage(user, emails[i], function() {});
+                }
             }
             return res.ok();
         });
