@@ -141,6 +141,10 @@ module.exports.routes = {
     'get /swagger/doc': {
         controller: 'SwaggerController',
         action: 'doc'
+    },
+    'delete /api/v1/contacts': {
+        controller: 'ContactsController',
+        action: 'destroy'
     }
 
     /***************************************************************************

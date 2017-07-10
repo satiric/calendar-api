@@ -92,5 +92,52 @@ module.exports = {
         });
         
 //        var token = Auth.extractAuthKey(req);
+    },
+
+    destroy: function(req, res) {
+
+        UserAuth.getUserByAuthToken(token, function(err, user) {
+            if(err) {
+                return res.serverError({"data": err});
+            }
+            var emails = req.param('emails');
+            var phones = req.param('phones');
+            if(!Array.isArray(emails)) {
+                return res.badRequest({"message": "emails must be an array"});
+            }
+            emails = emails.map(function(value) {
+                return {
+                    'email': value, 
+                    'user_id': user.id
+                };
+            });
+            EmailContacts.destroy(emails).exec(function(err){
+                if(err) {
+                    return res.serverError({"data": err});
+                }
+                
+                if(!Array.isArray(phones)) {
+                    return res.badRequest({"message": "phones must be an array"});
+                }
+                phones = phones.map(function(value) {
+                    return {
+                        'id': PhoneIdentifier.extract(value),
+                        'phone': value,
+                        'user_id': user.id
+                    };
+                });
+
+                PhoneContacts.destroy(phones).exec(function(err){
+                    if(err) {
+                        return res.serverError({"data": err});
+                    }
+                    return res.ok();
+                });
+            });
+        });
+
+
+
+
     }
 };
