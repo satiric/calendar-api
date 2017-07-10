@@ -55,7 +55,7 @@ module.exports = {
                 if(err) {
                     return res.serverError({"details":err});
                 }
-                return res.ok({"data": result});
+                return res.ok({"data": { contacts: result } });
             });
         });
     }, 
