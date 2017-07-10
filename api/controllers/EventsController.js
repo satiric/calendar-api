@@ -124,7 +124,7 @@ module.exports = {
             }
             require('../utils/Events').create(req.body, user.id, function(err, result) {
                 if(err) {
-                    return (err instanceof ValidationE) ? res.badRequest({"message": err}) : res.serverError({"data":err});
+                    return (err instanceof ValidationE) ? res.badRequest({"message": err.message}) : res.serverError({"data":err});
                 }
                 return res.ok({"data": result});
             });
