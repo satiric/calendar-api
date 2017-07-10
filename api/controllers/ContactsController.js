@@ -74,11 +74,17 @@ module.exports = {
                 var msg = user.name + " " + user.second_name + " invited you to vlife-1st ever Calendar-Chat";
                 msg += " app. Connect privately with Work&Social contacts. Click here for more info";
                 for(i = 0, size = phones.length; i < size; i++) {
+                    if(!phones[i]) {
+                        continue;
+                    }
                     Twilio.sendMessage(msg,phones[i]);
                 }
             }
             if(emails && emails.length) {
                 for(i = 0, size = emails.length; i < size; i++) {
+                    if(!emails[i]) {
+                        continue;
+                    }
                     Mailer.sendInviteMessage(user, emails[i], function() {});
                 }
             }
