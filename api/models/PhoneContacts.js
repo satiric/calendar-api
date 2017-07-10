@@ -18,6 +18,9 @@ module.exports = {
         },
         user_id: {
             model: "User"
+        },
+        blocked: {
+            type: "integer"
         }
     },
 

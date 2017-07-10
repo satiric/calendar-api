@@ -145,6 +145,10 @@ module.exports.routes = {
     'delete /api/v1/contacts': {
         controller: 'ContactsController',
         action: 'destroy'
+    },
+    'put /api/v1/contacts/block': {
+        controller: 'ContactsController',
+        action: 'block'
     }
 
     /***************************************************************************

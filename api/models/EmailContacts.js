@@ -20,6 +20,9 @@ module.exports = {
         },
         user_id: {
             model: "User"
+        },
+        blocked: {
+            type: "integer"
         }
     },
 
@@ -31,8 +34,7 @@ module.exports = {
         }
         var placeholders = (new Array(parseInt(pc.length / 2))).join('(?, ?),') + '(?, ?)';
         var sql = 'INSERT INTO email_subscribe (email, user_id) VALUES '+ placeholders + ' ON DUPLICATE KEY UPDATE email=email, user_id=user_id';
-
-
+        
         EmailContacts.query(sql, pc ,function(err, rawResult) {
             return cb(err, rawResult);
         });
