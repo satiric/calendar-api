@@ -108,7 +108,7 @@ module.exports = {
                 emailSubscribe.push({"email": contacts[i].emails[j], "user_id": parseInt(userId)});
             }
             for (j = 0, size =  contacts[i].phones.length; j < size; j++) {
-                if(!contacts[i].phones[j]) {
+                if(!contacts[i].phones[j] || ! PhoneIdentifier.extract(contacts[i].phones[j])) {
                     continue;
                 }
                 phones.push({"id": PhoneIdentifier.extract(contacts[i].phones[j])});
