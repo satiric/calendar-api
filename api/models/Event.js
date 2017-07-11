@@ -107,11 +107,16 @@ types: {
         next();
     },
 
-    isValid: function(event) {
-        var dateStart = (new Date(event.date_start)).getTime();
+    hasNotice: function(event) {
+        if(!event.date_end) {
+            return;
+        }
         var dateEnd = (new Date(event.date_end)).getTime();
-        if(dateStart > dateEnd) {
-            return "date_start must be less than date_end";
+        if(event.date_start) {
+            var dateStart = (new Date(event.date_start)).getTime();
+            if(dateStart > dateEnd) {
+                return "date_start must be less than date_end";
+            }
         }
         if(event.end_repeat) {
             var endRepeat = (new Date(event.end_repeat)).getTime();
@@ -119,9 +124,6 @@ types: {
                 return "end_repeat must be more than date_end";
             }
         }
-        // if(
-        // 2). time_end should be > time_start
-        // 3). end_repeat >= event_date
-
+        return undefined;
     }
 };

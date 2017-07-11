@@ -122,6 +122,10 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
+            var errorMsg  = Event.hasNotice(req.body);
+            if(errorMsg) {
+                return res.badRequest({"message": errorMsg});
+            }
             require('../utils/Events').create(req.body, user.id, function(err, result) {
                 if(err) {
                     return (err instanceof ValidationE) ? res.badRequest({"message": err.message}) : res.serverError({"data":err});
@@ -153,6 +157,10 @@ module.exports = {
                 }
                 if(!founded) {
                     return res.json(404, {"status":"error", "message": "Event isn't found"});
+                }
+                var errorMsg  = Event.hasNotice(req.body);
+                if(errorMsg) {
+                    return res.badRequest({"message": errorMsg});
                 }
                 Event.update({id: eventId, "founder": user.id}, req.body).exec(function (err, event) {
                     if(err) {
