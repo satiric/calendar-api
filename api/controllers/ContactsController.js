@@ -53,7 +53,7 @@ module.exports = {
             }
             require('../utils/Contacts').create(user.id, contacts, function(err, result) {
                 if(err) {
-                    return res.serverError({"details":err});
+                    return res.serverError({"data":err});
                 }
                 return res.ok({"data": { contacts: result } });
             });
@@ -90,8 +90,6 @@ module.exports = {
             }
             return res.ok();
         });
-        
-//        var token = Auth.extractAuthKey(req);
     },
     block: function(req, res) {
 
@@ -138,7 +136,6 @@ module.exports = {
 
 
     destroy: function(req, res) {
-
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
                 return res.serverError({"data": err});
@@ -169,7 +166,6 @@ module.exports = {
                         'user_id': user.id
                     };
                 });
-
                 PhoneContacts.destroy(phones).exec(function(err){
                     if(err) {
                         return res.serverError({"data": err});

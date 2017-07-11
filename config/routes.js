@@ -35,7 +35,7 @@ module.exports.routes = {
     'get /': {
         view: 'homepage'
     },
-
+    // user ----
     'post /api/v1/user/signup': {
         controller: 'UserController',
         action: 'signup',
@@ -55,17 +55,6 @@ module.exports.routes = {
     'post /api/v2/user/login': {
         controller: 'v2/UserController',
         action: 'login',
-        skipAssets: 'true'
-    },
-    
-    'post /api/v1/file': {
-        controller: 'FileController',
-        action: 'create',
-        skipAssets: 'true'
-    },
-    'post /api/v2/file': {
-        controller: 'v2/FileController',
-        action: 'create',
         skipAssets: 'true'
     },
     'get /api/v1/user/logout': {
@@ -110,6 +99,20 @@ module.exports.routes = {
         controller: 'UserController',
         action: 'verifyPhone'
     },
+
+    // file ----
+    'post /api/v1/file': {
+        controller: 'FileController',
+        action: 'create',
+        skipAssets: 'true'
+    },
+    'post /api/v2/file': {
+        controller: 'v2/FileController',
+        action: 'create',
+        skipAssets: 'true'
+    },
+
+    // contacts ----
     'post /api/v1/contacts': {
         controller: 'ContactsController',
         action: 'create'
@@ -122,6 +125,16 @@ module.exports.routes = {
         controller: 'ContactsController',
         action: 'find'
     },
+    'delete /api/v1/contacts': {
+        controller: 'ContactsController',
+        action: 'destroy'
+    },
+    'put /api/v1/contacts/block': {
+        controller: 'ContactsController',
+        action: 'block'
+    },
+
+    // events ----
     'get /api/v1/myEvents': {
         controller: 'EventsController',
         action: 'findMy'
@@ -138,18 +151,13 @@ module.exports.routes = {
         controller: 'EventsController',
         action: 'update'
     },
+
+    // swagger ----
     'get /swagger/doc': {
         controller: 'SwaggerController',
         action: 'doc'
     },
-    'delete /api/v1/contacts': {
-        controller: 'ContactsController',
-        action: 'destroy'
-    },
-    'put /api/v1/contacts/block': {
-        controller: 'ContactsController',
-        action: 'block'
-    }
+
 
     /***************************************************************************
      *                                                                          *

@@ -28,18 +28,15 @@ module.exports = {
         var pc = [];
 
         if(!phones) {
-            sails.log("-----------");
             return cb();
         }
         for(var i = 0, size = phones.length; i < size; i++) {
             pc.push(phones[i].id);
-            pc.push(phones[i].phone);
             pc.push(phones[i].user_id);
         }
 
-        var placeholders = (new Array(parseInt(pc.length / 3))).join('(?, ?, ?),') + '(?, ?, ?)';
-        var sql = 'INSERT INTO phone_subscribe (id, phone, user_id) VALUES '+ placeholders + ' ON DUPLICATE KEY UPDATE id=id, phone = phone, user_id=user_id';
-
+        var placeholders = (new Array(parseInt(pc.length / 2))).join('(?, ?),') + '(?, ?)';
+        var sql = 'INSERT INTO phone_subscribe (phone_id, user_id) VALUES '+ placeholders + ' ON DUPLICATE KEY UPDATE phone_id = phone_id, user_id=user_id';
 
         PhoneContacts.query(sql, pc ,function(err, rawResult) {
             return cb(err, rawResult);

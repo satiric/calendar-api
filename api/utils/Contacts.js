@@ -5,6 +5,9 @@ var LogicE = require('../exceptions/Logic');
 
 function registEmails(emails, emailSubscribe, cb) {
     //1. find emails from contact in dictionary
+    if(!emails.length) {
+        return cb();
+    }
     Email.find(emails).exec(function(err, results){
         if(err) {
             return cb(err);
@@ -47,14 +50,16 @@ function registPhones(phones, phonesRecords, phonesSubscribe, cb) {
             if(err) {
                 return cb(err);
             }
-            return cb(null,result);
+
+            sails.log(phonesSubscribe);
+
             //at second - subcribe to all
-            // PhoneContacts.batchInsert(phonesSubscribe, function(err, result){
-            //     if(err) {
-            //         return cb(err);
-            //     }
-            //     return cb(null,founded);
-            // });
+            PhoneContacts.batchInsert(phonesSubscribe, function(err, result){
+                if(err) {
+                    return cb(err);
+                }
+                return cb(null,founded);
+            });
         });
     });
 }
