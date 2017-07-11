@@ -50,8 +50,8 @@ module.exports = {
      */
     find: function (req, res) {
         var token = Auth.extractAuthKey(req);
-        var page = Math.abs(req.param('page', 1));
-        var pageSize = req.param('pageSize', 10);
+        var page = Math.abs(parseInt(req.param('page', 1)));
+        var pageSize = Math.abs(parseInt(req.param('pageSize', 10)));
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
                 return res.serverError({"data": err});
@@ -141,38 +141,50 @@ module.exports = {
         var eventId = req.param('id');
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
-                return res.serverError({"details": err});
+                return res.serverError({"data": err});
             }
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
             req.body.founder = user.id;
-            Event.update({id: eventId, "founder": user.id}, req.body).exec(function (err, event) {
+            Event.findOne(eventId).exec(function(err, founded){
                 if(err) {
-                    return res.serverError({"details":err});
+                    return res.serverError({"data": err});
                 }
-                return res.ok({"event": event});
+                if(!founded) {
+                    return res.json(404, {"status":"error", "message": "Event isn't found"});
+                }
+                Event.update({id: eventId, "founder": user.id}, req.body).exec(function (err, event) {
+                    if(err) {
+                        return res.serverError({"data":err});
+                    }
+                    if( !event ) {
+                        return res.json(403, {"status": "error","message":"Permission denied"});
+                    }
+                    return res.ok({"data": {"event":event}});
+                });
             });
+
         });
     },
-    search: function (req, res) {
-        var token = Auth.extractAuthKey(req);
-        var searchValue = req.param('value');
-        var page = req.param('page');
-        var pageSize = req.param('pageSize');
-        UserAuth.getUserByAuthToken(token, function(err, user) {
-            // if(err) {
-            //     return res.serverError({"details": err});
-            // }
-            // if(!user) {
-            //     return res.badRequest({"message": "User not found"});
-            // }
-            Event.find({"founder": user.id}).exec(function (err, events) {
-                if(err) {
-                    return res.serverError({"details":err});
-                }
-                return res.ok({"event": events});
-            }).paginate({page: page, limit: pageSize});
-        });
-    }
+    // search: function (req, res) {
+    //     var token = Auth.extractAuthKey(req);
+    //     var searchValue = req.param('value');
+    //     var page = req.param('page');
+    //     var pageSize = req.param('pageSize');
+    //     UserAuth.getUserByAuthToken(token, function(err, user) {
+    //         // if(err) {
+    //         //     return res.serverError({"details": err});
+    //         // }
+    //         // if(!user) {
+    //         //     return res.badRequest({"message": "User not found"});
+    //         // }
+    //         Event.find({"founder": user.id}).exec(function (err, events) {
+    //             if(err) {
+    //                 return res.serverError({"details":err});
+    //             }
+    //             return res.ok({"event": events});
+    //         }).paginate({page: page, limit: pageSize});
+    //     });
+    // }
 };

@@ -7,7 +7,8 @@ module.exports = {
         title: {
             type: "string",
             required: true,
-            maxLength: 25
+            maxLength: 25,
+            trimSpaces: true
         },
         sphere: {
             type: "integer"
@@ -49,6 +50,18 @@ module.exports = {
             model: 'User'
         }
     },
+
+
+// Custom types / validation rules
+// (available for use in this model's attribute definitions above)
+types: {
+    trimSpaces: function (value) {
+        var oldLen = value.length;
+        value = value.trim();
+        return (value.length === oldLen);
+    }
+},
+
     validationMessages: { //hand for i18n & l10n
         date_start: {
             required: 'Date start is required',
@@ -58,6 +71,13 @@ module.exports = {
             required: 'Date end is required',
             datetime: 'Invalid type for Date end. Date end format is UTC',
         },
+        title: {
+            trimSpaces: 'Title should not contain spaces',
+        },
+        description: {
+            maxLength: "Description must be less than 200 symbols"
+        }
+
         // second_name: {
         //     required: "Name is required",
         //     validName: "Invalid Last Name: it must be more than 1 symbol and less than 26, without spaces"
@@ -88,6 +108,17 @@ module.exports = {
     },
 
     isValid: function(event) {
+        var dateStart = (new Date(event.date_start)).getTime();
+        var dateEnd = (new Date(event.date_end)).getTime();
+        if(dateStart > dateEnd) {
+            return "date_start must be less than date_end";
+        }
+        if(event.end_repeat) {
+            var endRepeat = (new Date(event.end_repeat)).getTime();
+            if (endRepeat < dateEnd) {
+                return "end_repeat must be more than date_end";
+            }
+        }
         // if(
         // 2). time_end should be > time_start
         // 3). end_repeat >= event_date

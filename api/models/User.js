@@ -113,10 +113,8 @@ module.exports = {
     // (available for use in this model's attribute definitions above)
     types: {
         password: function (value) {
-            'use strict';
             var oldLen = value.length;
             value = value.trim();
-            console.log('----------------');
             return (value.length === oldLen);
         },
         notNum: function(value) {

@@ -267,14 +267,11 @@ definitions:
   EventWithInvites:
     type: object
     required:
-      - id
       - title
       - date_start
       - date_end
       - sphere
     properties:
-      id: 
-        type: integer
       title:
         type: string
         example: Meeting near the caffe
