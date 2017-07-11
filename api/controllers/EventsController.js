@@ -52,6 +52,8 @@ module.exports = {
         var token = Auth.extractAuthKey(req);
         var page = Math.abs(parseInt(req.param('page', 1)));
         var pageSize = Math.abs(parseInt(req.param('pageSize', 10)));
+        sails.log(page);
+        sails.log(pageSize);
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
                 return res.serverError({"data": err});
@@ -97,28 +99,31 @@ module.exports = {
                     if(err) {
                         return res.serverError({"data":err});
                     }
-                    return res.ok({data: { event: event, invited: invited}});
+                    var inv = invited.map(function(value){
+                        return {
+                            id: value.user_id.id,
+                            status: value.status,
+                            name: value.user_id.name + " " + value.user_id.second_name
+                        };
+                    });
+                    EventInviteGuest.find({'event_id': eventId }).exec(function(err, invited) {
+                        if(err) {
+                            return res.serverError({"data":err});
+                        }
+                        sails.log(invited);
+                        for (var i = 0, size = invited.length; i < size; i++) {
+                            inv.push({
+                                "id": null,
+                                status: null,
+                                "value": (invited[i].phone_id || invited[i].email)
+                            });
+                        }
+                        event.invited = inv;
+                        return res.ok({data: event});
+                    });
                 });
             });
         });
-        // Name of the Event Creator
-        // Profile Picture of the Event Creator
-        // Event Name
-        // Sphere for the Event [Work / Personal]
-        // Event Description
-        // Location (Native Maps Application would be opened)
-        // Date of the Event
-        // Start & End Time of the Event
-        // Visual Indicator of any earlier Accepted event (Along with Event Name, Start & End
-        // Time) which will create conflict with this Event if a user Accepts it
-        // Paginated List of Users (Who have been Invited to the Event) in Alphabetical Order
-        // with following Details:
-        //     > Name of the User
-        // > Profile Picture of the User
-        // > Visual Indicator if the Event Invite has been Accepted by the User or Not
-        // User (Guests) should be able to Accept / Reject the Event Invite
-
-
     },
 
 
@@ -164,7 +169,6 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
-            req.body.founder = user.id;
             Event.findOne(eventId).exec(function(err, founded){
                 if(err) {
                     return res.serverError({"data": err});

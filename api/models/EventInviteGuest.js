@@ -20,6 +20,10 @@ module.exports = {
         email: {
             model: 'Email',
             primaryKey: true
+        },
+        id: {
+            type: "integer",
+            primaryKey: true
         }
     }
     // validationMessages: { //hand for i18n & l10n

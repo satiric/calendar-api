@@ -25,10 +25,11 @@ exports.up = function(knex, Promise) {
         knex.raw("ALTER TABLE `phone_subscribe` ADD FOREIGN KEY (user_id) REFERENCES `user` (`id`) ON UPDATE CASCADE ON DELETE CASCADE; "),
 
         knex.raw("    CREATE TABLE `event_guest` (\
+            `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\
             `event_id` int(10) unsigned NOT NULL,\
         `phone_id` VARCHAR(12) NULL DEFAULT NULL,\
         `email` varchar(254) NULL DEFAULT NULL,\
-        PRIMARY KEY (`event_id`, `phone_id`, `email`)\
+        PRIMARY KEY (`id`)\
         )"),
         knex.raw("ALTER TABLE `event_guest` ADD FOREIGN KEY (event_id) REFERENCES `event` (`id`) ON UPDATE CASCADE ON DELETE CASCADE"),
         knex.raw(" ALTER TABLE `event_guest` ADD FOREIGN KEY (phone_id) REFERENCES `phone` (`id`) ON UPDATE CASCADE ON DELETE CASCADE"),
