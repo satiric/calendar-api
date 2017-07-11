@@ -92,7 +92,7 @@ module.exports = {
         });
     },
     block: function(req, res) {
-
+//todo refactor it
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
                 return res.serverError({"data": err});
@@ -103,11 +103,18 @@ module.exports = {
                 return res.badRequest({"message": "emails must be an array"});
             }
             emails = emails.map(function(value) {
+                if(!value) {
+                    return value;
+                }
                 return {
                     'email': value,
                     'user_id': user.id
                 };
             });
+            emails = emails.filter(function(val){
+                return (val);
+            });
+
             EmailContacts.update(emails,{"blocked": 1}).exec(function(err){
                 if(err) {
                     return res.serverError({"data": err});
@@ -123,13 +130,19 @@ module.exports = {
                         'user_id': user.id
                     };
                 });
-
-                PhoneContacts.update(phones, {"blocked":1}).exec(function(err){
-                    if(err) {
-                        return res.serverError({"data": err});
-                    }
-                    return res.ok();
+                phones = phones.filter(function(val){
+                    return (val);
                 });
+                if(phones.length){
+                    return PhoneContacts.update(phones, {"blocked":1}).exec(function(err){
+                        if(err) {
+                            return res.serverError({"data": err});
+                        }
+                        return res.ok();
+                    });
+                }
+                return res.ok();
+
             });
         });
     },

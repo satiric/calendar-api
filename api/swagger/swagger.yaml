@@ -927,7 +927,7 @@ paths:
         "200":
           description: Success
           schema:
-            $ref: "#/definitions/ErrorResp"
+            $ref: "#/definitions/SuccessResponse"
 
         # responses may fall through to errors
         default:
