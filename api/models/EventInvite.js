@@ -12,8 +12,8 @@ module.exports = {
             type: "integer"
         },
         event_id: {
-            model: 'Event', 
-            primaryKey: true
+            model: 'Event',
+         //   primaryKey: true //NOT WORKING POPULATE WITH IT
         },
         user_id: {
             model: 'User',

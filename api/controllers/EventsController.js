@@ -89,15 +89,15 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
-            Event.find({"founder": user.id}).exec(function (err, events) {
+            Event.findOne(eventId).populate("founder").exec(function (err, event) {
                 if(err) {
                     return res.serverError({"data":err});
                 }
-                Event.count({"founder": user.id}).exec(function (err, count) {
+                EventInvite.find({'event_id': eventId }).populate('user_id').exec(function(err, invited){
                     if(err) {
                         return res.serverError({"data":err});
                     }
-                    return res.ok({"data": events, "page": page, "pageSize": pageSize, "total": count});
+                    return res.ok({data: { event: event, invited: invited}});
                 });
             });
         });
