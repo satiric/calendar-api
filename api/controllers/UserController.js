@@ -27,7 +27,7 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found."});
             }
-            return res.ok({ "data": {"user":user} });
+            return res.ok({ "data": user });
         });
     },
 
@@ -69,7 +69,7 @@ module.exports = {
                         if (err) {
                             return res.serverError({"data":err});
                         }
-                        return res.ok({"data": {"user":result}});
+                        return res.ok({"data": result});
                     });
 
             });
@@ -119,10 +119,10 @@ module.exports = {
         var authKey = Auth.extractAuthKey(req);
         Auth.logout(authKey, function (err, result) {
             if (err) {
-                return res.serverError({"status": "error", "details": err});
+                return res.serverError({"data": err});
             }
             if (!result) {
-                return res.badRequest({"status": "error", "message": "This token isn't found."});
+                return res.badRequest({ "message": "This token isn't found."});
             }
             return res.ok();
         });
@@ -139,7 +139,7 @@ module.exports = {
         if (token) {
             return UserAuth.getUserByResetToken(token, function (err, user) {
                 if (err) {
-                    return res.serverError({"details": err});
+                    return res.serverError({"data": err});
                 }
                 if (!user) {
                     return res.badRequest({"message": "User not found"});

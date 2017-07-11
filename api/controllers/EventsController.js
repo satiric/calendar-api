@@ -79,13 +79,9 @@ module.exports = {
      * @param req
      * @param res
      */
-    findOne: function (req, res) {
+    detail: function (req, res) {
+        var eventId = req.param('id');
         var token = Auth.extractAuthKey(req);
-        var page = req.param('page', 1);
-        if (page < 0 ) {
-            page = 1;
-        }
-        var pageSize = req.param('pageSize', 10);
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
                 return res.serverError({"data": err});
@@ -93,7 +89,7 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
-            Event.find({"founder": user.id}).paginate({page: page, limit: pageSize}).exec(function (err, events) {
+            Event.find({"founder": user.id}).exec(function (err, events) {
                 if(err) {
                     return res.serverError({"data":err});
                 }
@@ -105,6 +101,24 @@ module.exports = {
                 });
             });
         });
+        // Name of the Event Creator
+        // Profile Picture of the Event Creator
+        // Event Name
+        // Sphere for the Event [Work / Personal]
+        // Event Description
+        // Location (Native Maps Application would be opened)
+        // Date of the Event
+        // Start & End Time of the Event
+        // Visual Indicator of any earlier Accepted event (Along with Event Name, Start & End
+        // Time) which will create conflict with this Event if a user Accepts it
+        // Paginated List of Users (Who have been Invited to the Event) in Alphabetical Order
+        // with following Details:
+        //     > Name of the User
+        // > Profile Picture of the User
+        // > Visual Indicator if the Event Invite has been Accepted by the User or Not
+        // User (Guests) should be able to Accept / Reject the Event Invite
+
+
     },
 
 
