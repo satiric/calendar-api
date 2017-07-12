@@ -35,6 +35,7 @@ module.exports = {
         },
         phone: {
             required: true,
+            unique: true,
             type: 'string',
             regex: /\+([0-9]){9,13}/
         },
