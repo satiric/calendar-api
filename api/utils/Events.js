@@ -40,6 +40,8 @@ function inviteUsers(event, invites, cb) {
         return PhoneIdentifier.extract(value);
     });
     var users = invites.users || [];
+
+
     //2. search all users with phones
     Phones.find({ user_id: {'!': null}, id: phones}).exec(function(err, results){
         if(err) {
@@ -49,6 +51,8 @@ function inviteUsers(event, invites, cb) {
         invites.phones = filterPhones(results, invites.phones);
         // 3. collect all founded user ids
         users = users.concat(mapUser(results));
+
+
         // 4. find all users with emails
         User.find({email: invites.emails}).exec(function (err, results) {
             if(err) {
@@ -67,7 +71,26 @@ function inviteUsers(event, invites, cb) {
                 if(err) {
                     return cb(err);
                 }
-                return cb(null, invites);
+                //array with id, status and value for user
+                var invitedIds = users.map(function(value) {
+                    return value.id;
+                });
+                User.find({'id': invitedIds}).exec(function(err, result){
+                    if(err) {
+                        return cb(err);
+                    }
+                    var invitedExtract = result.map(function(value){
+                        return {
+                            'id': value.id,
+                            'status': null,
+                            'value': value.name + " " + value.second_name
+                        };
+                    });
+                    return cb(null, invites, invitedExtract);
+                });
+
+
+
             });
         });
     });
@@ -134,10 +157,10 @@ module.exports = {
                 return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
             }
             if(!event.invites) {
-                return cb();
+                return cb(null, result);
             }
             // 2. inviteUsers
-            inviteUsers(result, event.invites, function(err, notInvited){
+            inviteUsers(result, event.invites, function(err, notInvited, extract){
                 if(err) {
                     return cb(err);
                 }
@@ -146,7 +169,8 @@ module.exports = {
                     if(err) {
                         return cb(err);
                     }
-                    return cb();
+                    event.invited = extract;
+                    return cb(null, event);
                 });
             });
         });
