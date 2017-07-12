@@ -22,7 +22,7 @@ module.exports = {
         var token = Auth.extractAuthKey(req);
         var page = Math.abs(parseInt(req.param('page', 1)));
         var pageSize = Math.abs(parseInt(req.param('pageSize', 10)));
-        var keyWord = req.param('keyword', 10);
+        var keyWord = req.param('keyword');
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
                 return res.serverError({"data": err});
