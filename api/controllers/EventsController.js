@@ -14,14 +14,15 @@ module.exports = {
         rest: false
     },
     /**
-     *
+     * find of my
      * @param req
      * @param res
      */
     findMy: function (req, res) {
         var token = Auth.extractAuthKey(req);
-        var page = Math.abs(req.param('page', 1));
-        var pageSize = req.param('pageSize', 10);
+        var page = Math.abs(parseInt(req.param('page', 1)));
+        var pageSize = Math.abs(parseInt(req.param('pageSize', 10)));
+        var keyWord = req.param('keyword', 10);
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
                 return res.serverError({"data": err});
@@ -29,11 +30,19 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
-            Event.find({"founder": user.id, 'active':true}).paginate({page: page, limit: pageSize}).exec(function (err, events) {
+            var params = {"founder": user.id, 'active':true};
+            if( keyWord) {
+                params.or = [
+                    { title : { 'like': '%'+keyWord+'%' } },
+                    { description : { 'like': '%'+keyWord+'%' } }
+                ];
+            }
+
+            Event.find(params).paginate({page: page, limit: pageSize}).exec(function (err, events) {
                 if(err) {
                     return res.serverError({"data":err});
                 }
-                Event.count({"founder": user.id, 'active':true}).exec(function (err, count) {
+                Event.count(params).exec(function (err, count) {
                     if(err) {
                         return res.serverError({"data":err});
                     }
@@ -44,7 +53,7 @@ module.exports = {
     },
 
     /**
-     *
+     * find from all
      * @param req
      * @param res
      */
@@ -52,8 +61,7 @@ module.exports = {
         var token = Auth.extractAuthKey(req);
         var page = Math.abs(parseInt(req.param('page', 1)));
         var pageSize = Math.abs(parseInt(req.param('pageSize', 10)));
-        sails.log(page);
-        sails.log(pageSize);
+
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
                 return res.serverError({"data": err});
@@ -75,6 +83,37 @@ module.exports = {
         });
     },
 
+    //
+    // /**
+    //  * find from all
+    //  * @param req
+    //  * @param res
+    //  */
+    // findAll: function (req, res) {
+    //     var token = Auth.extractAuthKey(req);
+    //     var page = Math.abs(parseInt(req.param('page', 1)));
+    //     var pageSize = Math.abs(parseInt(req.param('pageSize', 10)));
+    //     var keyword = req.param('keyword');
+    //     UserAuth.getUserByAuthToken(token, function(err, user) {
+    //         if(err) {
+    //             return res.serverError({"data": err});
+    //         }
+    //         if(!user) {
+    //             return res.badRequest({"message": "User not found"});
+    //         }
+    //         EventInvite.find({"user_id": user.id}).populate('event_id').paginate({page: page, limit: pageSize}).exec(function (err, events) {
+    //             if(err) {
+    //                 return res.serverError({"data":err});
+    //             }
+    //             EventInvite.count({"user_id": user.id}).exec(function (err, count) {
+    //                 if(err) {
+    //                     return res.serverError({"data":err});
+    //                 }
+    //                 return res.ok({"data": events, "page": page, "pageSize": pageSize, "total": count});
+    //             });
+    //         });
+    //     });
+    // },
 
     /**
      *
