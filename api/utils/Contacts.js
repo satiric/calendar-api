@@ -88,6 +88,24 @@ function registPhones(phones, phonesRecords, phonesSubscribe, cb) {
 // });
 
 module.exports = {
+    registerPhones: function(phones, cb) {
+        var phoneIds = phones.map(function(value) {
+            return value.id;
+        });
+        Phone.find(phoneIds).exec(function(err, results){
+            if(err) {
+                return cb(err);
+            }
+
+            var notFouneded = phones.filter(function(val) {
+                return !(_.find(results, { 'id':val.id }));
+            });
+            //at first - create phones that not founded
+            Phone.create(notFouneded).exec(function(err, result) {
+                return cb(err,result)
+            });
+        });
+    },
     create: function(userId, contacts, cb) {
         var emails = []; //for search, just list of emails
         var emailSubscribe = [];
