@@ -875,7 +875,7 @@ paths:
         - $ref: "#/parameters/auth-token-required"
         - name: id
           in: path
-          description: User id.
+          description: events id
           required: true
           type: integer
           format: int64
@@ -942,7 +942,7 @@ paths:
       tags: 
       - user
       - contacts
-      description: Check sms code 
+      description: sync contacts
       # used as the method name of the controller
       operationId: createContacts
       parameters:
@@ -979,7 +979,7 @@ paths:
       tags: 
       - user
       - contacts
-      description: Check sms code 
+      description: get contacts 
       # used as the method name of the controller
       operationId: getContacts
       parameters:
@@ -1004,6 +1004,82 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResp"
+    delete:
+      tags: 
+      - contacts
+      description: Delete contacts
+      # used as the method name of the controller
+      operationId: deleteContacts
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - $ref: "#/parameters/auth-token-required"
+        - in: query
+          name: emails
+          type: array
+          description: "array of emails"
+          required: true
+          items: 
+            type: string
+        - in: query
+          name: phones
+          description: "array of phones"
+          required: true
+          type: array
+          items: 
+            type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResp"
+            
+  /contacts/block:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: ContactsController
+    put:
+      tags: 
+      - contacts
+      description: Block contacts 
+      # used as the method name of the controller
+      operationId: blockContacts
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - $ref: "#/parameters/auth-token-required"
+        - in: query
+          name: emails
+          type: array
+          description: "array of emails"
+          required: true
+          items: 
+            type: string
+        - in: query
+          name: phones
+          description: "array of phones"
+          required: true
+          type: array
+          items: 
+            type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResp"
+            
+            
+
+            
   /swagger:
     x-swagger-pipe: swagger_raw
 # complex objects have schema definitions
