@@ -190,8 +190,9 @@ module.exports = {
                     if(err) {
                         return cb(err);
                     }
-                    event.invited = extract;
-                    return cb(null, event);
+                    result.invited = extract;
+
+                    return cb(null, result);
                 });
             });
         });
@@ -209,7 +210,7 @@ module.exports = {
                 // 3. invite not invited person by phone or email
                 inviteGuests(result, notInvited, function(err) {
                     if(err) {
-                        return cb(err);
+                        return cb(err, result);
                     }
 
                 });
