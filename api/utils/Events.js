@@ -194,6 +194,18 @@ module.exports = {
                         return cb(err);
                     }
                     result.invited = extract;
+                    if(event.invites && event.invites.phones &&  event.invites.phones.length) {
+                        result.invited = result.invited.concat(event.invites.phones.map(function(value){
+                            return {id:null, value: value, status: null};
+                        }));
+                    }
+                    sails.log(event.invited);
+                    if(event.invites && event.invites.emails &&  event.invites.emails.length) {
+                        result.invited = result.invited.concat(event.invites.emails.map(function(value){
+                            return {id:null, value: value, status: null};
+                        }));
+                    }
+                    sails.log(extract);
 
                     return cb(null, result);
                 });
