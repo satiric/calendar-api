@@ -142,7 +142,7 @@ module.exports = {
                         return {
                             id: value.user_id.id,
                             status: value.status,
-                            name: value.user_id.name + " " + value.user_id.second_name
+                            value: value.user_id.name + " " + value.user_id.second_name
                         };
                     });
                     EventInviteGuest.find({'event_id': eventId }).exec(function(err, invited) {

@@ -264,6 +264,70 @@ definitions:
         type: boolean
         description: Status for the event. Default is true. 
   
+  EventDetailResponse:
+    type: object
+    required:
+      - id
+      - title
+      - date_start
+      - date_end
+      - sphere
+      - founder
+    properties:
+      id: 
+        type: integer
+      title:
+        type: string
+        example: Meeting near the caffe
+        maxLength: 25
+      sphere: 
+        type: integer
+        description: 0 - Personal, 1 - Work
+      date_start: 
+        type: string
+        format: datetime
+      date_end: 
+        type: string
+        format: datetime
+      founder:
+        $ref: "#/definitions/UserReadable"
+      repeat_type: 
+        type: integer
+        description: bitmask. 1 - Never, 2 - Day, 4 - Week, 8 - Fortnight, 16 - Month. Available values - only one of it. 
+      repeat_option: 
+        type: integer
+        description: bitmask. 1 - Monday, 2 - Tuesday, 4 - Wednesday, 8 - Thursday, 16 - Friday, 32 - Saturday, 64 - Sunday. For example, 65 is mark for Monday and Sunday, 67 - for Monday, Sunday and Tuesday, 3 - for Monday and Tuesday etc. 
+      end_repeat: 
+        type: string
+        format: datetime
+        description: when repeating must be stopped.
+      description: 
+        type: string
+        description: Description for the event
+      reminds: 
+        type: integer
+        description: Reminds before x seconds.
+      location: 
+        type: string
+        description: google place id or other text for place identification
+      active: 
+        type: boolean
+        description: Status for the event. Default is true.   
+      invited:
+        $ref: "#/definitions/Invited"      
+  
+  Invited: 
+    type: array
+    items: 
+      type: object
+      properties: 
+        id: 
+          type: integer
+        value: 
+          type: string 
+        status: 
+          type: integer
+          
   EventWithInvites:
     type: object
     required:
@@ -795,7 +859,7 @@ paths:
         - in: query
           name: "keyword"
           description: for search by keyword in title and description for events
-          type: integer
+          type: string
         - in: query
           name: "pageSize"
           description: pagesize, default 10
@@ -900,7 +964,37 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResp"
+
+  /events/detail/{id}:
+    get:
+      tags: 
+      - event
+      description: get detail event
+      # used as the method name of the controller
+      operationId: getDetailEvent
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - $ref: "#/parameters/auth-token-required"
+        - name: id
+          in: path
+          description: events id
+          required: true
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/EventDetailResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResp"
             
+            
+
   /contacts/invite:
     # binds a127 app logic to a route
     x-swagger-router-controller: ContactsController
@@ -1080,10 +1174,7 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResp"
-            
-            
-
-            
+          
   /swagger:
     x-swagger-pipe: swagger_raw
 # complex objects have schema definitions
