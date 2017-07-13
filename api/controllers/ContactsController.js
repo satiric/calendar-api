@@ -93,6 +93,7 @@ module.exports = {
     },
     block: function(req, res) {
 //todo refactor it
+        var token = Auth.extractAuthKey(req);
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
                 return res.serverError({"data": err});
