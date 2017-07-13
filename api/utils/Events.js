@@ -24,6 +24,9 @@ function filterEmails(invitedEmailRecords, emails) {
     var emailList = invitedEmailRecords.map(function(value){
         return value.email;
     });
+    if(!emails || !emails.length) {
+        return [];
+    }
     return emails.filter(function(value){
         return emailList.indexOf(value) === -1;
     });
