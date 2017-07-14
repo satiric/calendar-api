@@ -23,6 +23,10 @@ module.exports = {
         },
         blocked: {
             type: "integer"
+        },
+        fictive_id: {
+            type: "integer",
+            primaryKey: true
         }
     },
 

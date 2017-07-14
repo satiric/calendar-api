@@ -21,6 +21,10 @@ module.exports = {
         },
         blocked: {
             type: "integer"
+        },
+        fictive_id: { //FOR STUPID WATERLINE AJAJJAJAJA
+            type: "integer",
+            primaryKey: true
         }
     },
 
@@ -41,5 +45,5 @@ module.exports = {
         PhoneContacts.query(sql, pc ,function(err, rawResult) {
             return cb(err, rawResult);
         });
-    }
+    },
 };

@@ -64,7 +64,19 @@ function registPhones(phones, phonesRecords, phonesSubscribe, cb) {
     });
 }
 
+function destroyEmails(emails, cb) {
+    if(!emails.length) {
+        return cb();
+    }
+    EmailContacts.destroy({ 'or' : emails } ).exec(cb);
+}
 
+function destroyPhones(phones, cb) {
+    if(!phones.length) {
+        return cb();
+    }
+    PhoneContacts.destroy({ 'or' : phones }).exec(cb);
+}
 
 // Phone.find(phones).exec(function(err, results){
 //     if(err) {
@@ -102,7 +114,7 @@ module.exports = {
             });
             //at first - create phones that not founded
             Phone.create(notFouneded).exec(function(err, result) {
-                return cb(err,result)
+                return cb(err,result);
             });
         });
     },
@@ -176,6 +188,38 @@ module.exports = {
                 User.find({id: users}).populate('avatar').exec(function(err, users){
                     return cb(err, users);
                 });
+            });
+        });
+    },
+
+    destroy: function(user, emails, phones, cb) {
+        if(emails.length) {
+            emails = emails.map(function(value) {
+                return {
+                    'email': value,
+                    'user_id': user.id
+                };
+            });
+        }
+        if(phones.length) {
+            phones = phones.map(function(value) {
+                return {
+                    'phone_id': PhoneIdentifier.extract(value),
+                    'user_id': user.id
+                };
+            });
+        }
+        destroyEmails(emails, function(err, result) {
+            if(err) {
+                return cb(err);
+            }
+
+            destroyPhones(phones, function(err, result){
+                if(err) {
+                    return cb(err);
+                }
+
+                return cb(null, result);
             });
         });
     }

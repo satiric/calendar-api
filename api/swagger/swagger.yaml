@@ -1111,20 +1111,23 @@ paths:
       parameters:
         - $ref: "#/parameters/vlife-key"
         - $ref: "#/parameters/auth-token-required"
-        - in: query
-          name: emails
-          type: array
-          description: "array of emails"
+        - name: body
+          in: body
+          description: "Object User"
           required: true
-          items: 
-            type: string
-        - in: query
-          name: phones
-          description: "array of phones"
-          required: true
-          type: array
-          items: 
-            type: string
+          schema: 
+            type: object
+            properties: 
+              emails: 
+                type: array
+                description: "array of emails"
+                items: 
+                  type: string
+              phones: 
+                type: array
+                items: 
+                  type: string
+
       responses:
         "200":
           description: Success
@@ -1149,20 +1152,23 @@ paths:
       parameters:
         - $ref: "#/parameters/vlife-key"
         - $ref: "#/parameters/auth-token-required"
-        - in: query
-          name: emails
-          type: array
-          description: "array of emails"
+        - name: body
+          in: body
+          description: "Object User"
           required: true
-          items: 
-            type: string
-        - in: query
-          name: phones
-          description: "array of phones"
-          required: true
-          type: array
-          items: 
-            type: string
+          schema: 
+            type: object
+            properties: 
+              emails: 
+                type: array
+                description: "array of emails"
+                items: 
+                  type: string
+              phones: 
+                type: array
+                items: 
+                  type: string
+
       responses:
         "200":
           description: Success

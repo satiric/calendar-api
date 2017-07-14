@@ -150,6 +150,7 @@ module.exports = {
 
 
     destroy: function(req, res) {
+        var token = Auth.extractAuthKey(req);
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
                 return res.serverError({"data": err});
@@ -159,33 +160,14 @@ module.exports = {
             if(!Array.isArray(emails)) {
                 return res.badRequest({"message": "emails must be an array"});
             }
-            emails = emails.map(function(value) {
-                return {
-                    'email': value, 
-                    'user_id': user.id
-                };
-            });
-            EmailContacts.destroy(emails).exec(function(err){
+            if(!Array.isArray(phones)) {
+                return res.badRequest({"message": "phones must be an array"});
+            }
+            require('../utils/Contacts').destroy(user, emails, phones, function(err, result){
                 if(err) {
                     return res.serverError({"data": err});
                 }
-                
-                if(!Array.isArray(phones)) {
-                    return res.badRequest({"message": "phones must be an array"});
-                }
-                phones = phones.map(function(value) {
-                    return {
-                        'id': PhoneIdentifier.extract(value),
-                        'phone': value,
-                        'user_id': user.id
-                    };
-                });
-                PhoneContacts.destroy(phones).exec(function(err){
-                    if(err) {
-                        return res.serverError({"data": err});
-                    }
-                    return res.ok();
-                });
+                return res.ok();
             });
         });
     }
