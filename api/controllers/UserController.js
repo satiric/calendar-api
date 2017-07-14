@@ -45,7 +45,7 @@ module.exports = {
             if (!user) {
                 return res.badRequest({ "message": "User not found"});
             }
-            User.updateProfile(user, req.param(), function(err, result) {
+            User.updateProfile(user, req.allParams(), function(err, result) {
                 if(err) {
                     return (err instanceof ValidationE || err instanceof LogicE)
                         ? res.badRequest({ "message": err.message })
