@@ -199,6 +199,12 @@ module.exports = {
                 emailsList.push(emails[i].email);
             }
             Email.find({select: ['user_id'], "email": emailsList, user_id: {'!': null} }).populate("user_id").exec(function(err, users) {
+               if(!users.length) {
+                   return cb(err, []);
+               }
+                users = users.map(function(value) {
+                    return value.user_id.id;
+                });
                 User.find({id: users}).populate('avatar').exec(function(err, users){
                     return cb(err, users);
                 });
