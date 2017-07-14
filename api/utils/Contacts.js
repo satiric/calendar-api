@@ -78,6 +78,20 @@ function destroyPhones(phones, cb) {
     PhoneContacts.destroy({ 'or' : phones }).exec(cb);
 }
 
+
+function blockEmails(emails, cb) {
+    if(!emails.length) {
+        return cb();
+    }
+    EmailContacts.update({ 'or' : emails } , {"blocked":1}).exec(cb);
+}
+
+function blockPhones(phones, cb) {
+    if(!phones.length) {
+        return cb();
+    }
+    PhoneContacts.update({ 'or' : phones } , {"blocked":1}).exec(cb);
+}
 // Phone.find(phones).exec(function(err, results){
 //     if(err) {
 //         return cb(err);
@@ -190,6 +204,40 @@ module.exports = {
                 });
             });
         });
+    },
+
+    block: function (user,emails,phones,cb) {
+        if(emails.length) {
+            emails = emails.map(function(value) {
+                return {
+                    'email': value,
+                    'user_id': user.id
+                };
+            });
+        }
+        if(phones.length) {
+            phones = phones.map(function(value) {
+                return {
+                    'phone_id': PhoneIdentifier.extract(value),
+                    'user_id': user.id
+                };
+            });
+        }
+
+        blockEmails(emails, function(err, result) {
+            if(err) {
+                return cb(err);
+            }
+
+            blockPhones(phones, function(err, result){
+                if(err) {
+                    return cb(err);
+                }
+
+                return cb(null, result);
+            });
+        });
+
     },
 
     destroy: function(user, emails, phones, cb) {

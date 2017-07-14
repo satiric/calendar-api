@@ -103,47 +103,14 @@ module.exports = {
             if(!Array.isArray(emails)) {
                 return res.badRequest({"message": "emails must be an array"});
             }
-            emails = emails.map(function(value) {
-                if(!value) {
-                    return value;
-                }
-                return {
-                    'email': value,
-                    'user_id': user.id
-                };
-            });
-            emails = emails.filter(function(val){
-                return (val);
-            });
-
-            EmailContacts.update(emails,{"blocked": 1}).exec(function(err){
+            if(!Array.isArray(phones)) {
+                return res.badRequest({"message": "phones must be an array"});
+            }
+            require('../utils/Contacts').block(user, emails, phones, function(err, result){
                 if(err) {
                     return res.serverError({"data": err});
                 }
-
-                if(!Array.isArray(phones)) {
-                    return res.badRequest({"message": "phones must be an array"});
-                }
-                phones = phones.map(function(value) {
-                    return {
-                        'id': PhoneIdentifier.extract(value),
-                        'phone': value,
-                        'user_id': user.id
-                    };
-                });
-                phones = phones.filter(function(val){
-                    return (val);
-                });
-                if(phones.length){
-                    return PhoneContacts.update(phones, {"blocked":1}).exec(function(err){
-                        if(err) {
-                            return res.serverError({"data": err});
-                        }
-                        return res.ok();
-                    });
-                }
                 return res.ok();
-
             });
         });
     },
