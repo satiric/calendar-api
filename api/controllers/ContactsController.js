@@ -62,7 +62,9 @@ module.exports = {
     invite: function (req, res) {
         var emails = req.param('emails');
         var phones = req.param('phones');
-
+        if( (! phones || ! phones.length) && (! emails || ! emails.length)) {
+            return res.badRequest({"message": "Empty emails and phones arrays"});
+        }
         var token = Auth.extractAuthKey(req);
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
@@ -71,22 +73,35 @@ module.exports = {
 
             var i, size;
             if(phones && phones.length) {
+
                 var msg = user.name + " " + user.second_name + " invited you to vlife-1st ever Calendar-Chat";
                 msg += " app. Connect privately with Work&Social contacts. Click here for more info";
                 for(i = 0, size = phones.length; i < size; i++) {
                     if(!phones[i]) {
                         continue;
                     }
+
                     Twilio.sendMessage(msg,phones[i]);
                 }
             }
             if(emails && emails.length) {
-                for(i = 0, size = emails.length; i < size; i++) {
-                    if(!emails[i]) {
-                        continue;
+                User.find({"email": emails}).exec(function(err, result) {
+                    if(err) {
+                        return res.serverError({"data": err});
                     }
-                    Mailer.sendInviteMessage(user, emails[i], function() {});
-                }
+                    var founeded = [];
+                    if (result.length) {
+                        founeded = result.map(function(value){
+                            return value.email;
+                        });
+                    }
+                    for(i = 0, size = emails.length; i < size; i++) {
+                        if(!emails[i] || founeded.indexOf(emails[i]) !== -1) {
+                            continue;
+                        }
+                        Mailer.sendInviteMessage(user, emails[i], function() {});
+                    }
+                });
             }
             return res.ok();
         });
