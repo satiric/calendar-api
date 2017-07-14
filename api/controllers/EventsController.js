@@ -226,7 +226,7 @@ module.exports = {
                     if( !event || !event.length) {
                         return res.json(403, {"status": "error","message":"Permission denied"});
                     }
-                    return res.ok({"data": {"event":event}});
+                    return res.ok({"data": event });
                 });
             });
 
