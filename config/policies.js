@@ -38,7 +38,11 @@ module.exports.policies = {
 
     ContactsController: {
         '*': ['hasValidHeaders','sessionAuth']
+    },
+    EventsController: {
+        '*': ['hasValidHeaders','sessionAuth']
     }
+
 
     /***************************************************************************
      *                                                                          *
