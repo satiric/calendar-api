@@ -58,7 +58,13 @@ module.exports = {
                 return res.ok({"data": { contacts: result } });
             });
         });
-    }, 
+    },
+    /**
+     * 
+     * @param req
+     * @param res
+     * @returns {*}
+     */
     invite: function (req, res) {
         var emails = req.param('emails');
         var phones = req.param('phones');
@@ -106,6 +112,11 @@ module.exports = {
             return res.ok();
         });
     },
+    /**
+     * 
+     * @param req
+     * @param res
+     */
     block: function(req, res) {
 //todo refactor it
         var token = Auth.extractAuthKey(req);
@@ -129,8 +140,11 @@ module.exports = {
             });
         });
     },
-
-
+    /**
+     * 
+     * @param req
+     * @param res
+     */
     destroy: function(req, res) {
         var token = Auth.extractAuthKey(req);
         UserAuth.getUserByAuthToken(token, function(err, user) {

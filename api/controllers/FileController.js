@@ -11,6 +11,11 @@ module.exports = {
         shortcuts: false,
         rest: false
     },
+    /**
+     * 
+     * @param req
+     * @param res
+     */
 	create: function (req, res) {
         FileManager.uploadFileToS3(req.file('file'), function(err, uploadedFiles) {
             if (err) {

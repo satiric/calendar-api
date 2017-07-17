@@ -20,6 +20,7 @@ module.exports = {
      */
     findMy: function (req, res) {
         var token = Auth.extractAuthKey(req);
+        var date = req.param('date');
         var page = Math.abs(parseInt(req.param('page', 1)));
         var pageSize = Math.abs(parseInt(req.param('pageSize', 10)));
         var keyWord = req.param('keyword');
@@ -31,12 +32,17 @@ module.exports = {
                 return res.badRequest({"message": "User not found"});
             }
             var params = {"founder": user.id, 'active':true};
-            if( keyWord) {
+            if( keyWord ) {
                 params.or = [
                     { title : { 'like': '%'+keyWord+'%' } },
                     { description : { 'like': '%'+keyWord+'%' } }
                 ];
             }
+            if(date) {
+                params.date_start = {'<=': date};
+                params.date_end =  {'>=': date };
+            }
+
 
             Event.find(params).paginate({page: page, limit: pageSize}).exec(function (err, events) {
                 if(err) {
@@ -46,7 +52,29 @@ module.exports = {
                     if(err) {
                         return res.serverError({"data":err});
                     }
-                    return res.ok({"data": events, "page": page, "pageSize": pageSize, "total": count});
+                    params.sphere = 0;
+                    Event.count(params).exec(function (err, countWork) {
+                        if(err) {
+                            return res.serverError({"data":err});
+                        }
+                        params.sphere = 1;
+                        Event.count(params).exec(function (err, countPers) {
+                            if(err) {
+                                return res.serverError({"data":err});
+                            }
+                            var mainPercent = (countWork / count)*100;
+                            return res.ok({
+                                "data": events,
+                                "page": page,
+                                "pageSize": pageSize,
+                                "total": count,
+                                stat: {
+                                    0: mainPercent.toFixed(2),
+                                    1: (100 - mainPercent).toFixed(2)
+                                }
+                            });
+                        });
+                    });
                 });
             });
         });

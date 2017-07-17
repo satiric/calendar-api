@@ -107,6 +107,12 @@ module.exports = {
             return res.ok();
         });
     },
+    /**
+     * todo refactoring
+     * @param req
+     * @param res
+     * @returns {*}
+     */
     changePassword: function (req, res) {
         var token = req.param('token');
         var value = req.param('password');
@@ -162,7 +168,10 @@ module.exports = {
             });
         });
     },
-
+    /**
+     * @param req
+     * @param res
+     */
     resetPassword: function (req, res) {
         'use strict';
         var hash = require("randomstring").generate(45);
@@ -179,6 +188,11 @@ module.exports = {
                 });
             });
     },
+    /**
+     * 
+     * @param req
+     * @param res
+     */
     checkEmail: function (req, res) {
         User.find({'email': req.param('email')}).exec(function (err, user) {
             if (err) {
@@ -190,7 +204,11 @@ module.exports = {
             });
         });
     },
-
+    /**
+     * 
+     * @param req
+     * @param res
+     */
     checkPhone: function (req, res) {
         var noVerify = req.param('noVerify');
         User.findOne({'phone': req.param('phone')}).exec(function (err, user) {
