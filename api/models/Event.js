@@ -104,12 +104,6 @@ types: {
         if(values.description){
             values.description = values.description.trim();
         }
-        if(!values.date_start) {
-            values.date_start = null;
-        }
-        if(!values.date_end) {
-            values.date_end = null;
-        }
         if(!values.end_repeat) {
             values.end_repeat = null;
         }
@@ -118,15 +112,6 @@ types: {
     beforeUpdate: function (values, next) {
         if(values.description){
             values.description = values.description.trim();
-        }
-        if(!values.date_start) {
-            values.date_start = null;
-        }
-        if(!values.date_end) {
-            values.date_end = null;
-        }
-        if(!values.end_repeat) {
-            values.end_repeat = null;
         }
         next();
     },
