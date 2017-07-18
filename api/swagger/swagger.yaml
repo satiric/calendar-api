@@ -176,6 +176,81 @@ definitions:
         type: string
         example: "+1234567899"
         pattern: "\\+([0-9]){9,13}"    
+  
+  EventWithDropInv:
+    type: object
+    required:
+      - title
+      - date_start
+      - date_end
+      - sphere
+    properties:
+      title:
+        type: string
+        example: Meeting near the caffe
+        maxLength: 25
+      sphere: 
+        type: integer
+        description: 0 - Personal, 1 - Work
+      date_start: 
+        type: string
+        format: datetime
+      date_end: 
+        type: string
+        format: datetime
+      repeat_type: 
+        type: integer
+        description: bitmask. 1 - Never, 2 - Day, 4 - Week, 8 - Fortnight, 16 - Month. Available values - only one of it. 
+      repeat_option: 
+        type: integer
+        description: bitmask. 1 - Monday, 2 - Tuesday, 4 - Wednesday, 8 - Thursday, 16 - Friday, 32 - Saturday, 64 - Sunday. For example, 65 is mark for Monday and Sunday, 67 - for Monday, Sunday and Tuesday, 3 - for Monday and Tuesday etc. 
+      end_repeat: 
+        type: string
+        format: datetime
+        description: when repeating must be stopped.
+      description: 
+        type: string
+        description: Description for the event
+      reminds: 
+        type: integer
+        description: Reminds before x seconds.
+      location: 
+        type: string
+        description: google place id or other text for place identification
+      active: 
+        type: boolean
+        description: Status for the event. Default is true. 
+      invites: 
+        type: object
+        properties:
+          users:
+            type: array
+            items: 
+              type: integer
+          phones: 
+            type: array
+            items: 
+              type: string
+          emails:
+            type: array
+            items: 
+              type: string
+      dropped_invites: 
+        type: object
+        properties:
+          users:
+            type: array
+            items: 
+              type: integer
+          phones: 
+            type: array
+            items: 
+              type: string
+          emails:
+            type: array
+            items: 
+              type: string
+        
         
   UserSignup:
     type: object
@@ -983,7 +1058,7 @@ paths:
           description: "Object Event"
           required: true
           schema:
-            "$ref": "#/definitions/Event"
+            "$ref": "#/definitions/EventWithDropInv"
       responses:
         "200":
           description: Success
