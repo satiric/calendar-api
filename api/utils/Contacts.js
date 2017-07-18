@@ -92,6 +92,78 @@ function blockPhones(phones, cb) {
     }
     PhoneContacts.update({ 'or' : phones } , {"blocked":1}).exec(cb);
 }
+
+function cascadeSend(emails, founded, user, current, cb, info) {
+    info = info || [];
+    if(current >= emails.length) {
+        return cb(null, info);
+    }
+    if(!emails[current] || founded.indexOf(emails[current]) !== -1) {
+        return cascadeSend(emails, founded, user, current+1, cb, info);
+    }
+    //todo make as cascade
+    Mailer.sendInviteMessage(user, emails[current], function(err, result) {
+        info.push({
+            'err': err,
+            'result': result,
+            'email': emails[current]
+        });
+        return cascadeSend(emails, founded, user, current+1, cb, info);
+    });
+}
+
+
+function sendEmails(emails, user, cb) {
+    if(!emails || !emails.length) {
+        return cb();
+    }
+    User.find({"email": emails}).exec(function(err, result) {
+        if(err) {
+            return cb(err);
+        }
+        var founded = (Array.isArray(result))
+            ? result.map(function(value){
+                return value.email;
+            })
+            : [];
+
+        cascadeSend(emails, founded, user, 0, function(result) {
+            console.log(result);
+            return cb();
+        });
+    });
+}
+
+
+function sendPhones(phones, user, cb) {
+    if(!phones || !phones.length) {
+        return cb();
+    }
+    var phoneIds = phones.map(function(value){
+        return { phone: { 'like': '%' + PhoneIdentifier.extract(value) } };
+    });
+    User.find({ or: phoneIds }).exec(function(err, result) {
+        if(err) {
+            return cb(err);
+        }
+        var founeded = (Array.isArray(result))
+            ? result.map(function(value){
+            return value.email;
+        })
+            : [];
+
+        var msg = user.name + " " + user.second_name + " invited you to vlife-1st ever Calendar-Chat";
+        msg += " app. Connect privately with Work&Social contacts. Click here for more info";
+        for(var i = 0, size = phones.length; i < size; i++) {
+            if(!phones[i] || founeded.indexOf(phones[i]) !== -1) {
+                continue;
+            }
+            Twilio.sendMessage(msg,phones[i]);
+        }
+        return cb();
+    });
+
+}
 // Phone.find(phones).exec(function(err, results){
 //     if(err) {
 //         return cb(err);
@@ -273,6 +345,19 @@ module.exports = {
                     return cb(err);
                 }
 
+                return cb(null, result);
+            });
+        });
+    },
+    invite: function(emails, phones, inviter, cb) {
+        sendEmails(emails, inviter, function(err, result) {
+            if(err) {
+                return cb(err);
+            }
+            sendPhones(phones, inviter, function(err, result) {
+                if(err) {
+                    return cb(err);
+                }
                 return cb(null, result);
             });
         });

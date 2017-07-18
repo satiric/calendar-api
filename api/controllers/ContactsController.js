@@ -76,40 +76,12 @@ module.exports = {
             if(err) {
                 return res.serverError({"data": err});
             }
-
-            var i, size;
-            if(phones && phones.length) {
-
-                var msg = user.name + " " + user.second_name + " invited you to vlife-1st ever Calendar-Chat";
-                msg += " app. Connect privately with Work&Social contacts. Click here for more info";
-                for(i = 0, size = phones.length; i < size; i++) {
-                    if(!phones[i]) {
-                        continue;
-                    }
-
-                    Twilio.sendMessage(msg,phones[i]);
+            require('../utils/Contacts').invite( emails, phones, user, function(err, result) {
+                if(err) {
+                    return res.serverError({"data": err});
                 }
-            }
-            if(emails && emails.length) {
-                User.find({"email": emails}).exec(function(err, result) {
-                    if(err) {
-                        return res.serverError({"data": err});
-                    }
-                    var founeded = [];
-                    if (result.length) {
-                        founeded = result.map(function(value){
-                            return value.email;
-                        });
-                    }
-                    for(i = 0, size = emails.length; i < size; i++) {
-                        if(!emails[i] || founeded.indexOf(emails[i]) !== -1) {
-                            continue;
-                        }
-                        Mailer.sendInviteMessage(user, emails[i], function() {});
-                    }
-                });
-            }
-            return res.ok();
+                return res.ok({"data": result});
+            });
         });
     },
     /**
