@@ -4,7 +4,7 @@
 
 var ValidationE = require('../exceptions/Validation');
 var PermissionE = require('../exceptions/Permission');
-
+var LogicE = require('../exceptions/Logic');
 function mapUser(list, key) {
     key = key || 'user_id';
     return list.map(function(value) {
@@ -178,7 +178,6 @@ function makeInvite(event, invites, cb) {
         if(err) {
             return cb(err);
         }
-       
         // 3. invite not invited person by phone or email
         inviteGuests(event, notInvited, function(err) {
             if(err) {
@@ -207,18 +206,23 @@ module.exports = {
     create: function(event, userId, cb) {
         event.founder = userId;
         // 1. create event
+        var ei = event.invites;
+        delete event.invites;
         Event.create(event).exec(function (err, result) {
             if(err) {
                 return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
             }
-            if(!event.invites) {
+            if(!ei) {
                 return cb(null, result);
             }
-            makeInvite(result[0], event.invites, cb);
+            sails.log(result);
+            if(!result) {
+                return cb(new LogicE("error wasn't created"));
+            }
+            makeInvite(result, ei, cb);
         });
     },
     update: function(eventId, user, event, cb) {
-
         Event.update({id: eventId, "founder": user.id}, event).exec(function (err, result) {
             if(err) {
                 return cb(err);
