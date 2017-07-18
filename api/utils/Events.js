@@ -169,8 +169,78 @@ function inviteGuests(event, invites, cb) {
 
 }
 
+
+function dropUser(users, event, cb) {
+    if(users && users.length) {
+        var dropUInvite = users.map(function(v) {
+            return {'user_id': v, 'event_id':event.id};
+        });
+        EventInvite.destroy({or:dropUInvite}).exec(function(err){
+            if(err) {
+                return cb(err);
+            }
+            return cb();
+        });
+    }
+    else {
+        return cb();
+    }
+}
+
+function dropEmail(emails, event, cb) {
+    if(emails && emails.length) {
+        var dropEInvite = emails.map(function(v) {
+            return {'email': v, 'event_id':event.id};
+        });
+
+        EventInviteGuest.destroy({or:dropEInvite}).exec(function(err) {
+            if (err) {
+                return cb(err);
+            }
+            return cb();
+        });
+    }
+    else {
+        return cb();
+    }
+
+}
+
+
+function dropPhone(phones, event, cb) {
+    if(phones && phones.length) {
+        var dropPInvite = phones.map(function(v) {
+            return {'phone_id': PhoneIdentifier.extract(v), 'event_id':event.id};
+        });
+        EventInviteGuest.destroy({or:dropPInvite}).exec(function(err){
+            if(err) {
+                return cb(err);
+            }
+            return cb();
+        });
+    }
+    else {
+        return cb();
+    }
+}
+
+function dropInvites(invites, event, cb) {
+    sails.log(event);
+    dropUser(invites.users, event, function(){
+        dropEmail(invites.emails, event, function(){
+            dropPhone(invites.phones, event, function(){
+                return cb();
+            });
+        });
+    });
+}
+
+
 function makeInvite(event, invites, cb) {
     // 2. inviteUsers
+    if(!invites) {
+        return cb();
+    }
     inviteUsers(event, invites, function(err, notInvited, extract){
         if(err) {
             return cb(err);
@@ -217,11 +287,13 @@ module.exports = {
         });
     },
     update: function(eventId, user, event, cb) {
+
+
         Event.update({id: eventId, "founder": user.id}, event).exec(function (err, result) {
             if(err) {
                 return cb(err);
             }
-            if(!event.invites) {
+            if(!event.invites && !event.dropped_invites) {
                 return cb(null, result);
             }
             if( !result || !result.length) {
@@ -231,7 +303,19 @@ module.exports = {
                 if(err) {
                     return cb(err);
                 }
-                return cb(null, event);
+                var droppedInvites = event.dropped_invites;
+                sails.log(droppedInvites);
+                if(droppedInvites) {
+                    return dropInvites(droppedInvites, result[0], function(err){
+                        if(err) {
+                            return cb(err);
+                        }
+                        return cb(null, result[0]);
+                    });
+                }
+                else {
+                    return cb(null, event);
+                }
             });
         });
     }
