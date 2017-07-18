@@ -6,6 +6,7 @@
  */
 var LogicE = require('../exceptions/Logic');
 var ValidationE = require('../exceptions/Validation');
+var PermissionE = require('../exceptions/Permission');
 var UserAuth = require("../utils/UserAuth");
 module.exports = {
     _config: {
@@ -251,6 +252,7 @@ module.exports = {
                 if(!founded) {
                     return res.json(404, {"status":"error", "message": "Event isn't found"});
                 }
+
                 var errorMsg  = Event.hasNotice(req.body);
                 if(errorMsg) {
                     return res.badRequest({"message": errorMsg});
@@ -262,17 +264,15 @@ module.exports = {
                     return res.badRequest({"message": "Incorrect type for date. Is required ISO format"});
                 }
 
-                Event.update({id: eventId, "founder": user.id}, req.body).exec(function (err, event) {
+                require("../utils/Events").update(eventId, user, req.body, function(err, result) {
                     if(err) {
-                        return res.serverError({"data":err});
+                        return (err instanceof PermissionE)
+                            ? res.json(403, {"status": "error","message": err.message})
+                            : res.serverError({"data":err});
                     }
-                    if( !event || !event.length) {
-                        return res.json(403, {"status": "error","message":"Permission denied"});
-                    }
-                    return res.ok({"data": event });
+                    return res.ok({"data":result});
                 });
             });
-
         });
     },
     // search: function (req, res) {

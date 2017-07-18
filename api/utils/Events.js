@@ -3,7 +3,7 @@
  */
 
 var ValidationE = require('../exceptions/Validation');
-
+var PermissionE = require('../exceptions/Permission');
 
 function mapUser(list, key) {
     key = key || 'user_id';
@@ -56,7 +56,8 @@ function inviteUsers(event, invites, cb) {
         // 3. collect all founded user ids
         users = users.concat(mapUser(results));
 
-
+        sails.log("_=_+_+");
+        sails.log(invites.emails);
         // 4. find all users with emails
         User.find({email: invites.emails}).exec(function (err, results) {
             if(err) {
@@ -75,9 +76,6 @@ function inviteUsers(event, invites, cb) {
             } else {
                 users = [];
             }
-
-
-
             // 6. create invite
             EventInvite.create(users).exec(function(err, result){
                 //todo make a send notification
@@ -139,27 +137,34 @@ function inviteGuests(event, invites, cb) {
         return {'id':PhoneIdentifier.extract(value), 'phone': value};
     }), function(err){
         if(err) {
-            cb(err);
+            return cb(err);
         }
-        sendSms(phones, function(){
-            sendEmail(emails, function(){
-                var eventInviteGuest = phones.map(function(value) {
-                    return {"phone_id": PhoneIdentifier.extract(value), "event_id": event.id };
-                });
 
-                eventInviteGuest = eventInviteGuest.concat(
-                    emails.map(function(value) {
-                        return {"email": value, "event_id": event.id };
-                    })
-                );
-                sails.log( eventInviteGuest);
-                EventInviteGuest.create(eventInviteGuest).exec(function(err, result){
-                    if(err) {
-                        return cb(err);
-                    }
-                    return cb(null, result);
+        require('./Contacts').registerEmails(emails, function(err) {
+            if (err) {
+                return cb(err);
+            }
+            sendSms(phones, function(){
+                sendEmail(emails, function(){
+                    var eventInviteGuest = phones.map(function(value) {
+                        return {"phone_id": PhoneIdentifier.extract(value), "event_id": event.id };
+                    });
+
+                    eventInviteGuest = eventInviteGuest.concat(
+                        emails.map(function(value) {
+                            return {"email": value, "event_id": event.id };
+                        })
+                    );
+
+                    EventInviteGuest.create(eventInviteGuest).exec(function(err, result){
+                        if(err) {
+                            return cb(err);
+                        }
+                        return cb(null, result);
+                    });
                 });
             });
+            
         });
     });
 
@@ -167,7 +172,33 @@ function inviteGuests(event, invites, cb) {
 
 }
 
-
+function makeInvite(event, invites, cb) {
+    // 2. inviteUsers
+    inviteUsers(event, invites, function(err, notInvited, extract){
+        if(err) {
+            return cb(err);
+        }
+       
+        // 3. invite not invited person by phone or email
+        inviteGuests(event, notInvited, function(err) {
+            if(err) {
+                return cb(err);
+            }
+            event.invited = extract;
+            if(invites && invites.phones &&  invites.phones.length) {
+                event.invited = event.invited.concat(invites.phones.map(function(value){
+                    return {id:null, value: value, status: null};
+                }));
+            }
+            if(invites && invites.emails &&  invites.emails.length) {
+                event.invited = event.invited.concat(invites.emails.map(function(value){
+                    return {id:null, value: value, status: null};
+                }));
+            }
+            return cb(null, event);
+        });
+    });
+}
 /**
  * contain all business logic for user authorization
  * @type {{login: module.exports.login, refreshToken: module.exports.refreshToken, getByPasswordResetToken: module.exports.getByPasswordResetToken, changePassByToken: module.exports.changePassByToken, changePassByAuthKey: module.exports.changePassByAuthKey, getUserByAuthToken: module.exports.getUserByAuthToken}}
@@ -183,51 +214,27 @@ module.exports = {
             if(!event.invites) {
                 return cb(null, result);
             }
-            // 2. inviteUsers
-            inviteUsers(result, event.invites, function(err, notInvited, extract){
-                if(err) {
-                    return cb(err);
-                }
-                // 3. invite not invited person by phone or email
-                inviteGuests(result, notInvited, function(err) {
-                    if(err) {
-                        return cb(err);
-                    }
-                    result.invited = extract;
-                    if(event.invites && event.invites.phones &&  event.invites.phones.length) {
-                        result.invited = result.invited.concat(event.invites.phones.map(function(value){
-                            return {id:null, value: value, status: null};
-                        }));
-                    }
-                    sails.log(event.invited);
-                    if(event.invites && event.invites.emails &&  event.invites.emails.length) {
-                        result.invited = result.invited.concat(event.invites.emails.map(function(value){
-                            return {id:null, value: value, status: null};
-                        }));
-                    }
-                    sails.log(extract);
-
-                    return cb(null, result);
-                });
-            });
+            makeInvite(result[0], event.invites, cb);
         });
     },
-    update: function(eventId, eventInfo, cb) {
-        Event.update({"id": eventId}, eventInfo).exec(function (err, result) {
+    update: function(eventId, user, event, cb) {
+
+        Event.update({id: eventId, "founder": user.id}, event).exec(function (err, result) {
             if(err) {
                 return cb(err);
             }
-            // 2. inviteUsers
-            inviteUsers(result, event.invites, function(err, notInvited){
+            sails.log(result);
+            if(!event.invites) {
+                return cb(null, result);
+            }
+            if( !result || !result.length) {
+                return cb(new PermissionE("Permission denied"));
+            }
+            makeInvite(result[0], event.invites, function(err){
                 if(err) {
                     return cb(err);
                 }
-                // 3. invite not invited person by phone or email
-                inviteGuests(result, notInvited, function(err) {
-                    if(err) {
-                        return cb(err, result);
-                    }
-                });
+                return cb(null, event);
             });
         });
     }

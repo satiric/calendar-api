@@ -37,7 +37,9 @@ module.exports = {
     sendMultiMessage: function (message, subject, emails, cb) {
         'use strict';
         for(var i = 0, size = emails.length; i < size; i++) {
-            Mailer.sendMessage(message, subject, emails[i]);
+            Mailer.sendMessage(message, subject, emails[i], function() {
+
+            });
         }
         return cb();
     },

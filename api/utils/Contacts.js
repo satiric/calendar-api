@@ -207,6 +207,25 @@ module.exports = {
             });
         });
     },
+    registerEmails: function(emails, cb) {
+
+        Email.find(emails).exec(function(err, results){
+            if(err) {
+                return cb(err);
+            }
+
+            var notFouneded = emails.filter(function(val) {
+                return !(_.find(results, { 'email':val }));
+            });
+            notFouneded = notFouneded.map(function(value){
+                return {"email": value};
+            });
+            //at first - create phones that not founded
+            Email.create(notFouneded).exec(function(err, result) {
+                return cb(err,result);
+            });
+        });
+    },
     create: function(userId, contacts, cb) {
         var emails = []; //for search, just list of emails
         var emailSubscribe = [];

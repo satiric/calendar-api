@@ -19,7 +19,9 @@ module.exports = {
     sendMultiMessage: function (message, phones, cb) {
         message = message || "";
         for(var i = 0, size = phones.length; i < size; i++) {
-            Twilio.sendMessage(message, phones[i]);
+            Twilio.sendMessage(message, phones[i], function(){
+
+            });
         }
         return cb();
     }
