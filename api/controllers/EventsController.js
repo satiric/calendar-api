@@ -63,7 +63,7 @@ module.exports = {
                             if(err) {
                                 return res.serverError({"data":err});
                             }
-                            var mainPercent = (countWork / count)*100;
+                            var mainPercent = (!countWork || ! countWork) ? 0 : (countWork / count)*100;
                             return res.ok({
                                 "data": events,
                                 "page": page,
