@@ -56,8 +56,6 @@ function inviteUsers(event, invites, cb) {
         // 3. collect all founded user ids
         users = users.concat(mapUser(results));
 
-        sails.log("_=_+_+");
-        sails.log(invites.emails);
         // 4. find all users with emails
         User.find({email: invites.emails}).exec(function (err, results) {
             if(err) {
@@ -66,8 +64,7 @@ function inviteUsers(event, invites, cb) {
             //4.1 remove invited emails
             invites.emails = filterEmails(results, invites.emails);
             // 5. collect all founded user ids
-            sails.log('---');
-            sails.log(results);
+
             users = users.concat(mapUser(results, 'id'));
             if(users.length) {
                 users = users.map(function(value) {
@@ -206,20 +203,17 @@ module.exports = {
     create: function(event, userId, cb) {
         event.founder = userId;
         // 1. create event
-        var ei = event.invites;
-        delete event.invites;
         Event.create(event).exec(function (err, result) {
             if(err) {
                 return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
             }
-            if(!ei) {
+            if(!event.invites) {
                 return cb(null, result);
             }
-            sails.log(result);
             if(!result) {
                 return cb(new LogicE("error wasn't created"));
             }
-            makeInvite(result, ei, cb);
+            makeInvite(result, event.invites, cb);
         });
     },
     update: function(eventId, user, event, cb) {
@@ -227,7 +221,6 @@ module.exports = {
             if(err) {
                 return cb(err);
             }
-            sails.log(result);
             if(!event.invites) {
                 return cb(null, result);
             }
