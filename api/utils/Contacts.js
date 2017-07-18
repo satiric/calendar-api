@@ -36,6 +36,9 @@ function registEmails(emails, emailSubscribe, cb) {
 
 function registPhones(phones, phonesRecords, phonesSubscribe, cb) {
     //1. find phones from contact in dictionary
+    if(!phones.length) {
+        return cb();
+    }
     Phone.find(phones).exec(function(err, results){
         if(err) {
             return cb(err);
@@ -210,6 +213,7 @@ module.exports = {
         var phones = [];
         var phoneSubscribe = [];
         var phonesRecords = [];
+        var j, size;
         for(var i = 0, sizeContacts = contacts.length; i < sizeContacts; i++) {
             contacts[i].emails = contacts[i].emails || [];
             contacts[i].phones = contacts[i].phones || [];
@@ -224,7 +228,10 @@ module.exports = {
                 emailSubscribe.push({"email": contacts[i].emails[j], "user_id": parseInt(userId)});
             }
             for (j = 0, size =  contacts[i].phones.length; j < size; j++) {
+                sails.log("++++");
+                sails.log(contacts[i].phones[j]);
                 if(!contacts[i].phones[j] || ! PhoneIdentifier.extract(contacts[i].phones[j])) {
+                    sails.log('---------');
                     continue;
                 }
                 phones.push({"id": PhoneIdentifier.extract(contacts[i].phones[j])});
