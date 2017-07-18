@@ -281,7 +281,7 @@ module.exports = {
             UserAuth.refreshToken(token, req.param('refresh_token'), 60 * 60 * 24 * 30 * 1000, function (err, newToken) {
                 if (err) {
                     return (err instanceof LogicE)
-                        ? res.badRequest({"message": err.message})
+                        ? res.json(404, {"message": err.message})
                         : res.serverError({"details": err});
                 }
                 User.findOne({"id": user.id}).populate("avatar").exec(function(err, user) {
