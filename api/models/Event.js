@@ -16,11 +16,13 @@ module.exports = {
         },
         date_start: {
             required: true,
-            type: "datetime"
+            type: "datetime",
+   //         isISOdatetime: true
         },
         date_end: {
             required: true,
-            type: "datetime"
+            type: "datetime",
+      //      isISOdatetime: true
         },
         repeat_type: {
             type: "integer",
@@ -30,7 +32,8 @@ module.exports = {
             type: "integer"
         },
         end_repeat: {
-            type: "datetime"
+            type: "datetime",
+      //      isISOdatetime: true
         },
         location: {
             type: "string"
@@ -60,6 +63,9 @@ types: {
         value = value.trim();
         return (value.length === oldLen);
     }
+    // isISOdatetime: function (value) {
+    //     return /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(?:(\.\d+([+-][0-2]\d:[0-5]\d|Z))|)/.test(value.toISOString());
+    // }
 },
 
     validationMessages: { //hand for i18n & l10n
@@ -105,6 +111,10 @@ types: {
             values.description = values.description.trim();
         }
         next();
+    },
+    
+    isoDate: function(date) {
+        return /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(?:(\.\d+([+-][0-2]\d:[0-5]\d|Z))|)/.test(date);
     },
 
     hasNotice: function(event) {

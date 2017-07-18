@@ -206,14 +206,19 @@ module.exports = {
         var token = Auth.extractAuthKey(req);
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
-                return res.serverError({"details": err});
+                return res.serverError({"data": err});
             }
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
+
             var errorMsg  = Event.hasNotice(req.body);
             if(errorMsg) {
                 return res.badRequest({"message": errorMsg});
+            } //todo do with it something
+            if(!Event.isoDate(req.body.date_start) || !Event.isoDate(req.body.date_end) ||
+                (req.body.end_repeat && !Event.isoDate(req.body.end_repeat) )) {
+                return res.badRequest({"message": "Incorrect type for date. Is required ISO format"});
             }
             require('../utils/Events').create(req.body, user.id, function(err, result) {
                 if(err) {
@@ -250,6 +255,13 @@ module.exports = {
                 if(errorMsg) {
                     return res.badRequest({"message": errorMsg});
                 }
+
+                if((req.body.date_start && !Event.isoDate(req.body.date_start)) ||
+                    (req.body.date_end && !Event.isoDate(req.body.date_end)) ||
+                    (req.body.end_repeat && !Event.isoDate(req.body.end_repeat) )) {
+                    return res.badRequest({"message": "Incorrect type for date. Is required ISO format"});
+                }
+
                 Event.update({id: eventId, "founder": user.id}, req.body).exec(function (err, event) {
                     if(err) {
                         return res.serverError({"data":err});
