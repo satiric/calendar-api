@@ -423,13 +423,13 @@ definitions:
         type: integer
       total:
         type: integer
-      stat: 
+      percentage: 
         type: object
         properties: 
-          "0": 
+          personal: 
             type: number
             format: float
-          "1": 
+          work: 
             type: number
             format: float
   AuthResponse:

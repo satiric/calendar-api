@@ -68,9 +68,9 @@ module.exports = {
                                 "page": page,
                                 "pageSize": pageSize,
                                 "total": count,
-                                stat: {
-                                    0: mainPercent.toFixed(2),
-                                    1: (100 - mainPercent).toFixed(2)
+                                percentage: {
+                                    personal: mainPercent.toFixed(2),
+                                    work: (100 - mainPercent).toFixed(2)
                                 }
                             });
                         });
@@ -161,6 +161,9 @@ module.exports = {
             Event.findOne(eventId).populate("founder").exec(function (err, event) {
                 if(err) {
                     return res.serverError({"data":err});
+                }
+                if(!event) {
+                    return res.badRequest({"message":"Event not exist"});
                 }
                 EventInvite.find({'event_id': eventId }).populate('user_id').exec(function(err, invited){
                     if(err) {
