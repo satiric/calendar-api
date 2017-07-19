@@ -11,7 +11,8 @@ module.exports = {
             trimSpaces: true
         },
         sphere: {
-            type: "integer"
+            type: "integer",
+            isSphere: true
            // enum: ['Personal', 'Work']
         },
         date_start: {
@@ -62,6 +63,9 @@ types: {
         var oldLen = value.length;
         value = value.trim();
         return (value.length === oldLen);
+    },
+    isSphere: function (value) {
+        return (value === 1 || value === 0);
     }
     // isISOdatetime: function (value) {
     //     return /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(?:(\.\d+([+-][0-2]\d:[0-5]\d|Z))|)/.test(value.toISOString());
@@ -78,10 +82,15 @@ types: {
             datetime: 'Invalid type for Date end. Date end format is UTC',
         },
         title: {
+            required: 'Title is required',
             trimSpaces: 'Title should not contain spaces',
+            maxLength: "Description must be less than 26 symbols"
         },
         description: {
             maxLength: "Description must be less than 200 symbols"
+        },
+        sphere:  {
+            isSphere: "Sphere must be only 1 or 0"
         }
 
         // second_name: {

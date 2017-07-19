@@ -291,7 +291,7 @@ module.exports = {
 
         Event.update({id: eventId, "founder": user.id}, event).exec(function (err, result) {
             if(err) {
-                return cb(err);
+                return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
             }
             if(!event.invites && !event.dropped_invites) {
                 return cb(null, result);

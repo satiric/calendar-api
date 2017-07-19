@@ -266,9 +266,13 @@ module.exports = {
 
                 require("../utils/Events").update(eventId, user, req.body, function(err, result) {
                     if(err) {
-                        return (err instanceof PermissionE)
-                            ? res.json(403, {"status": "error","message": err.message})
-                            : res.serverError({"data":err});
+                        if (err instanceof PermissionE) {
+                            return res.json(403, {"status": "error","message": err.message});
+                        }
+                        if (err instanceof ValidationE) {
+                            return res.badRequest({"message": err.message});
+                        } 
+                        return res.serverError({"data":err});
                     }
                     return res.ok({"data":result});
                 });

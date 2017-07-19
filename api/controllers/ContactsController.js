@@ -78,7 +78,8 @@ module.exports = {
             }
             require('../utils/Contacts').invite( emails, phones, user, function(err, result) {
                 if(err) {
-                    return res.serverError({"data": err});
+                    return (err instanceof LogicE) ? res.badRequest({"message": err.message})
+                        : res.serverError({"data": err});
                 }
                 return res.ok({"data": result});
             });
@@ -105,6 +106,34 @@ module.exports = {
                 return res.badRequest({"message": "phones must be an array"});
             }
             require('../utils/Contacts').block(user, emails, phones, function(err, result){
+                if(err) {
+                    return res.serverError({"data": err});
+                }
+                return res.ok();
+            });
+        });
+    },
+    /**
+     *
+     * @param req
+     * @param res
+     */
+    unblock: function(req, res) {
+//todo refactor it
+        var token = Auth.extractAuthKey(req);
+        UserAuth.getUserByAuthToken(token, function(err, user) {
+            if(err) {
+                return res.serverError({"data": err});
+            }
+            var emails = req.param('emails');
+            var phones = req.param('phones');
+            if(!Array.isArray(emails)) {
+                return res.badRequest({"message": "emails must be an array"});
+            }
+            if(!Array.isArray(phones)) {
+                return res.badRequest({"message": "phones must be an array"});
+            }
+            require('../utils/Contacts').unblock(user, emails, phones, function(err, result){
                 if(err) {
                     return res.serverError({"data": err});
                 }

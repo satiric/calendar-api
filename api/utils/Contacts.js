@@ -1,4 +1,4 @@
-/**
+/** todo refactor it
  * Created by decadal on 01.07.17.
  */
 var LogicE = require('../exceptions/Logic');
@@ -53,9 +53,6 @@ function registPhones(phones, phonesRecords, phonesSubscribe, cb) {
             if(err) {
                 return cb(err);
             }
-
-            sails.log(phonesSubscribe);
-
             //at second - subcribe to all
             PhoneContacts.batchInsert(phonesSubscribe, function(err, result){
                 if(err) {
@@ -96,6 +93,22 @@ function blockPhones(phones, cb) {
     PhoneContacts.update({ 'or' : phones } , {"blocked":1}).exec(cb);
 }
 
+
+function unblockEmails(emails, cb) {
+    if(!emails.length) {
+        return cb();
+    }
+    EmailContacts.update({ 'or' : emails } , {"blocked":null}).exec(cb);
+}
+
+function unblockPhones(phones, cb) {
+    if(!phones.length) {
+        return cb();
+    }
+    PhoneContacts.update({ 'or' : phones } , {"blocked":null}).exec(cb);
+}
+
+
 function cascadeSend(emails, founded, user, current, cb, info) {
     info = info || [];
     if(current >= emails.length) {
@@ -106,21 +119,37 @@ function cascadeSend(emails, founded, user, current, cb, info) {
     }
     //todo make as cascade
     Mailer.sendInviteMessage(user, emails[current], function(err, result) {
-        info.push({
-            'err': err,
-            'result': result,
-            'email': emails[current]
-        });
+        if(err) {
+            info.push({
+                'message': err,
+                'email': emails[current]
+            });
+        }
         return cascadeSend(emails, founded, user, current+1, cb, info);
     });
 }
 
+function validateEmail(email) {
+    return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email);
+}
+function validatePhone(phone) {
+    return true; //  /\+([0-9]){9,13}/  - dont use
+}
 
 function sendEmails(emails, user, cb) {
     if(!emails || !emails.length) {
         return cb();
     }
-    User.find({"email": emails}).exec(function(err, result) {
+    for (var i = 0, size = emails.length; i < size; i++) {
+        if(!validateEmail(emails[i])) {
+            return cb(new LogicE("email '" + emails[i] + "' isn't valid" ));
+        }
+    }
+
+    var prepEmails = emails.map(function(value) {
+        return {"email": value};
+    });
+    User.find({or: prepEmails }).exec(function(err, result) {
         if(err) {
             return cb(err);
         }
@@ -131,17 +160,23 @@ function sendEmails(emails, user, cb) {
             : [];
 
         cascadeSend(emails, founded, user, 0, function(result) {
-            console.log(result);
-            return cb();
+            return cb(null, result);
         });
     });
 }
 
-
+//todo make cascade
 function sendPhones(phones, user, cb) {
     if(!phones || !phones.length) {
         return cb();
     }
+    for (var i = 0, size = phones.length; i < size; i++) {
+        if(!validatePhone(phones[i])) {
+            return cb(new LogicE("phone '" + phones[i] + "' isn't valid" ));
+        }
+    }
+
+    var notice = [];
     var phoneIds = phones.map(function(value){
         return { phone: { 'like': '%' + PhoneIdentifier.extract(value) } };
     });
@@ -151,19 +186,20 @@ function sendPhones(phones, user, cb) {
         }
         var founeded = (Array.isArray(result))
             ? result.map(function(value){
-            return value.email;
+            return PhoneIdentifier.extract(value.phone);
         })
             : [];
 
         var msg = user.name + " " + user.second_name + " invited you to vlife-1st ever Calendar-Chat";
         msg += " app. Connect privately with Work&Social contacts. Click here for more info";
         for(var i = 0, size = phones.length; i < size; i++) {
-            if(!phones[i] || founeded.indexOf(phones[i]) !== -1) {
+            if(!phones[i] || founeded.indexOf(PhoneIdentifier.extract(phones[i])) !== -1) {
+                notice.push({"phone": phones[i], "message": "is not invited: invalid phone or user is exists"});
                 continue;
             }
             Twilio.sendMessage(msg,phones[i]);
         }
-        return cb();
+        return cb(null, notice);
     });
 
 }
@@ -247,10 +283,7 @@ module.exports = {
                 emailSubscribe.push({"email": contacts[i].emails[j], "user_id": parseInt(userId)});
             }
             for (j = 0, size =  contacts[i].phones.length; j < size; j++) {
-                sails.log("++++");
-                sails.log(contacts[i].phones[j]);
                 if(!contacts[i].phones[j] || ! PhoneIdentifier.extract(contacts[i].phones[j])) {
-                    sails.log('---------');
                     continue;
                 }
                 phones.push({"id": PhoneIdentifier.extract(contacts[i].phones[j])});
@@ -327,12 +360,10 @@ module.exports = {
                 };
             });
         }
-
         blockEmails(emails, function(err, result) {
             if(err) {
                 return cb(err);
             }
-
             blockPhones(phones, function(err, result){
                 if(err) {
                     return cb(err);
@@ -341,7 +372,35 @@ module.exports = {
                 return cb(null, result);
             });
         });
-
+    },
+    unblock: function (user,emails,phones,cb) {
+        if(emails.length) {
+            emails = emails.map(function(value) {
+                return {
+                    'email': value,
+                    'user_id': user.id
+                };
+            });
+        }
+        if(phones.length) {
+            phones = phones.map(function(value) {
+                return {
+                    'phone_id': PhoneIdentifier.extract(value),
+                    'user_id': user.id
+                };
+            });
+        }
+        unblockEmails(emails, function(err, result) {
+            if(err) {
+                return cb(err);
+            }
+            unblockPhones(phones, function(err, result){
+                if(err) {
+                    return cb(err);
+                }
+                return cb(null, result);
+            });
+        });
     },
 
     destroy: function(user, emails, phones, cb) {
@@ -376,15 +435,19 @@ module.exports = {
         });
     },
     invite: function(emails, phones, inviter, cb) {
+        
+        var results = {};
         sendEmails(emails, inviter, function(err, result) {
             if(err) {
                 return cb(err);
             }
+            results.emails = result;
             sendPhones(phones, inviter, function(err, result) {
                 if(err) {
                     return cb(err);
                 }
-                return cb(null, result);
+                results.phones = result;
+                return cb(null, results);
             });
         });
     }
