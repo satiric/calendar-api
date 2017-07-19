@@ -43,9 +43,8 @@ module.exports = {
                 params.date_start = {'<=': date};
                 params.date_end =  {'>=': date };
             }
-
-
-            Event.find(params).sort({date_start: 'asc'}).paginate({page: page, limit: pageSize}).exec(function (err, events) {
+            
+            Event.find(params).populate('founder').sort({date_start: 'asc'}).paginate({page: page, limit: pageSize}).exec(function (err, events) {
                 if(err) {
                     return res.serverError({"data":err});
                 }
