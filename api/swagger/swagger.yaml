@@ -402,6 +402,9 @@ definitions:
           type: string 
         status: 
           type: integer
+        type: 
+          type: integer
+          description: 1 - user, 2 - phone, 3 - email
           
   EventWithInvites:
     type: object
@@ -1103,7 +1106,7 @@ paths:
     get:
       tags: 
       - event
-      description: get detail event
+      description: get invited to event
       # used as the method name of the controller
       operationId: getInvitedUser
       parameters:
