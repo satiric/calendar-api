@@ -111,6 +111,53 @@ module.exports = {
             });
         });
     },
+    /**
+     * find from all
+     * @param req
+     * @param res
+     */
+    findInvited: function (req, res) {
+        var token = Auth.extractAuthKey(req);
+        var page = Math.abs(parseInt(req.param('page', 1)));
+        var pageSize = Math.abs(parseInt(req.param('pageSize', 10)));
+        var eventId = req.param('id');
+        UserAuth.getUserByAuthToken(token, function(err, user) {
+            if(err) {
+                return res.serverError({"data": err});
+            }
+            if(!user) {
+                return res.badRequest({"message": "User not found"});
+            }
+            var params = {"id": eventId, 'active':true};
+            Event.findOne(params).exec(function (err, events) {
+                if(err) {
+                    return res.serverError({"data":err});
+                }
+                EventInvite.find({"event_id":eventId}).paginate({page: page, limit: pageSize}).exec(function(err, result){
+                    if(err) {
+                        return res.serverError({"data":err});
+                    }
+                    EventInvite.count({"event_id":eventId}).exec(function (err, count) {
+                        if(err) {
+                            return res.serverError({"data":err});
+                        }
+                        return res.ok({
+                            "data": result,
+                            "page": page,
+                            "pageSize": pageSize,
+                            "total": count
+                        });
+
+                    });
+                });
+                // Event.count(params).exec(function (err, count) {
+                //     if(err) {
+                //         return res.serverError({"data":err});
+                //     }
+             //   });
+            });
+        });
+    },
 
     //
     // /**

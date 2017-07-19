@@ -21,7 +21,6 @@
  */
 
 module.exports.routes = {
-
     /***************************************************************************
      *                                                                          *
      * Make the view located at `views/homepage.ejs` (or `views/homepage.jade`, *
@@ -159,13 +158,16 @@ module.exports.routes = {
         controller: 'EventsController',
         action: 'update'
     },
+    'get /api/v1/events/:id/invited': {
+        controller: 'EventsController',
+        action: 'findInvited'
+    },
 
     // swagger ----
     'get /swagger/doc': {
         controller: 'SwaggerController',
         action: 'doc'
-    },
-
+    }
 
     /***************************************************************************
      *                                                                          *

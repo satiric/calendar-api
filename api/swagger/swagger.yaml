@@ -507,6 +507,34 @@ definitions:
           work: 
             type: number
             format: float
+            
+  InvitedUser: 
+    properties:
+      user_id:
+        type: integer
+      event_id: 
+        type: integer
+      status: 
+        type: integer
+            
+  InvitedToEvent: 
+    required: 
+      - data
+      - page 
+      - pageSize
+      - total
+    properties:
+      data:
+        type: array
+        items: 
+          "$ref": "#/definitions/InvitedUser"
+      page: 
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+            
   AuthResponse:
     required:
       - status
@@ -1071,6 +1099,44 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResp"
 
+  /events/{id}/invited:
+    get:
+      tags: 
+      - event
+      description: get detail event
+      # used as the method name of the controller
+      operationId: getInvitedUser
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - $ref: "#/parameters/auth-token-required"
+        - name: id
+          in: path
+          description: events id
+          required: true
+          type: integer
+          format: int64
+        - name: page
+          in: query
+          description: page
+          type: integer
+
+        - name: pageSize
+          in: query
+          description: pagesize
+          type: integer
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/InvitedToEvent"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResp"
+            
   /events/detail/{id}:
     get:
       tags: 
