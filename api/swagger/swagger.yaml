@@ -1288,6 +1288,46 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResp"
+  /contacts/unblock:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: ContactsController
+    put:
+      tags: 
+      - contacts
+      description: Unblock contacts 
+      # used as the method name of the controller
+      operationId: unblockContacts
+      parameters:
+        - $ref: "#/parameters/vlife-key"
+        - $ref: "#/parameters/auth-token-required"
+        - name: body
+          in: body
+          description: "Object with emails and phones for block"
+          required: true
+          schema: 
+            type: object
+            properties: 
+              emails: 
+                type: array
+                description: "array of emails"
+                items: 
+                  type: string
+              phones: 
+                type: array
+                items: 
+                  type: string
+
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/SuccessResponse"
+
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResp"
           
   /swagger:
     x-swagger-pipe: swagger_raw

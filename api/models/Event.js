@@ -146,6 +146,6 @@ types: {
                 return "end_repeat must be more than date_end";
             }
         }
-        return undefined;
+        return undefined; //todo remove?
     }
 };

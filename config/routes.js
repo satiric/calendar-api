@@ -133,6 +133,10 @@ module.exports.routes = {
         controller: 'ContactsController',
         action: 'block'
     },
+    'put /api/v1/contacts/unblock': {
+        controller: 'ContactsController',
+        action: 'unblock'
+    },
 
     // events ----
     'get /api/v1/myEvents': {
