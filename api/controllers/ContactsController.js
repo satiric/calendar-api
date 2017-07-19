@@ -51,9 +51,11 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
+
             require('../utils/Contacts').create(user.id, contacts, function(err, result) {
                 if(err) {
-                    return res.serverError({"data":err});
+                    return (err.Errors) ? res.badRequest({"message": (new ValidationE(err)).message})
+                        : res.serverError({"data": err});
                 }
                 return res.ok({"data":  result  });
             });

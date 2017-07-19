@@ -232,7 +232,7 @@ module.exports = {
                         for (var i = 0, size = invited.length; i < size; i++) {
                             inv.push({
                                 "id": null,
-                                status: null,
+                                status: 0,
                                 "value": (invited[i].phone_id || invited[i].email),
                                 type: ((invited[i].phone_id ) ? 2 : 3)
                             });
