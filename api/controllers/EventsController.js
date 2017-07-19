@@ -221,7 +221,8 @@ module.exports = {
                         return {
                             id: value.user_id.id,
                             status: value.status,
-                            value: value.user_id.name + " " + value.user_id.second_name
+                            value: value.user_id.name + " " + value.user_id.second_name,
+                            type: 1 //user
                         };
                     });
                     EventInviteGuest.find({'event_id': eventId }).exec(function(err, invited) {
@@ -233,7 +234,8 @@ module.exports = {
                             inv.push({
                                 "id": null,
                                 status: null,
-                                "value": (invited[i].phone_id || invited[i].email)
+                                "value": (invited[i].phone_id || invited[i].email),
+                                type: ((invited[i].phone_id ) ? 2 : 3)
                             });
                         }
                         event.invited = inv;
@@ -318,7 +320,11 @@ module.exports = {
                         }
                         if (err instanceof ValidationE) {
                             return res.badRequest({"message": err.message});
-                        } 
+                        }
+                        if(err.Errors) {
+                            err = new ValidationE(err);
+                            return res.badRequest({"message": err.message});
+                        }
                         return res.serverError({"data":err});
                     }
                     return res.ok({"data":result});
