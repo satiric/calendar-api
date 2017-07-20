@@ -147,5 +147,29 @@ types: {
             }
         }
         return undefined; //todo remove?
+    },
+
+    /**
+     * select userInfo and avatar for each founder 
+     * @param events
+     * @param cb
+     */
+    extendEvent: function(events, cb) {
+        var userIds = events.map(function(value) {
+            return value.founder;
+        });
+        User.find({id: userIds}).populate('avatar').exec(function(err, users){
+            if(err) {
+                return cb(err);
+            }
+            events = events.map(function(value){
+                var id = value.founder;
+                value.founder = users.find(function (element){
+                    return element.id === id;
+                });
+                return value;
+            });
+            return cb(null, events);
+        });
     }
 };

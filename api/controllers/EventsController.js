@@ -140,13 +140,18 @@ module.exports = {
                         if(err) {
                             return res.serverError({"data":err});
                         }
-                        return res.ok({
-                            "data": result,
-                            "page": page,
-                            "pageSize": pageSize,
-                            "total": count
+                     
+                        EventInvite.extendEventInvite(result, function(err, ei){
+                            if(err) {
+                                return res.serverError({"data":err});
+                            }
+                            return res.ok({
+                                "data": ei,
+                                "page": page,
+                                "pageSize": pageSize,
+                                "total": count
+                            });
                         });
-
                     });
                 });
                 // Event.count(params).exec(function (err, count) {
@@ -260,7 +265,6 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
-
             var errorMsg  = Event.hasNotice(req.body);
             if(errorMsg) {
                 return res.badRequest({"message": errorMsg});
@@ -273,7 +277,12 @@ module.exports = {
                 if(err) {
                     return (err instanceof ValidationE) ? res.badRequest({"message": err.message}) : res.serverError({"data":err});
                 }
-                return res.ok({"data": result});
+                Event.extendEvent([result], function(err, event){
+                    if(err) {
+                        return res.serverError({"data":err});
+                    }
+                    return res.ok({"data": event[0]});
+                });
             });
         });
     },
@@ -326,7 +335,12 @@ module.exports = {
                         }
                         return res.serverError({"data":err});
                     }
-                    return res.ok({"data":result});
+                    Event.extendEvent(result, function(err, event){
+                        if(err) {
+                            return res.serverError({"data":err});
+                        }
+                        return res.ok({"data": event[0]});
+                    });
                 });
             });
         });

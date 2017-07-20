@@ -22,6 +22,13 @@ module.exports = {
         //     via: 'email'
         // }
     },
+    validationMessages: { //hand for i18n & l10n
+        id: {
+            required: "Phone id (10 numerals) is required",
+            type: "Phone id must be string"
+        },
+    },
+
 };
 
 

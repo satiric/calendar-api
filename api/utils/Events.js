@@ -77,7 +77,7 @@ function inviteUsers(event, invites, cb) {
             EventInvite.create(users).exec(function(err, result){
                 //todo make a send notification
                 if(err) {
-                    return cb(err);
+                    return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
                 }
 
                 //array with id, status and value for user
@@ -164,9 +164,6 @@ function inviteGuests(event, invites, cb) {
             
         });
     });
-
-
-
 }
 
 
@@ -252,13 +249,18 @@ function makeInvite(event, invites, cb) {
             }
             event.invited = extract;
             if(invites && invites.phones &&  invites.phones.length) {
+                // for (var i = 0, size = invites.phone.length; i < size; i++ ) {
+                //     if (!PhoneIdentifier.extract(invites.phones[i])) {
+                //         return cb(new );
+                //     }
+                // }
                 event.invited = event.invited.concat(invites.phones.map(function(value){
-                    return {id:null, value: value, status: null};
+                    return {id:null, value: value, status: 0, type: 2};
                 }));
             }
             if(invites && invites.emails &&  invites.emails.length) {
                 event.invited = event.invited.concat(invites.emails.map(function(value){
-                    return {id:null, value: value, status: null};
+                    return {id:null, value: value, status: 0, type: 3};
                 }));
             }
             return cb(null, event);
@@ -288,7 +290,6 @@ module.exports = {
     },
     update: function(eventId, user, event, cb) {
 
-
         Event.update({id: eventId, "founder": user.id}, event).exec(function (err, result) {
             if(err) {
                 return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
@@ -304,7 +305,6 @@ module.exports = {
                     return cb(err);
                 }
                 var droppedInvites = event.dropped_invites;
-                sails.log(droppedInvites);
                 if(droppedInvites) {
                     return dropInvites(droppedInvites, result[0], function(err){
                         if(err) {
@@ -320,4 +320,3 @@ module.exports = {
         });
     }
 };
-

@@ -210,7 +210,26 @@ module.exports = {
         });
 
     },
-
+    /**
+     *
+     * @param ids
+     * @param cb
+     */
+    getFullUser: function(ids, cb) {
+        if(!Array.isArray(ids)) {
+            ids = +ids;
+        }
+        else {
+            ids = ids.join(',');
+        }
+        if(!ids) {
+            return cb();
+        }
+        var query = "SELECT * FROM user as u LEFT JOIN  file as f ON f.id = u.avatar WHERE u.id = ? ";
+        User.query(query, [ids], function(err, result){
+            return cb(err, result);
+        });
+    },
 //todo rework
     beforeCreate: function (values, next) {
         PasswordEncoder.bcryptEncode(values, next);

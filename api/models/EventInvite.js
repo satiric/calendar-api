@@ -19,6 +19,27 @@ module.exports = {
             model: 'User',
             primaryKey: true
         }
+    }, 
+    extendEventInvite: function(ei, cb) {
+            var userIds = ei.map(function(value) {
+                return value.user_id;
+            });
+        sails.log(userIds);
+            User.find({id: userIds}).populate('avatar').exec(function(err, users){
+                if(err) {
+                    return cb(err);
+                }
+                sails.log(users);
+                ei = ei.map(function(value){
+                    var id = value.user_id;
+                    value.user = users.find(function (element){
+                        return element.id === id;
+                    });
+                    return value;
+                });
+                return cb(null, ei);
+            });
+        
     }
     // validationMessages: { //hand for i18n & l10n
     //     email: {
