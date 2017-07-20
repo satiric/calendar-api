@@ -83,9 +83,8 @@ module.exports = {
             if (err) {
                 return res.json(401, {"status": "error", "message": err.message});
             }
-
             if (!result) {
-                return res.json(401, {"status": "error", "message": 'Invalid username/password combination.'});
+                return res.json(400, {"status": "error", "message": 'Invalid username/password combination.'});
             }
             return res.ok({"data":result});
         });
@@ -270,7 +269,6 @@ module.exports = {
     refresh: function (req, res) {
         var token = Auth.extractAuthKey(req);
         //todo refactor it
-
         UserAuth.getUserByAuthToken(token, function (err, user) {
             if (err) {
                 return res.serverError({"details": err});
