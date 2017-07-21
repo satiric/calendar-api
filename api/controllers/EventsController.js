@@ -358,14 +358,19 @@ module.exports = {
                         }
                         return res.serverError({"data":err});
                     }
-
-                    Event.extendEvent([founded], function(err, event){
+                    Event.findOne(founded.id).exec(function(err, resultEvent) {
                         if(err) {
-                            return res.serverError({"data":err});
-                        } //todo make error
-                        var response = (event) ? event[0] : null;
-                        return res.ok({"data": response});
+                            return res.serverError({"data": err});
+                        }
+                        Event.extendEvent([resultEvent], function(err, event){
+                            if(err) {
+                                return res.serverError({"data":err});
+                            } 
+                            var response = (event) ? event[0] : null;
+                            return res.ok({"data": response});
+                        });
                     });
+
                 });
             });
         });
