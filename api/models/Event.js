@@ -155,6 +155,9 @@ types: {
      * @param cb
      */
     extendEvent: function(events, cb) {
+        if(!events || !events.length) {
+            return cb();
+        }
         var userIds = events.map(function(value) {
             return value.founder;
         });

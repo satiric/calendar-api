@@ -44,7 +44,7 @@ module.exports = {
                 params.date_end =  {'>=': date };
             }
             
-            Event.find(params).populate('founder').sort({date_start: 'asc'}).paginate({page: page, limit: pageSize}).exec(function (err, events) {
+            Event.find(params).sort({date_start: 'asc'}).paginate({page: page, limit: pageSize}).exec(function (err, events) {
                 if(err) {
                     return res.serverError({"data":err});
                 }
@@ -62,16 +62,22 @@ module.exports = {
                             if(err) {
                                 return res.serverError({"data":err});
                             }
-                            var mainPercent = (!count) ? 0 : (countWork / count)*100;
-                            return res.ok({
-                                "data": events,
-                                "page": page,
-                                "pageSize": pageSize,
-                                "total": count,
-                                percentage: {
-                                    personal: mainPercent.toFixed(2),
-                                    work: (100 - mainPercent).toFixed(2)
+
+                            Event.extendEvent(events, function(err, results){
+                                if(err) {
+                                    return res.serverError({"data":err});
                                 }
+                                var mainPercent = (!count) ? 0 : (countWork / count)*100;
+                                return res.ok({
+                                    "data": results,
+                                    "page": page,
+                                    "pageSize": pageSize,
+                                    "total": count,
+                                    percentage: {
+                                        personal: mainPercent.toFixed(2),
+                                        work: (100 - mainPercent).toFixed(2)
+                                    }
+                                });
                             });
                         });
                     });
@@ -97,7 +103,7 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
-            EventInvite.find({"user_id": user.id}).populate('user_id').paginate({page: page, limit: pageSize}).exec(function (err, events) {
+            EventInvite.find({"user_id": user.id}).paginate({page: page, limit: pageSize}).exec(function (err, events) {
                 if(err) {
                     return res.serverError({"data":err});
                 }
@@ -105,7 +111,25 @@ module.exports = {
                     if(err) {
                         return res.serverError({"data":err});
                     }
-                    return res.ok({"data": events, "page": page, "pageSize": pageSize, "total": count});
+                    var ev = events.map(function(val){
+                        return val.event_id;
+                    });
+                    Event.find({"id":ev}).exec(function(err, events){
+                        if(err) {
+                            return res.serverError({"data":err});
+                        }
+                        Event.extendEvent(events, function(err, results){
+                            if(err) {
+                                return res.serverError({"data":err});
+                            }
+                            return res.ok({
+                                "data": results,
+                                "page": page,
+                                "pageSize": pageSize,
+                                "total": count
+                            });
+                        });
+                    });
                 });
             });
         });
@@ -335,11 +359,12 @@ module.exports = {
                         }
                         return res.serverError({"data":err});
                     }
-                    Event.extendEvent(result, function(err, event){
+                    Event.extendEvent([result], function(err, event){
                         if(err) {
                             return res.serverError({"data":err});
-                        }
-                        return res.ok({"data": event[0]});
+                        } //todo make error
+                        var response = (event) ? event[0] : null;
+                        return res.ok({"data": response});
                     });
                 });
             });

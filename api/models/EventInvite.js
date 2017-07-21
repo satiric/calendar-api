@@ -24,7 +24,6 @@ module.exports = {
             var userIds = ei.map(function(value) {
                 return value.user_id;
             });
-        sails.log(userIds);
             User.find({id: userIds}).populate('avatar').exec(function(err, users){
                 if(err) {
                     return cb(err);

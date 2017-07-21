@@ -405,6 +405,8 @@ definitions:
         type: 
           type: integer
           description: 1 - user, 2 - phone, 3 - email
+        user: 
+          $ref: "#/definitions/UserReadable" 
           
   EventWithInvites:
     type: object
