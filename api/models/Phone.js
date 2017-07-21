@@ -15,6 +15,9 @@ module.exports = {
             type: "integer",
             unique: true,
             model: "User"
+        },
+        phone: {
+            type: 'string'
         }
         // subscribers: {
         //     collection: 'EmailContacts',

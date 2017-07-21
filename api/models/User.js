@@ -7,6 +7,7 @@ var LogicE = require('../exceptions/Logic');
 var ValidationE = require('../exceptions/Validation');
 
 module.exports = {
+    connection: 'localMysqlServer',
     attributes: {
         name: {
             type: "string",
@@ -178,36 +179,6 @@ module.exports = {
             }
             return cb(err, updated);
         });
-    },
-    updateProfile: function(user, fieldsToUpdate, cb) {
-        var paramsObj = {};
-        var keys = ["name", "second_name", "avatar", "phone", "email"];
-        //todo if phone or email - change ids
-        for (var i = 0, size = keys.length; i < size; i++) {
-            if(keys[i] in fieldsToUpdate) {
-                paramsObj[keys[i]] = fieldsToUpdate[keys[i]];
-            }
-        }
-    
-        User.update({"id": user.id}, paramsObj, function (err, result) {
-            if(err) {
-                return (err.Errors)
-                    ? cb(new ValidationE(err))
-                    : cb(err);
-            }
-            if (!result || !result.length) {
-                return new LogicE("User not found.");
-            }
-            User.findOne(user.id) // You may try something like User._model(user) instead to avoid another roundtrip to the DB.
-                .populate('avatar')
-                .exec(function(err, result) {
-                    if (err) {
-                        return cb(err);
-                    }
-                    return cb(null, result);
-                });
-        });
-
     },
     /**
      *
