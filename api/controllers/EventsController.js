@@ -344,7 +344,6 @@ module.exports = {
                     (req.body.end_repeat && !Event.isoDate(req.body.end_repeat) )) {
                     return res.badRequest({"message": "Incorrect type for date. Is required ISO format"});
                 }
-
                 require("../utils/Events").update(eventId, user, req.body, function(err, result) {
                     if(err) {
                         if (err instanceof PermissionE) {
@@ -359,7 +358,8 @@ module.exports = {
                         }
                         return res.serverError({"data":err});
                     }
-                    Event.extendEvent([result], function(err, event){
+
+                    Event.extendEvent([founded], function(err, event){
                         if(err) {
                             return res.serverError({"data":err});
                         } //todo make error
