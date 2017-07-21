@@ -14,7 +14,7 @@ module.exports = {
         shortcuts: false,
         rest: false
     },
-    /**
+    /** todo refactor it
      * find of my
      * @param req
      * @param res
@@ -266,8 +266,15 @@ module.exports = {
                                 type: ((invited[i].phone_id ) ? 2 : 3)
                             });
                         }
-                        event.invited = inv;
-                        return res.ok({data: event});
+                        Event.extendEvent([event], function(err, event){
+                            if(err) {
+                                return res.serverError({"data":err});
+                            }
+                            var response = (event) ? event[0] : null;
+                            response.invited = inv;
+                            return res.ok({"data": response});
+                        });
+
                     });
                 });
             });
@@ -286,6 +293,7 @@ module.exports = {
             if(err) {
                 return res.serverError({"data": err});
             }
+
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
@@ -326,7 +334,7 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
-            Event.findOne(eventId).exec(function(err, founded){
+            Event.findOne({"id": eventId, "active": true}).exec(function(err, founded){
                 if(err) {
                     return res.serverError({"data": err});
                 }
@@ -365,7 +373,7 @@ module.exports = {
                         Event.extendEvent([resultEvent], function(err, event){
                             if(err) {
                                 return res.serverError({"data":err});
-                            } 
+                            }
                             var response = (event) ? event[0] : null;
                             return res.ok({"data": response});
                         });
