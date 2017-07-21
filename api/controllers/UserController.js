@@ -81,7 +81,7 @@ module.exports = {
     login: function (req, res) {
         User.login(req.param('email'), req.param('password'), function (err, result) {
             if (err) {
-                return res.json(401, {"status": "error", "message": err.message});
+                return res.json(400, {"status": "error", "message": err.message});
             }
             if (!result) {
                 return res.json(400, {"status": "error", "message": 'Invalid username/password combination.'});
