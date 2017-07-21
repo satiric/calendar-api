@@ -6,7 +6,6 @@
  */
 
 module.exports = {
-    connection: 'localMysqlServer',
     tableName: "phone_verification",
     attributes: {
         code: {

@@ -51,7 +51,17 @@ module.exports.connections = {
     charset   : 'utf8'
     // collation : 'utf8_swedish_ci'
   },
-
+  testMysqlServer: {
+    adapter: 'sails-mysql',
+    host      : 'localhost',
+    port      : 3306,
+    user      : 'root',
+    password  : 'jytjaptv222',
+    database  : 'test_vlife',
+    // Optional
+    charset   : 'utf8'
+    // collation : 'utf8_swedish_ci'
+  },
 
 
   /***************************************************************************

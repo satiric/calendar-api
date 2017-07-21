@@ -9,7 +9,6 @@
 
 module.exports = {
     tableName: "email_subscribe",
-    connection: 'localMysqlServer',
     autoCreatedAt: false,
     autoUpdatedAt: false,
     attributes: {

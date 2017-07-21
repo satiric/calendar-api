@@ -3,7 +3,6 @@
  */
 
 module.exports = {
-    connection: 'localMysqlServer',
     attributes: {
         id: {
             type: "string",

@@ -7,7 +7,6 @@ var LogicE = require('../exceptions/Logic');
 var ValidationE = require('../exceptions/Validation');
 
 module.exports = {
-    connection: 'localMysqlServer',
     attributes: {
         name: {
             type: "string",

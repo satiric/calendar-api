@@ -17,7 +17,7 @@ module.exports.models = {
   * connections (see `config/connections.js`)                                *
   *                                                                          *
   ***************************************************************************/
-   connection: 'localMysqlServer',
+   connection: (process.env.NODE_ENV === 'test') ? 'testMysqlServer' : 'localMysqlServer',
 
   /***************************************************************************
   *                                                                          *

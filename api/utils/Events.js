@@ -89,7 +89,7 @@ function inviteUsers(event, invites, cb) {
                     var invitedExtract = result.map(function(value){
                         return {
                             'id': value.id,
-                            'status': null,
+                            'status': 0,
                             'value': value.name + " " + value.second_name
                         };
                     });
@@ -169,10 +169,7 @@ function inviteGuests(event, invites, cb) {
 
 function dropUser(users, event, cb) {
     if(users && users.length) {
-        var dropUInvite = users.map(function(v) {
-            return {'user_id': v, 'event_id':event.id};
-        });
-        EventInvite.destroy({or:dropUInvite}).exec(function(err){
+        EventInvite.dropFromEvent(event.id, users, function(err,result){
             if(err) {
                 return cb(err);
             }
@@ -222,7 +219,6 @@ function dropPhone(phones, event, cb) {
 }
 
 function dropInvites(invites, event, cb) {
-    sails.log(event);
     dropUser(invites.users, event, function(){
         dropEmail(invites.emails, event, function(){
             dropPhone(invites.phones, event, function(){
@@ -294,17 +290,19 @@ module.exports = {
             if(err) {
                 return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
             }
-            if(!event.invites && !event.dropped_invites) {
-                return cb(null, result);
-            }
             if( !result || !result.length) {
                 return cb(new PermissionE("Permission denied"));
+            }
+
+            if(!event.invites && !event.dropped_invites) {
+                return cb(null, result);
             }
             makeInvite(result[0], event.invites, function(err){
                 if(err) {
                     return cb(err);
                 }
                 var droppedInvites = event.dropped_invites;
+                sails.log(droppedInvites);
                 if(droppedInvites) {
                     return dropInvites(droppedInvites, result[0], function(err){
                         if(err) {

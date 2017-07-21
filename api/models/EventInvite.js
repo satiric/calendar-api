@@ -39,6 +39,23 @@ module.exports = {
                 return cb(null, ei);
             });
         
+    },
+
+    dropFromEvent: function(eventId, userIds, cb) {
+        var sql = "";
+        var arr = [];
+        for(var i = 0, size = userIds.length; i < size; i++) {
+            sql+=  "(user_id = ? AND event_id = ?)";
+            arr.push(userIds[i]);
+            arr.push(eventId);
+
+            if(i !== userIds.length - 1) {
+                sql+= " OR ";
+            }
+        }
+        EventInvite.query("DELETE FROM event_invites WHERE " + sql, arr ,function(err, rawResult) {
+            return cb(err, rawResult);
+        });
     }
     // validationMessages: { //hand for i18n & l10n
     //     email: {
