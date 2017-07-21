@@ -69,13 +69,13 @@ module.exports = {
                                 }
                                 var mainPercent = (!count) ? 0 : (countWork / count)*100;
                                 return res.ok({
-                                    "data": results,
+                                    "data": (results) ? results : null ,
                                     "page": page,
                                     "pageSize": pageSize,
                                     "total": count,
                                     percentage: {
                                         personal: mainPercent.toFixed(2),
-                                        work: (100 - mainPercent).toFixed(2)
+                                        work: (results) ? (100 - mainPercent).toFixed(2) : 0
                                     }
                                 });
                             });
