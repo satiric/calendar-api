@@ -521,6 +521,7 @@ definitions:
         type: integer
       status: 
         type: integer
+        description: 0 - pending, 1 - accepted, 2 - declined
             
   InvitedToEvent: 
     required: 
