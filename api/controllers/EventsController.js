@@ -234,7 +234,7 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
-            Event.findOne(eventId).populate("founder").exec(function (err, event) {
+            Event.findOne(eventId).exec(function (err, event) {
                 if(err) {
                     return res.serverError({"data":err});
                 }
