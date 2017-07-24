@@ -620,16 +620,22 @@ paths:
       operationId: login
       parameters:
         - $ref: "#/parameters/vlife-key"
-        - name: password
-          in: query
-          description: password
+        - in: body
+          name: body
+          description: "Объект User"
           required: true
-          type: string
-        - name: email
-          in: query
-          description: email
-          required: true
-          type: string
+          schema: 
+            type: object
+            required: 
+            - password
+            - email
+            properties: 
+              password: 
+                description: password
+                type: string
+              email: 
+                description: email
+                type: string
       responses:
         "200":
           description: Success
