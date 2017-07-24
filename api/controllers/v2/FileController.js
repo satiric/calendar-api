@@ -36,7 +36,6 @@ module.exports = {
                 versions: [{
                     maxHeight: 500,
                     maxWidth: 500,
-                    aspect: '1:1',
                     suffix: '-small'
                 }, {
                     quality: 80
