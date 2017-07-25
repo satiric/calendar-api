@@ -44,20 +44,20 @@ module.exports = {
                 if(value.phone_id) {
                     return {
                         phone: value.phone_id,
-                        status: value.status
+                        status: 0 //unregistred cant accept invite
                     };
                 }
                 if(value.email) {
                     return {
                         email: value.email,
-                        status: value.status
+                        status: 0
                     };
                 }
-                var id = value.user_id;
-                value.user = users.find(function (element){
-                    return element.id === id;
-                });
-                return value;
+                var us = users.find(function (element){
+                        return element.id === value.user_id;
+                    });
+                us.status = (value.status || 0);
+                return us;
             });
             return cb(null, ei);
         });

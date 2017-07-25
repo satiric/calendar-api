@@ -153,11 +153,7 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
-    //        var params = {"id": eventId, 'active':true};
-            // Event.findOne(params).exec(function (err, events) {
-            //     if(err) {
-            //         return res.serverError({"data":err});
-            //     }
+
             EventInvite.find({"event_id":eventId}).paginate({page: page, limit: pageSize}).exec(function(err, result){
                 if(err) {
                     return res.serverError({"data":err});
@@ -179,7 +175,6 @@ module.exports = {
                     });
                 });
             });
-           // });
         });
     },
 

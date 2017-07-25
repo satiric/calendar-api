@@ -29,7 +29,7 @@ module.exports = {
             }
             require('../utils/Contacts').find(user.id, function(err, result) {
                 if(err) {
-                    return res.serverError({"details":err});
+                    return res.serverError({"data":err});
                 }
                 return res.ok({"data": result});
             });

@@ -409,8 +409,6 @@ definitions:
         type: 
           type: integer
           description: 1 - user, 2 - phone, 3 - email
-        user: 
-          $ref: "#/definitions/UserReadable" 
           
   EventWithInvites:
     type: object
@@ -518,15 +516,48 @@ definitions:
             format: float
             
   InvitedUser: 
+    description: "attention to required field: only status is required. InvitedUser can be with email or phone only."
+    required: 
+    - status
     properties:
-      user_id:
-        type: integer
-      event_id: 
-        type: integer
       status: 
         type: integer
         description: 0 - pending, 1 - accepted, 2 - declined
-            
+      id:
+        type: integer
+        example: 1
+      name:
+        type: string
+        example: Jhon
+        minLength: 2
+        maxLength: 25
+      second_name:
+        type: string
+        example: Statham
+        minLength: 2
+        maxLength: 25
+      email:
+        type: string
+        example: jhonstatham@gmail.com2
+      password:
+        type: string
+        minLength: 8
+        maxLength: 25
+        example: mycoolpassword
+      phone:
+        type: string
+        example: "+1234567899"
+        pattern: "\\+([0-9]){9,13}"
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+      avatar: 
+        "$ref": "#/definitions/File"
+        
+        
   InvitedToEvent: 
     required: 
       - data
