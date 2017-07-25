@@ -27,17 +27,20 @@ module.exports = {
         },
         repeat_type: {
             type: "integer",
+            isRepeatType: true
       //      enum: ['Never', 'Day', 'Week', 'Fortnight', 'Month']
         },
         repeat_option: {
-            type: "integer"
+            type: "integer",
+            isRepeatOption: true
         },
         end_repeat: {
             type: "datetime",
       //      isISOdatetime: true
         },
         location: {
-            type: "string"
+            type: "string",
+            trimSpaces: true
         },
         description: {
             type: "string",
@@ -66,6 +69,13 @@ types: {
     },
     isSphere: function (value) {
         return (value === 1 || value === 0);
+    },
+    isRepeatType: function (value) {
+        var available = [1,2,4,8,16];
+        return (available.indexOf(value) !== -1);
+    },
+    isRepeatOption: function (value) {
+        return value < 128;
     }
     // isISOdatetime: function (value) {
     //     return /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(?:(\.\d+([+-][0-2]\d:[0-5]\d|Z))|)/.test(value.toISOString());
@@ -91,6 +101,15 @@ types: {
         },
         sphere:  {
             isSphere: "Sphere must be only 1 or 0"
+        },
+        repeat_type: {
+            isRepeatType: "repeat_type must be 1, 2, 4, 8 or 16"
+        },
+        repeat_option: {
+            isRepeatOption: "repeat_option must be less than 128"
+        },
+        location: {
+            trimSpaces: "location shouldn't contain spaces in front or end of string"
         }
 
         // second_name: {
