@@ -129,6 +129,49 @@ function cascadeSend(emails, founded, user, current, cb, info) {
     });
 }
 
+
+/**
+ *  todo make it parallel
+ * @param phones
+ * @param founded
+ * @param user
+ * @param current
+ * @param cb
+ * @param info
+ * @returns {*}
+ */
+function cascadeSmsSend(phones, founded, user, current, cb, info) {
+    info = info || [];
+    if(current >= phones.length) {
+        return cb(null, info);
+    }
+    if(!phones[current] || founded.indexOf(PhoneIdentifier.extract(phones[current])) !== -1) {
+        info.push({
+            'message': "phone is alredy in vlife or not exists",
+            'phone': phones[current]
+        });
+        return cascadeSmsSend(phones, founded, user, current+1, cb, info);
+    }
+    var msg = user.name + " " + user.second_name + " invited you to vlife-1st ever Calendar-Chat";
+    msg += " app. Connect privately with Work&Social contacts. Click here for more info";
+
+    //todo make as cascade
+    Twilio.sendMessage(msg,phones[current], function(err, result) {
+        if(err) {
+            info.push({
+                'message': err,
+                'phone': phones[current]
+            });
+        }
+        return cascadeSmsSend(phones, founded, user, current+1, cb, info);
+    });
+}
+
+
+
+
+
+
 function validateEmail(email) {
     return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email);
 }
@@ -160,7 +203,9 @@ function sendEmails(emails, user, cb) {
             : [];
 
         cascadeSend(emails, founded, user, 0, function(result) {
-            return cb(null, result);
+            return cb(null, emails.filter(function(value){
+                return (founded.indexOf(value) === -1);
+            }));
         });
     });
 }
@@ -184,22 +229,12 @@ function sendPhones(phones, user, cb) {
         if(err) {
             return cb(err);
         }
-        var founeded = (Array.isArray(result))
-            ? result.map(function(value){
-            return PhoneIdentifier.extract(value.phone);
-        })
+        var founeded = (Array.isArray(result)) ?
+            result.map(function(value){
+                return PhoneIdentifier.extract(value.phone);
+            })
             : [];
-
-        var msg = user.name + " " + user.second_name + " invited you to vlife-1st ever Calendar-Chat";
-        msg += " app. Connect privately with Work&Social contacts. Click here for more info";
-        for(var i = 0, size = phones.length; i < size; i++) {
-            if(!phones[i] || founeded.indexOf(PhoneIdentifier.extract(phones[i])) !== -1) {
-                notice.push({"phone": phones[i], "message": "is not invited: invalid phone or user is exists"});
-                continue;
-            }
-            Twilio.sendMessage(msg,phones[i]);
-        }
-        return cb(null, notice);
+        cascadeSmsSend(phones, founeded, user, 0, cb);
     });
 
 }
@@ -336,6 +371,9 @@ module.exports = {
                 users = users.map(function(value) {
                     return value.user_id.id;
                 });
+                users = users.filter(function(value){
+                    return (value);
+                });
                 User.find({id: users}).populate('avatar').exec(function(err, users){
                     return cb(err, users);
                 });
@@ -435,18 +473,18 @@ module.exports = {
         });
     },
     invite: function(emails, phones, inviter, cb) {
-        
+
         var results = {};
         sendEmails(emails, inviter, function(err, result) {
             if(err) {
                 return cb(err);
             }
-            results.emails = result;
+            results.emails = result || [];
             sendPhones(phones, inviter, function(err, result) {
                 if(err) {
                     return cb(err);
                 }
-                results.phones = result;
+                results.phones = result || [];
                 return cb(null, results);
             });
         });
