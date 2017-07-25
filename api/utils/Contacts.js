@@ -373,7 +373,6 @@ module.exports = {
                 if(!users.length) {
                    return cb(err, []);
                }
-                sails.log(users);
                 users = users.map(function(value) {
                     return value.user_id.id;
                 });

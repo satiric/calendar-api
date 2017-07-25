@@ -42,8 +42,8 @@ module.exports = {
                 ];
             }
             if(date) {
-                params.date_start = {'<=': date};
-                params.date_end =  {'>=': date };
+                params.date_start = {'<=': date.split("T")[0]};
+                params.date_end =  {'>=': date.split("T")[0] };
             }
             
             Event.find(params).sort({date_start: 'asc'}).paginate({page: page, limit: pageSize}).exec(function (err, events) {
