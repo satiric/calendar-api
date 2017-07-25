@@ -6,57 +6,79 @@ module.exports = {
     autoCreatedAt: false,
     autoUpdatedAt: false,
     tableName: "event_invites",
-    autoId : false,
     attributes: {
-        status: {
-            type: "integer"
-        },
         event_id: {
             model: 'Event',
-         //   primaryKey: true //NOT WORKING POPULATE WITH IT
+            required: true
+        },
+        phone_id: {
+            model: 'Phone'
+        },
+        email: {
+            model: 'Email'
         },
         user_id: {
-            model: 'User',
+            model: 'User'
+        },
+        id: {
+            type: "integer",
             primaryKey: true
         }
-    }, 
-    extendEventInvite: function(ei, cb) {
-            var userIds = ei.map(function(value) {
-                return value.user_id;
-            });
-            User.find({id: userIds}).populate('avatar').exec(function(err, users){
-                if(err) {
-                    return cb(err);
-                }
-                sails.log(users);
-                ei = ei.map(function(value){
-                    var id = value.user_id;
-                    value.user = users.find(function (element){
-                        return element.id === id;
-                    });
-                    return value;
-                });
-                return cb(null, ei);
-            });
-        
     },
 
-    dropFromEvent: function(eventId, userIds, cb) {
-        var sql = "";
-        var arr = [];
-        for(var i = 0, size = userIds.length; i < size; i++) {
-            sql+=  "(user_id = ? AND event_id = ?)";
-            arr.push(userIds[i]);
-            arr.push(eventId);
-
-            if(i !== userIds.length - 1) {
-                sql+= " OR ";
-            }
-        }
-        EventInvite.query("DELETE FROM event_invites WHERE " + sql, arr ,function(err, rawResult) {
-            return cb(err, rawResult);
+    extendEventInvite: function(ei, cb) {
+        //filter all where user_id is exists
+        var userIds = ei.filter(function(value) {
+            return value.user_id;
         });
-    }
+        // make userIds as array of numbers
+        userIds = userIds.map(function(value) {
+            return value.user_id;
+        });
+        User.find({id: userIds}).populate('avatar').exec(function(err, users){
+            if(err) {
+                return cb(err);
+            }
+            ei = ei.map(function(value){
+                //todo extends model for guests
+                if(value.phone_id) {
+                    return {
+                        phone: value.phone_id,
+                        status: value.status
+                    };
+                }
+                if(value.email) {
+                    return {
+                        email: value.email,
+                        status: value.status
+                    };
+                }
+                var id = value.user_id;
+                value.user = users.find(function (element){
+                    return element.id === id;
+                });
+                return value;
+            });
+            return cb(null, ei);
+        });
+    },
+
+    // dropFromEvent: function(eventId, userIds, cb) {
+    //     var sql = "";
+    //     var arr = [];
+    //     for(var i = 0, size = userIds.length; i < size; i++) {
+    //         sql+=  "(user_id = ? AND event_id = ?)";
+    //         arr.push(userIds[i]);
+    //         arr.push(eventId);
+    //
+    //         if(i !== userIds.length - 1) {
+    //             sql+= " OR ";
+    //         }
+    //     }
+    //     EventInvite.query("DELETE FROM event_invites WHERE " + sql, arr ,function(err, rawResult) {
+    //         return cb(err, rawResult);
+    //     });
+    // }
     // validationMessages: { //hand for i18n & l10n
     //     email: {
     //         required: 'Email is required',

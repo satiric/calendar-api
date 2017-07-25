@@ -43,24 +43,24 @@ function inviteUsers(event, invites, cb) {
     var phones = invites.phones.map(function(value) {
         return PhoneIdentifier.extract(value);
     });
+    sails.log('----1');
     var users = invites.users || [];
-
-
     //2. search all users with phones
     Phone.find({ user_id: {'!': null}, id: phones}).exec(function(err, results){
         if(err) {
             return cb(err);
         }
+        sails.log('----2');
         // 2.1 remove invited phones
         invites.phones = filterPhones(results, invites.phones);
         // 3. collect all founded user ids
         users = users.concat(mapUser(results));
-
         // 4. find all users with emails
         User.find({email: invites.emails}).exec(function (err, results) {
             if(err) {
                 return cb(err);
             }
+            sails.log('----3');
             //4.1 remove invited emails
             invites.emails = filterEmails(results, invites.emails);
             // 5. collect all founded user ids
@@ -68,36 +68,51 @@ function inviteUsers(event, invites, cb) {
             users = users.concat(mapUser(results, 'id'));
             if(users.length) {
                 users = users.map(function(value) {
-                    return {"user_id": value, "event_id": event.id, "status": 0};
+                    return {"user_id": value, "event_id": event.id};
                 });
             } else {
                 users = [];
             }
             // 6. create invite
-            EventInvite.create(users).exec(function(err, result){
+            EventInvite.find({or:users}).exec(function(err, result){
                 //todo make a send notification
                 if(err) {
                     return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
                 }
-
-                //array with id, status and value for user
-                var invitedIds = mapUser(users);
-                User.find({'id': invitedIds}).exec(function(err, result){
-                    if(err) {
-                        return cb(err);
-                    }
-                    var invitedExtract = result.map(function(value){
-                        return {
-                            'id': value.id,
-                            'status': 0,
-                            'value': value.name + " " + value.second_name
-                        };
+                var founded = [];
+                if(result) {
+                    founded = result.map(function(value){
+                        return value.user_id;
                     });
-                    return cb(null, invites, invitedExtract);
+                }
+                users = users.filter(function(value) {
+                    return (founded.indexOf(value.user_id) === -1);
                 });
+                if(!users.length) {
+                    return cb(null, invites, []);
+                }
+                EventInvite.create(users).exec(function(err, result){
+                    if(err) {
+                        return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
+                    }
+                    //array with id, status and value for user
+                    var invitedIds = mapUser(users);
+                    User.find({'id': invitedIds}).exec(function(err, result){
+                        if(err) {
+                            return cb(err);
+                        }
+                        sails.log(result);
+                        var invitedExtract = result.map(function(value){
+                            return {
+                                'id': value.id,
+                                'status': 0,
+                                'value': value.name + " " + value.second_name
+                            };
+                        });
+                        return cb(null, invites, invitedExtract);
+                    });
 
-
-
+                });
             });
         });
     });
@@ -153,7 +168,7 @@ function inviteGuests(event, invites, cb) {
                         })
                     );
 
-                    EventInviteGuest.create(eventInviteGuest).exec(function(err, result){
+                    EventInvite.create(eventInviteGuest).exec(function(err, result){
                         if(err) {
                             return cb(err);
                         }
@@ -166,15 +181,22 @@ function inviteGuests(event, invites, cb) {
     });
 }
 
+function generalDropInvite(criteria, cb) {
+    EventInvite.destroy({or:criteria}).exec(function(err) {
+        if (err) {
+            return cb(err);
+        }
+        return cb();
+    });
+}
+
 
 function dropUser(users, event, cb) {
     if(users && users.length) {
-        EventInvite.dropFromEvent(event.id, users, function(err,result){
-            if(err) {
-                return cb(err);
-            }
-            return cb();
+        var dropUInvite = users.map(function(v) {
+            return {'user_id': v, 'event_id':event.id};
         });
+        return generalDropInvite(dropUInvite, cb);
     }
     else {
         return cb();
@@ -186,18 +208,11 @@ function dropEmail(emails, event, cb) {
         var dropEInvite = emails.map(function(v) {
             return {'email': v, 'event_id':event.id};
         });
-
-        EventInviteGuest.destroy({or:dropEInvite}).exec(function(err) {
-            if (err) {
-                return cb(err);
-            }
-            return cb();
-        });
+        return generalDropInvite(dropEInvite, cb);
     }
     else {
         return cb();
     }
-
 }
 
 
@@ -206,12 +221,7 @@ function dropPhone(phones, event, cb) {
         var dropPInvite = phones.map(function(v) {
             return {'phone_id': PhoneIdentifier.extract(v), 'event_id':event.id};
         });
-        EventInviteGuest.destroy({or:dropPInvite}).exec(function(err){
-            if(err) {
-                return cb(err);
-            }
-            return cb();
-        });
+        return generalDropInvite(dropPInvite, cb);
     }
     else {
         return cb();
@@ -263,6 +273,17 @@ function makeInvite(event, invites, cb) {
         });
     });
 }
+
+
+function fillInvitedContainer(value, status, type, id ) {
+    id = id || null;
+    return {
+        id: id,
+        status: status,
+        value: value,
+        type: type
+    };
+}
 /**
  * contain all business logic for user authorization
  * @type {{login: module.exports.login, refreshToken: module.exports.refreshToken, getByPasswordResetToken: module.exports.getByPasswordResetToken, changePassByToken: module.exports.changePassByToken, changePassByAuthKey: module.exports.changePassByAuthKey, getUserByAuthToken: module.exports.getUserByAuthToken}}
@@ -285,7 +306,6 @@ module.exports = {
         });
     },
     update: function(eventId, user, event, cb) {
-
         Event.update({id: eventId, "founder": user.id}, event).exec(function (err, result) {
             if(err) {
                 return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
@@ -314,6 +334,51 @@ module.exports = {
                 else {
                     return cb(null, event);
                 }
+            });
+        });
+    },
+
+    /**
+     *
+     * @param eventId
+     * @param user
+     * @param cb
+     */
+    detailed: function(eventId, user, cb) {
+        Event.findOne(eventId).exec(function (err, event) {
+            if(err) {
+                return cb(err);
+            }
+            if(!event) {
+                return cb( new LogicE("Event not exist") );
+            }
+            EventInvite.find({'event_id': eventId }).populate('user_id').populate('phone_id').exec(function(err, invited){
+                if(err) {
+                    return cb(err);
+                }
+                var inv = invited.map(function(value){
+                    if(value.phone_id) {
+                        return fillInvitedContainer(value.phone_id.id, value.status, 2);
+                    }
+                    if(value.email) {
+                        return fillInvitedContainer(value.email, value.status, 3);
+                    }
+                    //todo check it
+                    return fillInvitedContainer(
+                        value.user_id.name + " " + value.user_id.second_name, //value
+                        value.status, 1, value.user_id.id);
+                });
+                Event.extendEvent([event], function(err, event){
+                    if(err) {
+                        return cb(err);
+                    }
+                    if(!event || !event[0]) {
+                        return cb( new LogicE("Event not exist while extending") );
+                    }
+                    var response = event[0];
+                    response.invited = inv;
+                    return cb(null, response);
+                });
             });
         });
     }

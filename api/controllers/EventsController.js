@@ -7,7 +7,9 @@
 var LogicE = require('../exceptions/Logic');
 var ValidationE = require('../exceptions/Validation');
 var PermissionE = require('../exceptions/Permission');
+var BaseE = require('../exceptions/BaseException');
 var UserAuth = require("../utils/UserAuth");
+
 module.exports = {
     _config: {
         actions: false,
@@ -69,7 +71,7 @@ module.exports = {
                                 }
                                 var mainPercent = (!count) ? 0 : (countWork / count)*100;
                                 return res.ok({
-                                    "data": (results) ? results : null ,
+                                    "data": results || [] ,
                                     "page": page,
                                     "pageSize": pageSize,
                                     "total": count,
@@ -123,7 +125,7 @@ module.exports = {
                                 return res.serverError({"data":err});
                             }
                             return res.ok({
-                                "data": results,
+                                "data": results || [],
                                 "page": page,
                                 "pageSize": pageSize,
                                 "total": count
@@ -151,39 +153,33 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
-            var params = {"id": eventId, 'active':true};
-            Event.findOne(params).exec(function (err, events) {
+    //        var params = {"id": eventId, 'active':true};
+            // Event.findOne(params).exec(function (err, events) {
+            //     if(err) {
+            //         return res.serverError({"data":err});
+            //     }
+            EventInvite.find({"event_id":eventId}).paginate({page: page, limit: pageSize}).exec(function(err, result){
                 if(err) {
                     return res.serverError({"data":err});
                 }
-                EventInvite.find({"event_id":eventId}).paginate({page: page, limit: pageSize}).exec(function(err, result){
+                EventInvite.count({"event_id":eventId}).exec(function (err, count) {
                     if(err) {
                         return res.serverError({"data":err});
                     }
-                    EventInvite.count({"event_id":eventId}).exec(function (err, count) {
+                    EventInvite.extendEventInvite(result, function(err, ei){
                         if(err) {
                             return res.serverError({"data":err});
                         }
-                     
-                        EventInvite.extendEventInvite(result, function(err, ei){
-                            if(err) {
-                                return res.serverError({"data":err});
-                            }
-                            return res.ok({
-                                "data": ei,
-                                "page": page,
-                                "pageSize": pageSize,
-                                "total": count
-                            });
+                        return res.ok({
+                            "data": ei || [],
+                            "page": page,
+                            "pageSize": pageSize,
+                            "total": count
                         });
                     });
                 });
-                // Event.count(params).exec(function (err, count) {
-                //     if(err) {
-                //         return res.serverError({"data":err});
-                //     }
-             //   });
             });
+           // });
         });
     },
 
@@ -234,49 +230,13 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
-            Event.findOne(eventId).exec(function (err, event) {
+            require('../utils/Events').detailed(eventId, user, function(err, result) {
                 if(err) {
-                    return res.serverError({"data":err});
+                    return (err instanceof BaseE) 
+                        ? res.badRequest({ "message": err.message })
+                        : res.serverError({ "data": err });
                 }
-                if(!event) {
-                    return res.badRequest({"message":"Event not exist"});
-                }
-                EventInvite.find({'event_id': eventId }).populate('user_id').exec(function(err, invited){
-                    if(err) {
-                        return res.serverError({"data":err});
-                    }
-                    var inv = invited.map(function(value){
-                        return {
-                            id: value.user_id.id,
-                            status: value.status,
-                            value: value.user_id.name + " " + value.user_id.second_name,
-                            type: 1 //user
-                        };
-                    });
-                    EventInviteGuest.find({'event_id': eventId }).exec(function(err, invited) {
-                        if(err) {
-                            return res.serverError({"data":err});
-                        }
-                        sails.log(invited);
-                        for (var i = 0, size = invited.length; i < size; i++) {
-                            inv.push({
-                                "id": null,
-                                status: 0,
-                                "value": (invited[i].phone_id || invited[i].email),
-                                type: ((invited[i].phone_id ) ? 2 : 3)
-                            });
-                        }
-                        Event.extendEvent([event], function(err, event){
-                            if(err) {
-                                return res.serverError({"data":err});
-                            }
-                            var response = (event) ? event[0] : null;
-                            response.invited = inv;
-                            return res.ok({"data": response});
-                        });
-
-                    });
-                });
+                return res.ok({"data": result});
             });
         });
     },
