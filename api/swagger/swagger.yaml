@@ -806,11 +806,18 @@ paths:
       operationId: resetPassword
       parameters:
         - $ref: "#/parameters/vlife-key"
-        - name: email
-          in: query
-          description: email for user
+        - name: body
+          in: body
+          description: "Body with emails and phones for invite"
           required: true
-          type: string
+          schema: 
+            type: object
+            required: 
+              - email
+            properties: 
+              email: 
+                type: string
+                description: email for sending instruction for reset password
       responses:
         "200":
           description: Success
@@ -835,19 +842,24 @@ paths:
       parameters:
         - $ref: "#/parameters/vlife-key"
         - $ref: "#/parameters/auth-token"
-        - name: password
-          in: query
-          description: New password value
+        
+        - name: body
+          in: body
           required: true
-          type: string
-        - name: old_password
-          in: query
-          description: Old password value
-          type: string
-        - name: token
-          in: query
-          description: For anonymous user password-reset token must be sent by resetPassword method in email.
-          type: string
+          schema: 
+            type: object
+            required:
+              - password
+            properties: 
+              password:
+                description: New password value
+                type: string
+              old_password: 
+                description: Old password value
+                type: string
+              token:
+                description: For anonymous user password-reset token must be sent by resetPassword method in email.
+                type: string
       responses:
         "200":
           description: Success
@@ -906,10 +918,18 @@ paths:
       parameters:
         - $ref: "#/parameters/vlife-key"
         - $ref: "#/parameters/auth-token-required"
-        - in: query
-          name: refresh_token 
-          type: string
+        - name: body
+          in: body
+          description: "Body with emails and phones for invite"
           required: true
+          schema: 
+            type: object
+            required:
+            - refresh_token
+            properties: 
+              refresh_token: 
+                type: string
+                description: "array of emails"
       responses:
         "200":
           description: Success
@@ -947,16 +967,20 @@ paths:
       operationId: verifyPhone
       parameters:
         - $ref: "#/parameters/vlife-key"
-        - in: query
-          name: phone
-          type: string
+        - name: body
+          in: body
+          description: "Body with emails and phones for invite"
           required: true
-          pattern: "\\+([0-9]){9,13}"
-        - in: query
-          name: code
-          required: true
-          type: string
-          minLength: 4
+          schema: 
+            type: object
+            properties: 
+              phone: 
+                type: string
+                pattern: "\\+([0-9]){9,13}"
+              code: 
+                type: string
+                minLength: 4
+          
       responses:
         "200":
           description: Success
@@ -979,8 +1003,6 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResp"
-            
-            
   /myEvents: 
     # binds a127 app logic to a route
     x-swagger-router-controller: EventsController
@@ -1071,7 +1093,6 @@ paths:
           description: Success
           schema:
             "$ref": "#/definitions/EventResponse"
-              
         # responses may fall through to errors
         default:
           description: Error
@@ -1131,12 +1152,10 @@ paths:
           in: query
           description: page
           type: integer
-
         - name: pageSize
           in: query
           description: pagesize
           type: integer
-
       responses:
         "200":
           description: Success
@@ -1176,9 +1195,6 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResp"
-            
-            
-
   /contacts/invite:
     # binds a127 app logic to a route
     x-swagger-router-controller: ContactsController
