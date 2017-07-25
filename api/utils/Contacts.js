@@ -168,10 +168,6 @@ function cascadeSmsSend(phones, founded, user, current, cb, info) {
 }
 
 
-
-
-
-
 function validateEmail(email) {
     return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email);
 }
@@ -236,6 +232,47 @@ function sendPhones(phones, user, cb) {
             : [];
         cascadeSmsSend(phones, founeded, user, 0, cb);
     });
+
+}
+
+
+function getEmailContacts(userId, cb) {
+    EmailContacts.find({ select: ['email'], user_id: userId }).exec(function(err, emails) {
+        if(err) {
+            return cb(err);
+        }
+        var emailsList = [];
+        for (var i = 0, size = emails.length; i < size; i++)  {
+            emailsList.push({"email":emails[i].email, user_id: {'!': null}});
+        }
+
+        Email.find({or: emailsList}).populate("user_id").exec(function(err, users) {
+            if(err) {
+                return cb(err);
+            }
+            return cb(null, users);
+        });
+    });
+
+}
+
+function getPhoneContacts(userId, cb) {
+    PhoneContacts.find({ select: ['phone_id'], user_id: userId }).exec(function(err, phones) {
+        if(err) {
+            return cb(err);
+        }
+        var phoneList = [];
+        for (var i = 0, size = phones.length; i < size; i++)  {
+            phoneList.push({"id":phones[i].phone_id, user_id: {'!': null}});
+        }
+        Phone.find({or: phoneList}).populate("user_id").exec(function(err, users) {
+            if(err) {
+                return cb(err);
+            }
+            return cb(null, users);
+        });
+    });
+
 
 }
 // Phone.find(phones).exec(function(err, results){
@@ -357,29 +394,31 @@ module.exports = {
 
     },
     find: function(userId, cb) {
-        EmailContacts.find({ select: ['email'], user_id: userId }).exec(function(err, emails) {
+
+        getPhoneContacts(userId, function(err, users) {
             if(err) {
                 return cb(err);
             }
-            var emailsList = [];
-            for (var i = 0, size = emails.length; i < size; i++)  {
-                emailsList.push({"email":emails[i].email, user_id: {'!': null}});
+            var collected = [];
+            if(users.length) {
+                collected = users.map(function(value) {
+                    return value.user_id.id;
+                });
             }
 
-            Email.find({or: emailsList}).populate("user_id").exec(function(err, users) {
+            getEmailContacts(userId, function (err, users) {
                 if(err) {
                     return cb(err);
                 }
-                if(!users.length) {
-                   return cb(err, []);
-               }
-                users = users.map(function(value) {
+                var cacheUsers = users.map(function(value){
                     return value.user_id.id;
                 });
-                users = users.filter(function(value){
-                    return (value);
-                });
-                User.find({id: users}).populate('avatar').exec(function(err, users){
+
+                collected = collected.concat(cacheUsers.filter(function(value){
+                    return collected.indexOf(value) === -1;
+                }));
+
+                User.find({id: collected}).populate('avatar').exec(function(err, users){
                     return cb(err, users);
                 });
             });
@@ -467,12 +506,10 @@ module.exports = {
             if(err) {
                 return cb(err);
             }
-
             destroyPhones(phones, function(err, result){
                 if(err) {
                     return cb(err);
                 }
-
                 return cb(null, result);
             });
         });
