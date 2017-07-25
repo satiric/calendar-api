@@ -395,6 +395,10 @@ definitions:
     type: array
     items: 
       type: object
+      required: 
+      - id
+      - value
+      - status
       properties: 
         id: 
           type: integer

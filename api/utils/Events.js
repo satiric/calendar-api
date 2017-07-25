@@ -358,10 +358,10 @@ module.exports = {
                 }
                 var inv = invited.map(function(value){
                     if(value.phone_id) {
-                        return fillInvitedContainer(value.phone_id.id, value.status, 2);
+                        return fillInvitedContainer(value.phone_id.id, 0, 2);
                     }
                     if(value.email) {
-                        return fillInvitedContainer(value.email, value.status, 3);
+                        return fillInvitedContainer(value.email, 0, 3);
                     }
                     //todo check it
                     return fillInvitedContainer(
