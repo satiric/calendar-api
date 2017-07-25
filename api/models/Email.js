@@ -13,6 +13,8 @@ module.exports = {
         },
         //owner
         user_id: {
+            type: "integer",
+            unique: true,
             model: "User"
         }
         // subscribers: {

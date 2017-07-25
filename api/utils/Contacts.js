@@ -298,6 +298,7 @@ module.exports = {
         });
     },
     create: function(userId, contacts, cb) {
+        //todo refactor it
         var emails = []; //for search, just list of emails
         var emailSubscribe = [];
         var phones = [];
@@ -362,12 +363,17 @@ module.exports = {
             }
             var emailsList = [];
             for (var i = 0, size = emails.length; i < size; i++)  {
-                emailsList.push(emails[i].email);
+                emailsList.push({"email":emails[i].email, user_id: {'!': null}});
             }
-            Email.find({select: ['user_id'], "email": emailsList, user_id: {'!': null} }).populate("user_id").exec(function(err, users) {
-               if(!users.length) {
+
+            Email.find({or: emailsList}).populate("user_id").exec(function(err, users) {
+                if(err) {
+                    return cb(err);
+                }
+                if(!users.length) {
                    return cb(err, []);
                }
+                sails.log(users);
                 users = users.map(function(value) {
                     return value.user_id.id;
                 });
