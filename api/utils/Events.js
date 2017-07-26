@@ -5,6 +5,8 @@
 var ValidationE = require('../exceptions/Validation');
 var PermissionE = require('../exceptions/Permission');
 var LogicE = require('../exceptions/Logic');
+
+
 function mapUser(list, key) {
     key = key || 'user_id';
     return list.map(function(value) {
@@ -43,14 +45,12 @@ function inviteUsers(event, invites, cb) {
     var phones = invites.phones.map(function(value) {
         return PhoneIdentifier.extract(value);
     });
-    sails.log('----1');
     var users = invites.users || [];
     //2. search all users with phones
     Phone.find({ user_id: {'!': null}, id: phones}).exec(function(err, results){
         if(err) {
             return cb(err);
         }
-        sails.log('----2');
         // 2.1 remove invited phones
         invites.phones = filterPhones(results, invites.phones);
         // 3. collect all founded user ids
@@ -60,7 +60,6 @@ function inviteUsers(event, invites, cb) {
             if(err) {
                 return cb(err);
             }
-            sails.log('----3');
             //4.1 remove invited emails
             invites.emails = filterEmails(results, invites.emails);
             // 5. collect all founded user ids
@@ -111,7 +110,6 @@ function inviteUsers(event, invites, cb) {
                         });
                         return cb(null, invites, invitedExtract);
                     });
-
                 });
             });
         });
@@ -127,22 +125,24 @@ function sendSms(phones, cb){
     return cb();
 }
 
-function sendEmail(emails, cb) {
+function sendEmail(user, event, emails, cb) {
     if(emails.length) {
-        return Mailer.sendMultiMessage("Hi!", "Hi", emails, function(){
-            return cb();
+        emails.forEach(function(element){
+            Mailer.sendInviteToEventMessage(user, event, element, function(){});
         });
     }
     return cb();
 }
 
+
 /**
  *
+ * @param user
  * @param event
  * @param invites
  * @param cb
  */
-function inviteGuests(event, invites, cb) {
+function inviteGuests(user, event, invites, cb) {
     var emails = invites.emails;
     var phones = invites.phones;
     require('./Contacts').registerPhones(phones.map(function(value){
@@ -157,7 +157,7 @@ function inviteGuests(event, invites, cb) {
                 return cb(err);
             }
             sendSms(phones, function(){
-                sendEmail(emails, function(){
+                sendEmail(user, event, emails, function(){
                     var eventInviteGuest = phones.map(function(value) {
                         return {"phone_id": PhoneIdentifier.extract(value), "event_id": event.id };
                     });
@@ -176,7 +176,6 @@ function inviteGuests(event, invites, cb) {
                     });
                 });
             });
-            
         });
     });
 }
@@ -215,7 +214,6 @@ function dropEmail(emails, event, cb) {
     }
 }
 
-
 function dropPhone(phones, event, cb) {
     if(phones && phones.length) {
         var dropPInvite = phones.map(function(v) {
@@ -238,8 +236,15 @@ function dropInvites(invites, event, cb) {
     });
 }
 
-
-function makeInvite(event, invites, cb) {
+/**
+ *
+ * @param user
+ * @param event
+ * @param invites
+ * @param cb
+ * @returns {*}
+ */
+function makeInvite(user, event, invites, cb) {
     // 2. inviteUsers
     if(!invites) {
         return cb();
@@ -249,7 +254,7 @@ function makeInvite(event, invites, cb) {
             return cb(err);
         }
         // 3. invite not invited person by phone or email
-        inviteGuests(event, notInvited, function(err) {
+        inviteGuests(user, event, notInvited, function(err) {
             if(err) {
                 return cb(err);
             }
@@ -290,19 +295,27 @@ function fillInvitedContainer(value, status, type, id ) {
  */
 module.exports = {
     create: function(event, userId, cb) {
-        event.founder = userId;
-        // 1. create event
-        Event.create(event).exec(function (err, result) {
+        User.findOne(userId).exec(function(err, user){
             if(err) {
-                return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
+                return cb(err);
             }
-            if(!event.invites) {
-                return cb(null, result);
+            if(!user) {
+                return cb(new LogicE("Founder for event isn't found"));
             }
-            if(!result) {
-                return cb(new LogicE("error wasn't created"));
-            }
-            makeInvite(result, event.invites, cb);
+            event.founder = userId;
+            // 1. create event
+            Event.create(event).exec(function (err, result) {
+                if(err) {
+                    return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
+                }
+                if(!event.invites) {
+                    return cb(null, result);
+                }
+                if(!result) {
+                    return cb(new LogicE("error wasn't created"));
+                }
+                makeInvite(user, result, event.invites, cb);
+            });
         });
     },
     update: function(eventId, user, event, cb) {
@@ -317,7 +330,7 @@ module.exports = {
             if(!event.invites && !event.dropped_invites) {
                 return cb(null, result);
             }
-            makeInvite(result[0], event.invites, function(err){
+            makeInvite(user, result[0], event.invites, function(err){
                 if(err) {
                     return cb(err);
                 }

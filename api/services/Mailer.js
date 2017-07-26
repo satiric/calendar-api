@@ -52,5 +52,29 @@ module.exports = {
             to: email,
             subject: "Invite to vlife"
         }, cb);
+    },
+
+    /**
+     * todo refactor it
+     * @param user
+     * @param event
+     * @param email
+     * @param cb
+     * @returns {*}
+     */
+    sendInviteToEventMessage: function(user, event, email, cb) {
+        'use strict';
+
+        return sails.hooks.email.send("inviteToEventEmail", {
+            Name: user.name,
+            SecondName: user.second_name,
+            EventTitle: event.title || 'EventTitle',
+            EventLocation: event.location || '',
+            EventDate: event.date_start
+        }, {
+            to: email,
+            subject: "Invite to event in vlife"
+        }, cb);
     }
+    
 };
