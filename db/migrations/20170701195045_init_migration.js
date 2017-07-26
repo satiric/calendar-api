@@ -123,7 +123,10 @@ exports.up = function(knex, Promise) {
             `updatedAt` datetime DEFAULT NULL,\
             PRIMARY KEY (`id`),\
             UNIQUE KEY `email` (`email`)\
-        ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;")
+        ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;"),
+        knex.raw("INSERT INTO apikey (value) VALUES ('test')," +
+            "('059zZmWOYJU0bLf7RrjnLMPbfCYf3uve5KYGs8o3jWxYE1bBQoz5ZKKVafsn')," +
+            "('e3vsnAAywNnawmocHUE8EyeFdYRLMV071JGMUs-CwXLxSQukaUSMiQz0yJi4')  ;"),
     ]);
 };
 
