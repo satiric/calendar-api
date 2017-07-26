@@ -49,6 +49,6 @@ Note that for keeping server alive you should use <a href=http://pm2.keymetrics.
 # Requirements
 Must be pre installed:
 - node v6.10.3 or v8.1.0 (both was tested)
-- mysql
-Optional:
+- mysql <br /> <br />
+Optional: <br />
 - pm2
