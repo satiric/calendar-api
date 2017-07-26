@@ -7,7 +7,7 @@ info:
     name: "Konstantin Maruhnich"
     email: "nocturneumbra@gmail.com"
 # during dev, should point to your local machine
-host: http://vlife.dev.cleveroad.com/swagger/doc
+host: http://vlife.dev.cleveroad.com
 # basePath prefixes all resource paths
 basePath: /api/v1
 tags: 
