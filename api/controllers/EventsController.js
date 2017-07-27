@@ -17,7 +17,7 @@ module.exports = {
         rest: false
     },
     /** todo refactor it
-     * find of my
+     * get all events where i am creator
      * @param req
      * @param res
      */
@@ -42,10 +42,9 @@ module.exports = {
                 ];
             }
             if(date) {
-                params.date_start = {'<=': date.split("T")[0]};
-                params.date_end =  {'>=': date.split("T")[0] };
+                params.date_start = {'<=': date.split("T")[0] + " 23:59:59"};
+                params.date_end =  {'>=': date.split("T")[0]  + " 00:00:00"};
             }
-            
             Event.find(params).sort({date_start: 'asc'}).paginate({page: page, limit: pageSize}).exec(function (err, events) {
                 if(err) {
                     return res.serverError({"data":err});
@@ -64,7 +63,6 @@ module.exports = {
                             if(err) {
                                 return res.serverError({"data":err});
                             }
-
                             Event.extendEvent(events, function(err, results){
                                 if(err) {
                                     return res.serverError({"data":err});
@@ -236,7 +234,6 @@ module.exports = {
         });
     },
 
-
     /**
      *
      * @param req
@@ -248,7 +245,6 @@ module.exports = {
             if(err) {
                 return res.serverError({"data": err});
             }
-
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
@@ -296,12 +292,10 @@ module.exports = {
                 if(!founded) {
                     return res.json(404, {"status":"error", "message": "Event isn't found"});
                 }
-
                 var errorMsg  = Event.hasNotice(req.body);
                 if(errorMsg) {
                     return res.badRequest({"message": errorMsg});
                 }
-
                 if((req.body.date_start && !Event.isoDate(req.body.date_start)) ||
                     (req.body.date_end && !Event.isoDate(req.body.date_end)) ||
                     (req.body.end_repeat && !Event.isoDate(req.body.end_repeat) )) {
@@ -333,29 +327,8 @@ module.exports = {
                             return res.ok({"data": response});
                         });
                     });
-
                 });
             });
         });
-    },
-    // search: function (req, res) {
-    //     var token = Auth.extractAuthKey(req);
-    //     var searchValue = req.param('value');
-    //     var page = req.param('page');
-    //     var pageSize = req.param('pageSize');
-    //     UserAuth.getUserByAuthToken(token, function(err, user) {
-    //         // if(err) {
-    //         //     return res.serverError({"details": err});
-    //         // }
-    //         // if(!user) {
-    //         //     return res.badRequest({"message": "User not found"});
-    //         // }
-    //         Event.find({"founder": user.id}).exec(function (err, events) {
-    //             if(err) {
-    //                 return res.serverError({"details":err});
-    //             }
-    //             return res.ok({"event": events});
-    //         }).paginate({page: page, limit: pageSize});
-    //     });
-    // }
+    }
 };
