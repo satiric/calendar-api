@@ -131,6 +131,19 @@ module.exports = {
         }
     },
 
+    getPopulated: function(ids, cb) {
+        if (!Array.isArray(ids)) {
+            return cb( new Error("Ids should be an array") );
+        }
+        User.find({"id": ids}).populate('avatar').exec(function (err, users) {
+            if(err) {
+                return cb(err);
+            }
+            return cb(null, users);
+        });
+    },
+
+
     login: function (email, pass, cb) {
 
         User.findOne({

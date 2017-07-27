@@ -20,14 +20,14 @@ module.exports = {
      * @param res
      */
     find: function (req, res) {
-        User.findOne({"id": req.param('id')}).populate('avatar').exec(function (err, user) {
+        User.getPopulated([req.param('id')], function (err, users) {
             if(err) {
                 return res.serverError({"data": err});
             }
-            if(!user) {
+            if(! users || !users[0]) {
                 return res.badRequest({"message": "User not found."});
             }
-            return res.ok({ "data": user });
+            return res.ok({ "data": users[0] });
         });
     },
 
@@ -79,12 +79,13 @@ module.exports = {
      * @returns {*}
      */
     login: function (req, res) {
+        //todo make login as auth util
         User.login(req.param('email'), req.param('password'), function (err, result) {
             if (err) {
-                return res.json(400, {"status": "error", "message": err.message});
+                return res.badRequest({ "message": err.message});
             }
             if (!result) {
-                return res.json(400, {"status": "error", "message": 'Invalid username/password combination.'});
+                return res.badRequest({"message": 'Invalid username/password combination.'});
             }
             return res.ok({"data":result});
         });
@@ -113,12 +114,12 @@ module.exports = {
      * @returns {*}
      */
     changePassword: function (req, res) {
-        var token = req.param('token');
         var value = req.param('password');
         //VLIF-162
         if( typeof value === "number") {
             return res.badRequest({"message": "Password can not be number"});
         }
+        var token = req.param('token');
         var oldValue = req.param('old_password');
         var authKey = Auth.extractAuthKey(req);
         if (token) {
@@ -167,12 +168,13 @@ module.exports = {
             });
         });
     },
+
+
     /**
      * @param req
      * @param res
      */
     resetPassword: function (req, res) {
-        'use strict';
         var hash = require("randomstring").generate(45);
         User.update({'email': req.param('email')}, {"password_reset_token": hash, "reset_token_created": new Date()})
             .exec(function (err, users) {
@@ -204,7 +206,7 @@ module.exports = {
         });
     },
     /**
-     * 
+     * todo refactor it
      * @param req
      * @param res
      */
@@ -271,20 +273,20 @@ module.exports = {
         //todo refactor it
         UserAuth.getUserByAuthToken(token, function (err, user) {
             if (err) {
-                return res.serverError({"details": err});
+                return res.serverError({"data": err});
             }
             if (!user) {
-                return res.badRequest({"status": "error", "message": "User not found"});
+                return res.badRequest({"message": "User not found"});
             }
             UserAuth.refreshToken(token, req.param('refresh_token'), 60 * 60 * 24 * 30 * 1000, function (err, newToken) {
                 if (err) {
                     return (err instanceof LogicE)
                         ? res.json(404, {"message": err.message})
-                        : res.serverError({"details": err});
+                        : res.serverError({"data": err});
                 }
                 User.findOne({"id": user.id}).populate("avatar").exec(function(err, user) {
                     if (err) {
-                        return res.serverError({"details": err});
+                        return res.serverError({"data": err});
                     }
                     res.ok({"data": {"user": user, "token": newToken}});
                 });

@@ -3,19 +3,23 @@
  */
 var LogicE = require('../exceptions/Logic');
 
-function registEmails(emails, emailSubscribe, cb) {
-    //1. find emails from contact in dictionary
+function registEmails(emails, cb) {
     if(!emails.length) {
         return cb();
     }
-    Email.find(emails).exec(function(err, results){
+    var emailsList = emails.map(function(value){
+        return {email: value.email};
+    });
+    //1. find emails from contact in dictionary
+
+    Email.find(emailsList).exec(function(err, results){
         if(err) {
             return cb(err);
         }
         // sails.log(emails);
 //if founded - we must check exists records
         var founded = results;
-        var notFouneded = emails.filter(function(val) {
+        var notFouneded = emailsList.filter(function(val) {
             return !(_.find(results, { 'email':val.email }));
         });
         //at first - create emails that not founded
@@ -24,7 +28,7 @@ function registEmails(emails, emailSubscribe, cb) {
                 return cb(err);
             }
             //at second - subcribe to all
-            EmailContacts.batchInsert(emailSubscribe, function(err, result){
+            EmailContacts.batchInsert(emails, function(err, result){
                 if(err) {
                     return cb(err);
                 }
@@ -34,18 +38,22 @@ function registEmails(emails, emailSubscribe, cb) {
     });
 }
 
-function registPhones(phones, phonesRecords, phonesSubscribe, cb) {
-    //1. find phones from contact in dictionary
+function registPhones(phones, cb) {
+
     if(!phones.length) {
         return cb();
     }
-    Phone.find(phones).exec(function(err, results){
+    var phoneList = phones.map(function(value) {
+        return {"id" : value.id};
+    });
+    //1. find phones from contact in dictionary
+    Phone.find(phoneList).exec(function(err, results){
         if(err) {
             return cb(err);
         }
 //if founded - we must check exists records
         var founded = results;
-        var notFouneded = phonesRecords.filter(function(val) {
+        var notFouneded = phones.filter(function(val) {
             return !(_.find(results, { 'id':val.id }));
         });
         //at first - create phones that not founded
@@ -54,7 +62,7 @@ function registPhones(phones, phonesRecords, phonesSubscribe, cb) {
                 return cb(err);
             }
             //at second - subcribe to all
-            PhoneContacts.batchInsert(phonesSubscribe, function(err, result){
+            PhoneContacts.batchInsert(phones, function(err, result){
                 if(err) {
                     return cb(err);
                 }
@@ -64,49 +72,81 @@ function registPhones(phones, phonesRecords, phonesSubscribe, cb) {
     });
 }
 
-function destroyEmails(emails, cb) {
-    if(!emails.length) {
-        return cb();
-    }
-    EmailContacts.destroy({ 'or' : emails } ).exec(cb);
+function registContacts(emailRecords, phoneRecords, cb) {
+
+    registEmails(emailRecords, function(err, founded) {
+        var contacts = [];
+        if(err) {
+            return cb(err);
+        }
+        if(founded) {
+            for (var i = 0, size = founded.length; i < size; i++) {
+                if (founded[i].user_id && (contacts.indexOf(founded[i].user_id) === -1)) {
+                    contacts.push(founded[i].user_id);
+                }
+            }
+        }
+        registPhones(phoneRecords, function(err, founded) {
+            if(err) {
+                return cb(err);
+            }
+            if(founded) {
+                for (var i = 0, size = founded.length; i < size; i++) {
+                    if (founded[i].user_id && (contacts.indexOf(founded[i].user_id) === -1)) {
+                        contacts.push(founded[i].user_id);
+                    }
+                }
+            }
+            return cb(null, contacts);
+        });
+    });
 }
 
-function destroyPhones(phones, cb) {
-    if(!phones.length) {
-        return cb();
-    }
-    PhoneContacts.destroy({ 'or' : phones }).exec(cb);
-}
+
+// function destroyEmails(emails, cb) {
+//     if(!emails.length) {
+//         return cb();
+//     }
+//     EmailContacts.destroy({ 'or' : emails } ).exec(cb);
+// }
+//
+// function destroyPhones(phones, cb) {
+//     if(!phones.length) {
+//         return cb();
+//     }
+//     PhoneContacts.destroy({ 'or' : phones }).exec(cb);
+// }
 
 
-function blockEmails(emails, cb) {
-    if(!emails.length) {
-        return cb();
-    }
-    EmailContacts.update({ 'or' : emails } , {"blocked":1}).exec(cb);
-}
+// for old logic with contacts
+// function blockEmails(emails, cb) {
+//     if(!emails.length) {
+//         return cb();
+//     }
+//     EmailContacts.update({ 'or' : emails } , {"blocked":1}).exec(cb);
+// }
 
-function blockPhones(phones, cb) {
-    if(!phones.length) {
-        return cb();
-    }
-    PhoneContacts.update({ 'or' : phones } , {"blocked":1}).exec(cb);
-}
-
-
-function unblockEmails(emails, cb) {
-    if(!emails.length) {
-        return cb();
-    }
-    EmailContacts.update({ 'or' : emails } , {"blocked":null}).exec(cb);
-}
-
-function unblockPhones(phones, cb) {
-    if(!phones.length) {
-        return cb();
-    }
-    PhoneContacts.update({ 'or' : phones } , {"blocked":null}).exec(cb);
-}
+// function blockPhones(phones, cb) {
+//     if(!phones.length) {
+//         return cb();
+//     }
+//     PhoneContacts.update({ 'or' : phones } , {"blocked":1}).exec(cb);
+// }
+//
+//
+// function unblockEmails(emails, cb) {
+//     if(!emails.length) {
+//         return cb();
+//     }
+//     EmailContacts.update({ 'or' : emails } , {"blocked":null}).exec(cb);
+// }
+//
+// function unblockPhones(phones, cb) {
+//     if(!phones.length) {
+//         return cb();
+//     }
+//     PhoneContacts.update({ 'or' : phones } , {"blocked":null}).exec(cb);
+// }
 
 
 function cascadeSend(emails, founded, user, current, cb, info) {
@@ -235,46 +275,91 @@ function sendPhones(phones, user, cb) {
 
 }
 
+function changeBlock(user, friends, block, cb) {
 
-function getEmailContacts(userId, cb) {
-    EmailContacts.find({ select: ['email'], user_id: userId }).exec(function(err, emails) {
+    var friendsUser = friends.map(function(friend) {
+        return {
+            'user_who_id': user.id,
+            'user_whom_id': friend
+        };
+    });
+    Friend.update(friendsUser, {"blocked": block}).exec(function(err, results) {
         if(err) {
             return cb(err);
         }
-        var emailsList = [];
-        for (var i = 0, size = emails.length; i < size; i++)  {
-            emailsList.push({"email":emails[i].email, user_id: {'!': null}});
-        }
-
-        Email.find({or: emailsList}).populate("user_id").exec(function(err, users) {
+        var usersList = results.map(function(friend) {
+            return friend.user_whom_id;
+        });
+        User.find(usersList).exec(function (err, users) {
             if(err) {
                 return cb(err);
             }
-            return cb(null, users);
+            return cb(null, users.map(function(user) {
+                //because we block this user yet
+                user.blocked = block;
+                return user;
+            }));
         });
     });
 
 }
 
-function getPhoneContacts(userId, cb) {
-    PhoneContacts.find({ select: ['phone_id'], user_id: userId }).exec(function(err, phones) {
-        if(err) {
-            return cb(err);
-        }
-        var phoneList = [];
-        for (var i = 0, size = phones.length; i < size; i++)  {
-            phoneList.push({"id":phones[i].phone_id, user_id: {'!': null}});
-        }
-        Phone.find({or: phoneList}).populate("user_id").exec(function(err, users) {
-            if(err) {
-                return cb(err);
-            }
-            return cb(null, users);
-        });
-    });
+//for old logic with contacts
+// function getEmailContacts(userId, cb) {
+//     EmailContacts.find({ select: ['email'], user_id: userId }).exec(function(err, emails) {
+//         if(err) {
+//             return cb(err);
+//         }
+//         var emailsList = [];
+//         for (var i = 0, size = emails.length; i < size; i++)  {
+//             emailsList.push({"email":emails[i].email, user_id: {'!': null}});
+//         }
+//
+//         Email.find({or: emailsList}).populate("user_id").exec(function(err, users) {
+//             if(err) {
+//                 return cb(err);
+//             }
+//             return cb(null, users);
+//         });
+//     });
+//
+// }
 
-
-}
+// function getPhoneContacts(userId, cb) {
+//     PhoneContacts.find({ select: ['phone_id', 'blocked'], user_id: userId }).exec(function(err, phones) {
+//         if(err) {
+//             return cb(err);
+//         }
+//         var phoneList = [];
+//         var blocked = [];
+//         for (var i = 0, size = phones.length; i < size; i++)  {
+//             phoneList.push({"id":phones[i].phone_id, user_id: {'!': null}});
+//             if(phones[i].blocked) {
+//                 blocked.push(phones[i].phone_id);
+//             }
+//         }
+//
+//         Phone.find({or: phoneList}).populate("user_id").exec(function(err, userPhones) {
+//             if(err) {
+//                 return cb(err);
+//             }
+//             if(!userPhones.length) {
+//                 return cb(null, []);
+//             }
+//             userPhones.map(function(value){
+//
+//             });
+//
+//             var users = userPhones.map(function(value) {
+//                 return {
+//                     'id': value.user_id.id,
+//                     'blocked' : + (blocked.indexOf(value.id) !== -1) //to int
+//                 };
+//             });
+//             return cb(null, users);
+//         });
+//     });
+// }
 // Phone.find(phones).exec(function(err, results){
 //     if(err) {
 //         return cb(err);
@@ -316,12 +401,10 @@ module.exports = {
         });
     },
     registerEmails: function(emails, cb) {
-
         Email.find(emails).exec(function(err, results){
             if(err) {
                 return cb(err);
             }
-
             var notFouneded = emails.filter(function(val) {
                 return !(_.find(results, { 'email':val }));
             });
@@ -334,188 +417,257 @@ module.exports = {
             });
         });
     },
+
+
+    /**
+     * ---with friends - done and tested.
+     * @param userId
+     * @param contacts
+     * @param cb
+     * @returns {*}
+     */
     create: function(userId, contacts, cb) {
-        //todo refactor it
-        var emails = []; //for search, just list of emails
-        var emailSubscribe = [];
-        var phones = [];
-        var phoneSubscribe = [];
-        var phonesRecords = [];
-        var j, size;
-        for(var i = 0, sizeContacts = contacts.length; i < sizeContacts; i++) {
-            contacts[i].emails = contacts[i].emails || [];
-            contacts[i].phones = contacts[i].phones || [];
-            if(! Array.isArray(contacts[i].phones) || ! Array.isArray(contacts[i].emails)) {
+        var emailRecords = [];
+        var phoneRecords = [];
+        if(! (userId = parseInt(userId)) ) {
+            return cb(new LogicE("userId must be integer."));
+        }
+        //todo can split it
+        contacts.forEach(function(contact) {
+            var emails = contact.emails || [];
+            var phones = contact.phones || [];
+            if(! Array.isArray(emails) || ! Array.isArray(phones)) {
                 return cb(new LogicE("Phones and emails in contacts array must be an array."));
             }
-            for (j = 0, size =  contacts[i].emails.length; j < size; j++) {
-                if(!contacts[i].emails[j]) {
-                    continue;
+            //make from emails and phones - valid objects for inserting to db
+            emails.forEach(function(email) {
+                if(!email) {
+                    return;
                 }
-                emails.push({"email":contacts[i].emails[j]});
-                emailSubscribe.push({"email": contacts[i].emails[j], "user_id": parseInt(userId)});
-            }
-            for (j = 0, size =  contacts[i].phones.length; j < size; j++) {
-                if(!contacts[i].phones[j] || ! PhoneIdentifier.extract(contacts[i].phones[j])) {
-                    continue;
+                emailRecords.push({"email": email, "user_id": userId});
+            });
+            phones.forEach(function(phone) {
+                var phoneId = PhoneIdentifier.extract(phone);
+                if( ! phoneId ) {
+                    return;
                 }
-                phones.push({"id": PhoneIdentifier.extract(contacts[i].phones[j])});
-                phonesRecords.push({"id": PhoneIdentifier.extract(contacts[i].phones[j]), "phone": contacts[i].phones[j]});
-                phoneSubscribe.push({"id": PhoneIdentifier.extract(contacts[i].phones[j]), "phone": contacts[i].phones[j], "user_id":userId});
-            }
-        }
-
-        registEmails(emails, emailSubscribe, function(err, founded) {
-            var contacts = [];
+                phoneRecords.push({"id": phoneId, "phone": phone, "user_id": userId});
+            });
+        });
+        registContacts(emailRecords, phoneRecords, function(err, friendIds) {
             if(err) {
                 return cb(err);
             }
-            if(founded) {
-                for (var i = 0, size = founded.length; i < size; i++) {
-                    if (founded[i].user_id && (contacts.indexOf(founded[i].user_id) === -1)) {
-                        contacts.push(founded[i].user_id);
-                    }
-                }
+            if(!friendIds || !friendIds.length) {
+                return cb(null, []);
             }
-            registPhones(phones, phonesRecords, phoneSubscribe, function(err, founded) {
+            var friends = friendIds.map(function(friendId){
+                return {
+                    'user_who_id': userId,
+                    'user_whom_id': friendId
+                };
+            });
+            Friend.insertIgnore(friends, function(err, result) {
                 if(err) {
                     return cb(err);
                 }
-                if(founded) {
-                    for (var i = 0, size = founded.length; i < size; i++) {
-                        if (founded[i].user_id && (contacts.indexOf(founded[i].user_id) === -1)) {
-                            contacts.push(founded[i].user_id);
-                        }
+                //userIds is list of id each one we need to add to friends
+                User.find({"id": friendIds}).populate('avatar').exec(function(err, users) {
+                    if(err) {
+                        return cb(err);
                     }
-                }
-                User.find({"id": contacts}).populate('avatar').exec(cb);
+                    return cb(null, users.map(function(user) {
+                        //because we create pair user-friend just now and didn't block it
+                        user.blocked = 0;
+                        return user;
+                    }));
+                });
             });
         });
-
     },
+
+    /**
+     *
+     * @param userId
+     * @param cb
+     */
     find: function(userId, cb) {
-
-        getPhoneContacts(userId, function(err, users) {
+        Friend.find({user_who_id: userId}, function(err, friends) {
             if(err) {
                 return cb(err);
             }
-            var collected = [];
-            if(users.length) {
-                collected = users.map(function(value) {
-                    return value.user_id.id;
-                });
-            }
-
-            getEmailContacts(userId, function (err, users) {
+            var blocked = [];
+            var friendIds = friends.map(function(friend) {
+                if(friend.blocked) {
+                    blocked.push(friend.user_whom_id);
+                }
+                return friend.user_whom_id;
+            });
+            //userIds is list of id each one we need to add to friends
+            User.find({"id": friendIds}).populate('avatar').exec(function(err, users) {
                 if(err) {
                     return cb(err);
                 }
-                var cacheUsers = users.map(function(value){
-                    return value.user_id.id;
-                });
-
-                collected = collected.concat(cacheUsers.filter(function(value){
-                    return collected.indexOf(value) === -1;
+                return cb(null, users.map(function(user) {
+                    //because we create pair user-friend just now and didn't block it
+                    user.blocked = + ( blocked.indexOf(user.id) !== -1 );
+                    return user;
                 }));
-
-                User.find({id: collected}).populate('avatar').exec(function(err, users){
-                    return cb(err, users);
-                });
             });
         });
+        // getPhoneContacts(userId, function(err, users) {
+        //     if(err) {
+        //         return cb(err);
+        //     }
+        //     var collected = users;
+        //     getEmailContacts(userId, function (err, users) {
+        //         if(err) {
+        //             return cb(err);
+        //         }
+        //         var cacheUsers = users.map(function(value){
+        //             return value.user_id.id;
+        //         });
+        //
+        //         collected = collected.concat(cacheUsers.filter(function(value){
+        //             return collected.indexOf(value) === -1;
+        //         }));
+        //
+        //         User.find({id: collected}).populate('avatar').exec(function(err, users){
+        //             return cb(err, users);
+        //         });
+        //     });
+        // });
     },
 
-    block: function (user,emails,phones,cb) {
-        if(emails.length) {
-            emails = emails.map(function(value) {
-                return {
-                    'email': value,
-                    'user_id': user.id
-                };
-            });
-        }
-        if(phones.length) {
-            phones = phones.map(function(value) {
-                return {
-                    'phone_id': PhoneIdentifier.extract(value),
-                    'user_id': user.id
-                };
-            });
-        }
-        blockEmails(emails, function(err, result) {
-            if(err) {
-                return cb(err);
-            }
-            blockPhones(phones, function(err, result){
-                if(err) {
-                    return cb(err);
-                }
-
-                return cb(null, result);
-            });
-        });
-    },
-    unblock: function (user,emails,phones,cb) {
-        if(emails.length) {
-            emails = emails.map(function(value) {
-                return {
-                    'email': value,
-                    'user_id': user.id
-                };
-            });
-        }
-        if(phones.length) {
-            phones = phones.map(function(value) {
-                return {
-                    'phone_id': PhoneIdentifier.extract(value),
-                    'user_id': user.id
-                };
-            });
-        }
-        unblockEmails(emails, function(err, result) {
-            if(err) {
-                return cb(err);
-            }
-            unblockPhones(phones, function(err, result){
-                if(err) {
-                    return cb(err);
-                }
-                return cb(null, result);
-            });
-        });
+    /**
+     *
+     * @param user
+     * @param friends
+     * @param cb
+     */
+    block: function (user, friends,cb) {
+        return changeBlock(user, friends, 1, cb);
+        // if(emails.length) {
+        //     emails = emails.map(function(value) {
+        //         return {
+        //             'email': value,
+        //             'user_id': user.id
+        //         };
+        //     });
+        // }
+        // if(phones.length) {
+        //     phones = phones.map(function(value) {
+        //         return {
+        //             'phone_id': PhoneIdentifier.extract(value),
+        //             'user_id': user.id
+        //         };
+        //     });
+        // }
+        // blockEmails(emails, function(err, result) {
+        //     if(err) {
+        //         return cb(err);
+        //     }
+        //     blockPhones(phones, function(err, result){
+        //         if(err) {
+        //             return cb(err);
+        //         }
+        //
+        //         return cb(null, result);
+        //     });
+        // });
     },
 
-    destroy: function(user, emails, phones, cb) {
-        if(emails.length) {
-            emails = emails.map(function(value) {
-                return {
-                    'email': value,
-                    'user_id': user.id
-                };
-            });
-        }
-        if(phones.length) {
-            phones = phones.map(function(value) {
-                return {
-                    'phone_id': PhoneIdentifier.extract(value),
-                    'user_id': user.id
-                };
-            });
-        }
-        destroyEmails(emails, function(err, result) {
-            if(err) {
-                return cb(err);
-            }
-            destroyPhones(phones, function(err, result){
-                if(err) {
-                    return cb(err);
-                }
-                return cb(null, result);
-            });
-        });
+    /**
+     *
+     * @param user
+     * @param friends
+     * @param cb
+     */
+    unblock: function (user,friends,cb) {
+        return changeBlock(user, friends, 1, cb);
+
+
+        // if(emails.length) {
+        //     emails = emails.map(function(value) {
+        //         return {
+        //             'email': value,
+        //             'user_id': user.id
+        //         };
+        //     });
+        // }
+        // if(phones.length) {
+        //     phones = phones.map(function(value) {
+        //         return {
+        //             'phone_id': PhoneIdentifier.extract(value),
+        //             'user_id': user.id
+        //         };
+        //     });
+        // }
+        // unblockEmails(emails, function(err, result) {
+        //     if(err) {
+        //         return cb(err);
+        //     }
+        //     unblockPhones(phones, function(err, result){
+        //         if(err) {
+        //             return cb(err);
+        //         }
+        //         return cb(null, result);
+        //     });
+        // });
     },
+
+
+    /**
+     *
+     * @param user
+     * @param friends
+     * @param cb
+     */
+    destroy: function(user, friends, cb) {
+        var friendsUser = friends.map(function(friend) {
+            return {
+                'user_who_id': user.id,
+                'user_whom_id': friend
+            };
+        });
+        Friend.destroy(friendsUser).exec(cb);
+        // if(emails.length) {
+        //     emails = emails.map(function(value) {
+        //         return {
+        //             'email': value,
+        //             'user_id': user.id
+        //         };
+        //     });
+        // }
+        // if(phones.length) {
+        //     phones = phones.map(function(value) {
+        //         return {
+        //             'phone_id': PhoneIdentifier.extract(value),
+        //             'user_id': user.id
+        //         };
+        //     });
+        // }
+        // destroyEmails(emails, function(err, result) {
+        //     if(err) {
+        //         return cb(err);
+        //     }
+        //     destroyPhones(phones, function(err, result){
+        //         if(err) {
+        //             return cb(err);
+        //         }
+        //         return cb(null, result);
+        //     });
+        // });
+    },
+
+    /**
+     *
+     * @param emails
+     * @param phones
+     * @param inviter
+     * @param cb
+     */
     invite: function(emails, phones, inviter, cb) {
-
         var results = {};
         sendEmails(emails, inviter, function(err, result) {
             if(err) {

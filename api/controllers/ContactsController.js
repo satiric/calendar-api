@@ -27,7 +27,7 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
-            require('../utils/Contacts').find(user.id, function(err, result) {
+            require('../utils/Contacts').find(user, function(err, result) {
                 if(err) {
                     return res.serverError({"data":err});
                 }
@@ -99,15 +99,11 @@ module.exports = {
             if(err) {
                 return res.serverError({"data": err});
             }
-            var emails = req.param('emails');
-            var phones = req.param('phones');
-            if(!Array.isArray(emails)) {
-                return res.badRequest({"message": "emails must be an array"});
+            var friends = req.param('friends');
+            if(!Array.isArray(friends)) {
+                return res.badRequest({"message": "friends must be an array"});
             }
-            if(!Array.isArray(phones)) {
-                return res.badRequest({"message": "phones must be an array"});
-            }
-            require('../utils/Contacts').block(user, emails, phones, function(err, result){
+            require('../utils/Contacts').block(user, friends, function(err, result){
                 if(err) {
                     return res.serverError({"data": err});
                 }
@@ -127,15 +123,11 @@ module.exports = {
             if(err) {
                 return res.serverError({"data": err});
             }
-            var emails = req.param('emails');
-            var phones = req.param('phones');
-            if(!Array.isArray(emails)) {
-                return res.badRequest({"message": "emails must be an array"});
+            var friends = req.param('friends');
+            if(!Array.isArray(friends)) {
+                return res.badRequest({"message": "friends must be an array"});
             }
-            if(!Array.isArray(phones)) {
-                return res.badRequest({"message": "phones must be an array"});
-            }
-            require('../utils/Contacts').unblock(user, emails, phones, function(err, result){
+            require('../utils/Contacts').unblock(user, friends, function(err, result){
                 if(err) {
                     return res.serverError({"data": err});
                 }
@@ -154,15 +146,11 @@ module.exports = {
             if(err) {
                 return res.serverError({"data": err});
             }
-            var emails = req.param('emails');
-            var phones = req.param('phones');
-            if(!Array.isArray(emails)) {
-                return res.badRequest({"message": "emails must be an array"});
+            var friends = req.param('friends');
+            if(!Array.isArray(friends)) {
+                return res.badRequest({"message": "friends must be an array"});
             }
-            if(!Array.isArray(phones)) {
-                return res.badRequest({"message": "phones must be an array"});
-            }
-            require('../utils/Contacts').destroy(user, emails, phones, function(err, result){
+            require('../utils/Contacts').destroy(user, friends, function(err, result){
                 if(err) {
                     return res.serverError({"data": err});
                 }

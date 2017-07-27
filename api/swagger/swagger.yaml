@@ -7,7 +7,7 @@ info:
     name: "Konstantin Maruhnich"
     email: "nocturneumbra@gmail.com"
 # during dev, should point to your local machine
-host: http://vlife.dev.cleveroad.com
+host: vlife.dev.cleveroad.com
 # basePath prefixes all resource paths
 basePath: /api/v1
 tags: 
@@ -73,17 +73,58 @@ definitions:
       updatedAt:
         type: string
         format: date-time
-  Contact:
+  # Contact:
+  #   type: object
+  #   properties:
+  #     emails: 
+  #       type: array
+  #       items: 
+  #         type: string
+  #     phones: 
+  #       type: array
+  #       items: 
+  #         type: string
+  Friend: 
     type: object
+    required:
+      - id
+      - name
+      - second_name
+      - email
+      - phone
     properties:
-      emails: 
-        type: array
-        items: 
-          type: string
-      phones: 
-        type: array
-        items: 
-          type: string
+      id:
+        type: integer
+        example: 1
+      name:
+        type: string
+        example: Jhon
+        minLength: 2
+        maxLength: 25
+      second_name:
+        type: string
+        example: Statham
+        minLength: 2
+        maxLength: 25
+      email:
+        type: string
+        example: jhonstatham@gmail.com2
+      phone:
+        type: string
+        example: "+1234567899"
+        pattern: "\\+([0-9]){9,13}"
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+      avatar: 
+        "$ref": "#/definitions/File"
+      blocked: 
+        type: integer
+        description: 0 - unblocked, 1 - blocked
+      
   File: 
     type: object
     properties:
@@ -1288,9 +1329,19 @@ paths:
           description: "Contacts"
           required: true
           schema: 
-            type: array
-            items: 
-              $ref: "#/definitions/Contact"
+            type: object
+            properties: 
+              emails: 
+                type: array
+                description: "array of emails"
+                items: 
+                  type: string
+              phones: 
+                type: array
+                description: "array of phones"
+                items: 
+                  type: string
+                  
       responses:
         "200":
           description: Success
@@ -1303,7 +1354,7 @@ paths:
                 type: array
                 description:  array of users who in contacts
                 items: 
-                  $ref: "#/definitions/UserReadable"
+                  $ref: "#/definitions/Friend"
 
         # responses may fall through to errors
         default:
@@ -1332,7 +1383,7 @@ paths:
                 type: array
                 description: array of users who in contacts
                 items: 
-                  $ref: "#/definitions/UserReadable"
+                  $ref: "#/definitions/Friend"
 
         # responses may fall through to errors
         default:
@@ -1350,20 +1401,14 @@ paths:
         - $ref: "#/parameters/auth-token-required"
         - name: body
           in: body
-          description: "Object User"
+          description: "Friends list"
           required: true
           schema: 
             type: object
             properties: 
-              emails: 
-                type: array
-                description: "array of emails"
-                items: 
-                  type: string
-              phones: 
-                type: array
-                items: 
-                  type: string
+              friends: 
+                type: integer
+                description: user id each one is friend
 
       responses:
         "200":
@@ -1391,26 +1436,28 @@ paths:
         - $ref: "#/parameters/auth-token-required"
         - name: body
           in: body
-          description: "Object with emails and phones for block"
+          description: "Object with ids friends for block"
           required: true
           schema: 
             type: object
             properties: 
-              emails: 
-                type: array
-                description: "array of emails"
-                items: 
-                  type: string
-              phones: 
-                type: array
-                items: 
-                  type: string
+              friends: 
+                type: integer
+                description: user id each one is friend
 
       responses:
         "200":
           description: Success
           schema:
-            $ref: "#/definitions/SuccessResponse"
+            type: "object"
+            required: 
+            - data
+            properties: 
+              data:
+                type: array
+                description:  array of users who in contacts
+                items: 
+                  $ref: "#/definitions/Friend"
 
         # responses may fall through to errors
         default:
@@ -1431,26 +1478,28 @@ paths:
         - $ref: "#/parameters/auth-token-required"
         - name: body
           in: body
-          description: "Object with emails and phones for block"
+          description: "Object with friends ids for block"
           required: true
           schema: 
             type: object
             properties: 
-              emails: 
-                type: array
-                description: "array of emails"
-                items: 
-                  type: string
-              phones: 
-                type: array
-                items: 
-                  type: string
+              friends: 
+                type: integer
+                description: user id each one is friend
 
       responses:
         "200":
           description: Success
           schema:
-            $ref: "#/definitions/SuccessResponse"
+            type: "object"
+            required: 
+            - data
+            properties: 
+              data:
+                type: array
+                description:  array of users who in contacts
+                items: 
+                  $ref: "#/definitions/Friend"
 
         # responses may fall through to errors
         default:

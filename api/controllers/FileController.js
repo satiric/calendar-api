@@ -1,6 +1,6 @@
 /**
  * FileController
- *
+ *todo remove and replace for v2 file controller
  * @description :: Server-side logic for managing files
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
@@ -50,26 +50,7 @@ module.exports = {
                 }//todo not 0
                 return res.ok({"data": created[0]});
             });
-            // return res.json({
-            //     message: uploadedFiles.length + ' file(s) uploaded successfully!',
-            //     files: uploadedFiles
-            // });
         } );
-        // return req.file('file').upload({
-        //
-        //     dirname: '/uploads/'
-        // },);
-
-        // return req.file('file').upload(function (err, uploadedFiles){
-        //     if (err) return res.serverError(err);
-        //     return res.json({
-        //         message: uploadedFiles.length + ' file(s) uploaded successfully!',
-        //         files: uploadedFiles
-        //     });
-        // });
-    },
-    destroy: function (req, res) {
-
     }
 };
 
