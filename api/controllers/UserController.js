@@ -80,7 +80,10 @@ module.exports = {
      */
     login: function (req, res) {
         //todo make login as auth util
-        User.login(req.param('email'), req.param('password'), function (err, result) {
+        if(!req.body || !req.body.email || !req.body.password) {
+            return res.badRequest({ "message": "Email and password is required"});
+        }
+        User.login(req.body.email, req.body.password, function (err, result) {
             if (err) {
                 return res.badRequest({ "message": err.message});
             }
@@ -114,13 +117,14 @@ module.exports = {
      * @returns {*}
      */
     changePassword: function (req, res) {
-        var value = req.param('password');
+
+        var value = req.body.password;
         //VLIF-162
         if( typeof value === "number") {
             return res.badRequest({"message": "Password can not be number"});
         }
-        var token = req.param('token');
-        var oldValue = req.param('old_password');
+        var token = req.body.token;
+        var oldValue = req.body.old_password;
         var authKey = Auth.extractAuthKey(req);
         if (token) {
             return UserAuth.getUserByResetToken(token, function (err, user) {
@@ -176,7 +180,11 @@ module.exports = {
      */
     resetPassword: function (req, res) {
         var hash = require("randomstring").generate(45);
-        User.update({'email': req.param('email')}, {"password_reset_token": hash, "reset_token_created": new Date()})
+        if(!req.body || !req.body.email ) {
+            return res.badRequest({ "message": "Email is required"});
+        }
+
+        User.update({'email': req.body.email }, {"password_reset_token": hash, "reset_token_created": new Date()})
             .exec(function (err, users) {
                 if (err) {
                     return res.serverError(err.message);
@@ -250,9 +258,12 @@ module.exports = {
      */
     verifyPhone: function (req, res) {
         var secKey = require("randomstring").generate(60);
+        if(!req.body || !req.body.phone || !req.body.code ) {
+            return res.badRequest({ "message": "Phone and code is required"});
+        }
         PhoneVerification.update({
-            "phone": req.param('phone'),
-            "code": req.param('code')
+            "phone": req.body.phone,
+            "code": req.body.code
         }, {"security_hash":secKey}).exec(function (err, result) {
             if (err) {
                 return res.serverError({"data": err});
@@ -271,6 +282,9 @@ module.exports = {
     refresh: function (req, res) {
         var token = Auth.extractAuthKey(req);
         //todo refactor it
+        if( ! req.body || ! req.body.refresh_token) {
+            return res.badRequest({"message": "refresh_token is required"});
+        }
         UserAuth.getUserByAuthToken(token, function (err, user) {
             if (err) {
                 return res.serverError({"data": err});
@@ -278,7 +292,7 @@ module.exports = {
             if (!user) {
                 return res.badRequest({"message": "User not found"});
             }
-            UserAuth.refreshToken(token, req.param('refresh_token'), 60 * 60 * 24 * 30 * 1000, function (err, newToken) {
+            UserAuth.refreshToken(token, req.body.refresh_token, 60 * 60 * 24 * 30 * 1000, function (err, newToken) {
                 if (err) {
                     return (err instanceof LogicE)
                         ? res.json(404, {"message": err.message})
