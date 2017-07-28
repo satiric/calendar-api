@@ -453,7 +453,7 @@ module.exports = {
             }
             //make from emails and phones - valid objects for inserting to db
             emails.forEach(function(email) {
-                if(!email) {
+                if(!email || !validateEmail(email)) {
                     return;
                 }
                 emailRecords.push({"email": email, "user_id": userId});

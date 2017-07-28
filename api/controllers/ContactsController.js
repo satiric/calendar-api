@@ -43,6 +43,9 @@ module.exports = {
      */
     create: function (req, res) {
         var contacts = req.body;
+        if(!Array.isArray(contacts)) {
+            return res.badRequest({"message": "body of request must be an array"});
+        }
         var token = Auth.extractAuthKey(req);
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
