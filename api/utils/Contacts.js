@@ -220,7 +220,7 @@ function validateEmail(email) {
     return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email);
 }
 function validatePhone(phone) {
-    return true; //  /\+([0-9]){9,13}/  - dont use
+    return /\+([0-9]){9,13}/.test(phone);
 }
 
 function sendEmails(emails, user, cb) {
