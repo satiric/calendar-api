@@ -27,6 +27,7 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
+            sails.log(user);
             require('../utils/Contacts').find(user, function(err, result) {
                 if(err) {
                     return res.serverError({"data":err});

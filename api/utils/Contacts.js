@@ -495,11 +495,11 @@ module.exports = {
 
     /**
      *
-     * @param userId
+     * @param user
      * @param cb
      */
-    find: function(userId, cb) {
-        Friend.find({user_who_id: userId}, function(err, friends) {
+    find: function(user, cb) {
+        Friend.find({user_who_id: user.id}, function(err, friends) {
             if(err) {
                 return cb(err);
             }
