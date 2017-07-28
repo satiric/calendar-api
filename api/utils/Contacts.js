@@ -56,6 +56,13 @@ function registPhones(phones, cb) {
         var notFouneded = phones.filter(function(val) {
             return !(_.find(results, { 'id':val.id }));
         });
+
+        notFouneded = notFouneded.map(function(val) {
+            return {
+                'id': val.id,
+                'phone': val.phone
+            };
+        });
         //at first - create phones that not founded
         Phone.create(notFouneded).exec(function(err, result) {
             if(err) {
