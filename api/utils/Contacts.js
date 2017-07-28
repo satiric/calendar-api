@@ -644,7 +644,6 @@ module.exports = {
                 'user_whom_id': friend
             };
         });
-        sails.log(friendsUser);
         Friend.destroy({or:friendsUser}).exec(cb);
         // if(emails.length) {
         //     emails = emails.map(function(value) {

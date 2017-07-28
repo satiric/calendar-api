@@ -107,7 +107,7 @@ module.exports = {
                 if(err) {
                     return res.serverError({"data": err});
                 }
-                return res.ok();
+                return res.ok({"data":result});
             });
         });
     },
@@ -131,7 +131,7 @@ module.exports = {
                 if(err) {
                     return res.serverError({"data": err});
                 }
-                return res.ok();
+                return res.ok({"data": result});
             });
         });
     },
