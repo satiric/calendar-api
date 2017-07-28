@@ -301,7 +301,7 @@ function changeBlock(user, friends, block, cb) {
             return friend.user_whom_id;
         });
         sails.log(usersList);
-        User.find(usersList).exec(function (err, users) {
+        User.find(usersList).populate('avatar').exec(function (err, users) {
             if(err) {
                 return cb(err);
             }
