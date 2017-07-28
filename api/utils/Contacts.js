@@ -43,6 +43,7 @@ function registPhones(phones, cb) {
     if(!phones.length) {
         return cb();
     }
+
     var phoneList = phones.map(function(value) {
         return {"id" : value.id};
     });
@@ -290,13 +291,16 @@ function changeBlock(user, friends, block, cb) {
             'user_whom_id': friend
         };
     });
-    Friend.update(friendsUser, {"blocked": block}).exec(function(err, results) {
+    sails.log(friendsUser);
+    Friend.update({or: friendsUser }, {"blocked": block}).exec(function(err, results) {
         if(err) {
             return cb(err);
         }
+        sails.log('-------');
         var usersList = results.map(function(friend) {
             return friend.user_whom_id;
         });
+        sails.log(usersList);
         User.find(usersList).exec(function (err, users) {
             if(err) {
                 return cb(err);
@@ -440,6 +444,7 @@ module.exports = {
             return cb(new LogicE("userId must be integer."));
         }
         //todo can split it
+
         contacts.forEach(function(contact) {
             var emails = contact.emails || [];
             var phones = contact.phones || [];
@@ -459,6 +464,7 @@ module.exports = {
                     return;
                 }
                 phoneRecords.push({"id": phoneId, "phone": phone, "user_id": userId});
+
             });
         });
         registContacts(emailRecords, phoneRecords, function(err, friendIds) {
@@ -499,6 +505,7 @@ module.exports = {
      * @param cb
      */
     find: function(user, cb) {
+
         Friend.find({user_who_id: user.id}, function(err, friends) {
             if(err) {
                 return cb(err);
@@ -591,7 +598,7 @@ module.exports = {
      * @param cb
      */
     unblock: function (user,friends,cb) {
-        return changeBlock(user, friends, 1, cb);
+        return changeBlock(user, friends, 0, cb);
 
 
         // if(emails.length) {
@@ -637,7 +644,8 @@ module.exports = {
                 'user_whom_id': friend
             };
         });
-        Friend.destroy(friendsUser).exec(cb);
+        sails.log(friendsUser);
+        Friend.destroy({or:friendsUser}).exec(cb);
         // if(emails.length) {
         //     emails = emails.map(function(value) {
         //         return {
