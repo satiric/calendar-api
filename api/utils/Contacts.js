@@ -721,7 +721,7 @@ module.exports = {
                         if(err) {
                             return cb(err);
                         }
-                        results.phones = result || [];
+                        results.phones = phones || [];
                         return cb(null, results);
                     });
                 });
