@@ -29,6 +29,9 @@ module.exports = {
     insertIgnore: function(fields, cb) {
         var ids = [];
         var placeholders = '';
+        if(!fields.length) {
+            return cb();
+        }
         fields.forEach(function(value, index){
             placeholders+= (index !== (fields.length - 1))
                 ? '(?, ?, ?),'

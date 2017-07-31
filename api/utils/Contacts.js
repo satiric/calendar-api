@@ -321,7 +321,7 @@ function addFriends(userId, friendIds, cb) {
                 blocked.push(friend.user_whom_id);
             }
         });
-
+        sails.log(friends);
         Friend.insertIgnore(friends, function(err, result) {
             if(err) {
                 return cb(err);
