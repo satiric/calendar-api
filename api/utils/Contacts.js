@@ -223,7 +223,8 @@ function validatePhone(phone) {
     return /\+([0-9]){9,13}/.test(phone);
 }
 
-function sendEmails(emails, user, cb) {
+
+function findEmailUsers(emails, cb) {
     if(!emails || !emails.length) {
         return cb();
     }
@@ -232,7 +233,6 @@ function sendEmails(emails, user, cb) {
             return cb(new LogicE("email '" + emails[i] + "' isn't valid" ));
         }
     }
-
     var prepEmails = emails.map(function(value) {
         return {"email": value};
     });
@@ -240,19 +240,11 @@ function sendEmails(emails, user, cb) {
         if(err) {
             return cb(err);
         }
-        var founded = (Array.isArray(result))
-            ? result.map(function(value){
-                return value.email;
-            })
-            : [];
-
-        cascadeSend(emails, founded, user, 0, function(result) {
-            return cb(null, emails.filter(function(value){
-                return (founded.indexOf(value) === -1);
-            }));
-        });
+        return cb(null, result);
     });
 }
+
+
 
 //todo make cascade
 function sendPhones(phones, user, cb) {
@@ -296,7 +288,6 @@ function changeBlock(user, friends, block, cb) {
         if(err) {
             return cb(err);
         }
-        sails.log('-------');
         var usersList = results.map(function(friend) {
             return friend.user_whom_id;
         });
@@ -315,6 +306,31 @@ function changeBlock(user, friends, block, cb) {
 
 }
 
+function addFriends(userId, friendIds, cb) {
+    var friends = friendIds.map(function(friendId){
+        return {
+            'user_who_id': userId,
+            'user_whom_id': friendId
+        };
+    });
+
+    Friend.insertIgnore(friends, function(err, result) {
+        if(err) {
+            return cb(err);
+        }
+        //userIds is list of id each one we need to add to friends
+        User.find({"id": friendIds}).populate('avatar').exec(function(err, users) {
+            if(err) {
+                return cb(err);
+            }
+            return cb(null, users.map(function(user) {
+                //because we create pair user-friend just now and didn't block it
+                user.blocked = 0;
+                return user;
+            }));
+        });
+    });
+}
 //for old logic with contacts
 // function getEmailContacts(userId, cb) {
 //     EmailContacts.find({ select: ['email'], user_id: userId }).exec(function(err, emails) {
@@ -464,9 +480,9 @@ module.exports = {
                     return;
                 }
                 phoneRecords.push({"id": phoneId, "phone": phone, "user_id": userId});
-
             });
         });
+
         registContacts(emailRecords, phoneRecords, function(err, friendIds) {
             if(err) {
                 return cb(err);
@@ -474,28 +490,8 @@ module.exports = {
             if(!friendIds || !friendIds.length) {
                 return cb(null, []);
             }
-            var friends = friendIds.map(function(friendId){
-                return {
-                    'user_who_id': userId,
-                    'user_whom_id': friendId
-                };
-            });
-            Friend.insertIgnore(friends, function(err, result) {
-                if(err) {
-                    return cb(err);
-                }
-                //userIds is list of id each one we need to add to friends
-                User.find({"id": friendIds}).populate('avatar').exec(function(err, users) {
-                    if(err) {
-                        return cb(err);
-                    }
-                    return cb(null, users.map(function(user) {
-                        //because we create pair user-friend just now and didn't block it
-                        user.blocked = 0;
-                        return user;
-                    }));
-                });
-            });
+            sails.log(friendIds);
+            addFriends(userId, friendIds, cb);
         });
     },
 
@@ -683,17 +679,36 @@ module.exports = {
      */
     invite: function(emails, phones, inviter, cb) {
         var results = {};
-        sendEmails(emails, inviter, function(err, result) {
+        findEmailUsers(emails, function(err, result) {
             if(err) {
                 return cb(err);
             }
-            results.emails = result || [];
-            sendPhones(phones, inviter, function(err, result) {
+
+            var founded = [], friendIds = [];
+            if( Array.isArray(result) ) {
+                result.forEach(function(user){
+                    founded.push(user.email);
+                    friendIds.push(user.id);
+                });
+            }
+            addFriends(inviter.id, friendIds, function(err, res) {
                 if(err) {
                     return cb(err);
                 }
-                results.phones = result || [];
-                return cb(null, results);
+                cascadeSend(emails, founded, inviter, 0, function(result) {
+                    results.emails  = emails.filter(function(value){
+                            return (founded.indexOf(value) === -1);
+                        }) || [];
+
+                    //todo make same with phones
+                    sendPhones(phones, inviter, function(err, result) {
+                        if(err) {
+                            return cb(err);
+                        }
+                        results.phones = result || [];
+                        return cb(null, results);
+                    });
+                });
             });
         });
     }

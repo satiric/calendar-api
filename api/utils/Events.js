@@ -33,6 +33,43 @@ function filterEmails(invitedEmailRecords, emails) {
         return emailList.indexOf(value) === -1;
     });
 }
+
+function findUserPhone(phones, cb) {
+
+    if(!Array.isArray(phones)) {
+        return cb(null, phones, []);
+    }
+    //1. get phones for search in Phones
+    phones = phones.map(function(value) {
+        return PhoneIdentifier.extract(value);
+    });
+    //2. search all users with phones
+    Phone.find({ user_id: {'!': null}, id: phones}).exec(function(err, results){
+        if(err) {
+            return cb(err);
+        }
+        //3. filter founded phones
+        return cb(null, filterPhones(results, phones), mapUser(results));
+    });
+}
+
+
+
+function findUserEmail(emails, cb) {
+
+    if(!Array.isArray(emails)) {
+        return cb(null, emails, []);
+    }
+    //1. search emails
+    User.find({email: emails}).exec(function (err, results) {
+        if(err) {
+            return cb(err);
+        }
+        //2. filter invited emails
+        return cb(null, filterEmails(results, emails), mapUser(results, 'id'));
+    });
+}
+
 /**
  *
  * @param event
@@ -41,39 +78,38 @@ function filterEmails(invitedEmailRecords, emails) {
  * @returns {*}
  */
 function inviteUsers(event, invites, cb) {
-    //1. get phones for search in Phones
-    var phones = invites.phones.map(function(value) {
-        return PhoneIdentifier.extract(value);
-    });
-    var users = invites.users || [];
-    //2. search all users with phones
-    Phone.find({ user_id: {'!': null}, id: phones}).exec(function(err, results){
+
+    var collectedUsers = invites.users || [];
+
+    if(!invites) {
+        return cb(null, [], []);
+    }
+    sails.log('------------------');
+    sails.log(collectedUsers);
+    // firstly find all users what can related with this phones
+    findUserPhone((invites.phones || []), function(err, phones, users) {
         if(err) {
             return cb(err);
         }
-        // 2.1 remove invited phones
-        invites.phones = filterPhones(results, invites.phones);
-        // 3. collect all founded user ids
-        users = users.concat(mapUser(results));
-        // 4. find all users with emails
-        User.find({email: invites.emails}).exec(function (err, results) {
+        //filtred phones without each one which related to users
+        invites.phones = phones;
+        collectedUsers = collectedUsers.concat(users);
+        // same for emails
+        findUserEmail((invites.emails || []), function(err, emails, users){
             if(err) {
                 return cb(err);
             }
-            //4.1 remove invited emails
-            invites.emails = filterEmails(results, invites.emails);
-            // 5. collect all founded user ids
-
-            users = users.concat(mapUser(results, 'id'));
-            if(users.length) {
-                users = users.map(function(value) {
-                    return {"user_id": value, "event_id": event.id};
-                });
-            } else {
-                users = [];
-            }
-            // 6. create invite
-            EventInvite.find({or:users}).exec(function(err, result){
+            collectedUsers = collectedUsers.concat(users);
+            invites.emails = emails;
+            collectedUsers = collectedUsers.map(function(userId) {
+                return {
+                    'user_id': userId,
+                    'event_id': event.id
+                };
+            });
+            sails.log(collectedUsers);
+            // get all already has invites
+            EventInvite.find({or:collectedUsers}).exec(function(err, result){
                 //todo make a send notification
                 if(err) {
                     return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
@@ -84,28 +120,30 @@ function inviteUsers(event, invites, cb) {
                         return value.user_id;
                     });
                 }
-                users = users.filter(function(value) {
+
+                collectedUsers = collectedUsers.filter(function(value) {
                     return (founded.indexOf(value.user_id) === -1);
                 });
-                if(!users.length) {
+                if(!collectedUsers.length) {
                     return cb(null, invites, []);
                 }
-                EventInvite.create(users).exec(function(err, result){
+                sails.log(collectedUsers);
+                EventInvite.create(collectedUsers).exec(function(err, result){
                     if(err) {
                         return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
                     }
                     //array with id, status and value for user
-                    var invitedIds = mapUser(users);
+                    var invitedIds = mapUser(collectedUsers);
                     User.find({'id': invitedIds}).exec(function(err, result){
                         if(err) {
                             return cb(err);
                         }
-                        sails.log(result);
                         var invitedExtract = result.map(function(value){
                             return {
                                 'id': value.id,
                                 'status': 0,
-                                'value': value.name + " " + value.second_name
+                                'value': value.name + " " + value.second_name,
+                                'type': 1
                             };
                         });
                         return cb(null, invites, invitedExtract);
@@ -143,8 +181,10 @@ function sendEmail(user, event, emails, cb) {
  * @param cb
  */
 function inviteGuests(user, event, invites, cb) {
-    var emails = invites.emails;
-    var phones = invites.phones;
+    var emails = invites.emails || [];
+    var phones = invites.phones || [];
+
+
     require('./Contacts').registerPhones(phones.map(function(value){
         return {'id':PhoneIdentifier.extract(value), 'phone': value};
     }), function(err){
@@ -249,6 +289,7 @@ function makeInvite(user, event, invites, cb) {
     if(!invites) {
         return cb();
     }
+    sails.log(invites);
     inviteUsers(event, invites, function(err, notInvited, extract){
         if(err) {
             return cb(err);
@@ -260,11 +301,6 @@ function makeInvite(user, event, invites, cb) {
             }
             event.invited = extract;
             if(invites && invites.phones &&  invites.phones.length) {
-                // for (var i = 0, size = invites.phone.length; i < size; i++ ) {
-                //     if (!PhoneIdentifier.extract(invites.phones[i])) {
-                //         return cb(new );
-                //     }
-                // }
                 event.invited = event.invited.concat(invites.phones.map(function(value){
                     return {id:null, value: value, status: 0, type: 2};
                 }));
@@ -295,6 +331,7 @@ function fillInvitedContainer(value, status, type, id ) {
  */
 module.exports = {
     create: function(event, userId, cb) {
+        sails.log('-----1');
         User.findOne(userId).exec(function(err, user){
             if(err) {
                 return cb(err);
@@ -303,6 +340,7 @@ module.exports = {
                 return cb(new LogicE("Founder for event isn't found"));
             }
             event.founder = userId;
+            sails.log('-----2');
             // 1. create event
             Event.create(event).exec(function (err, result) {
                 if(err) {
@@ -314,6 +352,7 @@ module.exports = {
                 if(!result) {
                     return cb(new LogicE("error wasn't created"));
                 }
+                sails.log('-----3');
                 makeInvite(user, result, event.invites, cb);
             });
         });

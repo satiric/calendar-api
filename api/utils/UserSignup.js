@@ -19,7 +19,7 @@ function preparePhone (user, cb) {
                 if(err) {
                     return cb(err);
                 }
-                return cb();
+                registFriendsByPhone(user.id, user.phone, cb);
             });
             //call subscribers - this user in contacts
         }
@@ -90,6 +90,36 @@ function signupUser(data, cb) {
     });
 }
 
+function registFriendsByEmail(userId, email, cb) {
+    EmailContacts.find({email: email}).exec(function (err, result) {
+        if(err) {
+            return cb(err);
+        }
+        var friendRecords = result.map(function(value){
+            return {
+                'user_who_id': value.user_id,
+                'user_whom_id': userId
+            };
+        });
+        return Friend.insertIgnore(friendRecords, cb);
+    });
+}
+
+function registFriendsByPhone(userId, phone, cb) {
+    PhoneContacts.find({phone_id: PhoneIdentifier.extract(phone)}).exec(function (err, result) {
+        if(err) {
+            return cb(err);
+        }
+        var friendRecords = result.map(function(value){
+            return {
+                'user_who_id': value.user_id,
+                'user_whom_id': userId
+            };
+        });
+        return Friend.insertIgnore(friendRecords, cb);
+    });
+}
+
 /**
  * register user email to our dictionary for watchers of contacts.
  * @param user
@@ -97,6 +127,9 @@ function signupUser(data, cb) {
  */
 function prepareEmail(user, cb) {
     Email.findOne({"email":user.email}).exec(function(err, result) {
+        if(err) {
+            return cb(err);
+        }
         if(result) {
             return Email.update({"email":user.email}, {"user_id": user.id}).exec(function(err, result) {
                 if(err) {
@@ -107,7 +140,7 @@ function prepareEmail(user, cb) {
                         new LogicE("This user was not been register as email-owner for this email in Email-dictionary")
                     );
                 }
-                return cb();
+                registFriendsByEmail(user.id, user.email, cb);
             });
             //call subscribers - this user in contacts
         }

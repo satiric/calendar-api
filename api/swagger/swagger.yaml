@@ -1442,7 +1442,9 @@ paths:
             type: object
             properties: 
               friends: 
-                type: integer
+                type: array
+                items: 
+                  type: integer
                 description: user id each one is friend
 
       responses:
