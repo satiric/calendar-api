@@ -95,7 +95,7 @@ module.exports = {
         var token = Auth.extractAuthKey(req);
         var page = Math.abs(parseInt(req.param('page', 1)));
         var pageSize = Math.abs(parseInt(req.param('pageSize', 10)));
-        var date = req.param('date');
+
 
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
