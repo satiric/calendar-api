@@ -311,23 +311,39 @@ function addFriends(userId, friendIds, cb) {
             'user_whom_id': friendId
         };
     });
-
-    Friend.insertIgnore(friends, function(err, result) {
+    Friend.find({or: friends}).exec(function(err, result){
         if(err) {
             return cb(err);
         }
-        //userIds is list of id each one we need to add to friends
-        User.find({"id": friendIds}).populate('avatar').exec(function(err, users) {
+        var blocked = [];
+        result.forEach(function(friend){
+            if(friend.blocked) {
+                blocked.push(friend.user_whom_id);
+            }
+        });
+
+        Friend.insertIgnore(friends, function(err, result) {
             if(err) {
                 return cb(err);
             }
-            return cb(null, users.map(function(user) {
-                //because we create pair user-friend just now and didn't block it
-                user.blocked = 0;
-                return user;
-            }));
+            //userIds is list of id each one we need to add to friends
+            User.find({"id": friendIds}).populate('avatar').exec(function(err, users) {
+                if(err) {
+                    return cb(err);
+                }
+                return cb(null, users.map(function(user) {
+                    //because we create pair user-friend just now and didn't block it
+                    user.blocked = +(blocked.indexOf(user.id) !== -1);
+
+                    return user;
+                }));
+            });
         });
+
+
     });
+
+
 }
 //for old logic with contacts
 // function getEmailContacts(userId, cb) {
