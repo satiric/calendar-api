@@ -11,13 +11,11 @@ function registEmails(emails, cb) {
         return {email: value.email};
     });
     //1. find emails from contact in dictionary
-
     Email.find(emailsList).exec(function(err, results){
         if(err) {
             return cb(err);
         }
-        // sails.log(emails);
-//if founded - we must check exists records
+        //if founded - we must check exists records
         var founded = results;
         var notFouneded = emailsList.filter(function(val) {
             return !(_.find(results, { 'email':val.email }));
@@ -52,7 +50,7 @@ function registPhones(phones, cb) {
         if(err) {
             return cb(err);
         }
-//if founded - we must check exists records
+    //if founded - we must check exists records
         var founded = results;
         var notFouneded = phones.filter(function(val) {
             return !(_.find(results, { 'id':val.id }));
@@ -691,10 +689,12 @@ module.exports = {
                     friendIds.push(user.id);
                 });
             }
-            addFriends(inviter.id, friendIds, function(err, res) {
+            addFriends(inviter.id, friendIds, function(err, friends) {
                 if(err) {
                     return cb(err);
                 }
+                results.users = friends || [];
+
                 cascadeSend(emails, founded, inviter, 0, function(result) {
                     results.emails  = emails.filter(function(value){
                             return (founded.indexOf(value) === -1);

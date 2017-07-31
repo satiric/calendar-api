@@ -84,8 +84,6 @@ function inviteUsers(event, invites, cb) {
     if(!invites) {
         return cb(null, [], []);
     }
-    sails.log('------------------');
-    sails.log(collectedUsers);
     // firstly find all users what can related with this phones
     findUserPhone((invites.phones || []), function(err, phones, users) {
         if(err) {
@@ -183,7 +181,6 @@ function sendEmail(user, event, emails, cb) {
 function inviteGuests(user, event, invites, cb) {
     var emails = invites.emails || [];
     var phones = invites.phones || [];
-
 
     require('./Contacts').registerPhones(phones.map(function(value){
         return {'id':PhoneIdentifier.extract(value), 'phone': value};
@@ -285,21 +282,20 @@ function dropInvites(invites, event, cb) {
  * @returns {*}
  */
 function makeInvite(user, event, invites, cb) {
-    // 2. inviteUsers
+    // 1. inviteUsers
     if(!invites) {
         return cb();
     }
-    sails.log(invites);
-    inviteUsers(event, invites, function(err, notInvited, extract){
+    inviteUsers(event, invites, function(err, notInvited, invitedUsers){
         if(err) {
             return cb(err);
         }
-        // 3. invite not invited person by phone or email
+        // 2. invite not invited person by phone or email
         inviteGuests(user, event, notInvited, function(err) {
             if(err) {
                 return cb(err);
             }
-            event.invited = extract;
+            event.invited = invitedUsers;
             if(invites && invites.phones &&  invites.phones.length) {
                 event.invited = event.invited.concat(invites.phones.map(function(value){
                     return {id:null, value: value, status: 0, type: 2};
@@ -331,7 +327,6 @@ function fillInvitedContainer(value, status, type, id ) {
  */
 module.exports = {
     create: function(event, userId, cb) {
-        sails.log('-----1');
         User.findOne(userId).exec(function(err, user){
             if(err) {
                 return cb(err);
@@ -340,7 +335,6 @@ module.exports = {
                 return cb(new LogicE("Founder for event isn't found"));
             }
             event.founder = userId;
-            sails.log('-----2');
             // 1. create event
             Event.create(event).exec(function (err, result) {
                 if(err) {
@@ -352,7 +346,6 @@ module.exports = {
                 if(!result) {
                     return cb(new LogicE("error wasn't created"));
                 }
-                sails.log('-----3');
                 makeInvite(user, result, event.invites, cb);
             });
         });
