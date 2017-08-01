@@ -5,7 +5,7 @@
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
 var LogicE = require('../exceptions/Logic');
-var ValidationE = require('../exceptions/Validation');
+var BaseE = require('../exceptions/BaseException');
 var UserAuth = require("../utils/UserAuth");
 
 module.exports = {
@@ -32,7 +32,7 @@ module.exports = {
     },
 
     /**
-     *
+     * change user information
      * @param req
      * @param res
      */
@@ -47,8 +47,7 @@ module.exports = {
             }
             require('../utils/UserProfile').updateProfile(user, req.allParams(), function(err, result){
                 if(err) {
-                    return (err instanceof ValidationE || err instanceof LogicE)
-                        ? res.badRequest({ "message": err.message })
+                    return (err instanceof BaseE) ? res.badRequest({ "message": err.message })
                         : res.serverError({"data": err});
                 }
                 return res.ok({data: result});
@@ -65,15 +64,14 @@ module.exports = {
     signup: function (req, res) {
         require('../utils/UserSignup').signup(req.body, function (err, result) {
             if (err) {
-                return (err instanceof ValidationE || err instanceof LogicE)
-                    ? res.badRequest({"message": err.message})
+                return (err instanceof BaseE) ? res.badRequest({"message": err.message})
                     : res.serverError({"data": err});
             }
             return res.ok({data: result});
         });
     },
     /**
-     *
+     * create auth-token for unauthorizated user
      * @param req
      * @param res
      * @returns {*}
@@ -94,7 +92,7 @@ module.exports = {
         });
     },
     /**
-     *
+     * remove auth-token, associated with logged-in user
      * @param req
      * @param res
      */
@@ -111,13 +109,12 @@ module.exports = {
         });
     },
     /**
-     * todo refactoring
+     * for registred and unregistred users - both
      * @param req
      * @param res
      * @returns {*}
      */
     changePassword: function (req, res) {
-
         var value = req.body.password;
         //VLIF-162
         if( typeof value === "number") {
@@ -126,55 +123,20 @@ module.exports = {
         var token = req.body.token;
         var oldValue = req.body.old_password;
         var authKey = Auth.extractAuthKey(req);
-        if (token) {
-            return UserAuth.getUserByResetToken(token, function (err, user) {
-                if (err) {
-                    return res.serverError({"data": err});
-                }
-                if (!user) {
-                    return res.badRequest({"message": "User not found"});
-                }
-                return User.changePassword(user, value, function (err, result) {
-                    if (err) {
-                        return (err instanceof ValidationE) ? res.badRequest({"message": err.message})
-                            : res.serverError({"details": err});
-                    }
-                    if(!result) {
-                        return  res.badRequest({"message": "User not found"});
-                    }
-                    return User.update({"id": user.id}, {"password_reset_token": null}, function (err, updated) {
-                        if(err) {
-                            return res.serverError({"data": err});
-                        }
-                        return res.ok();
-                    });
-                });
-            });
-        }
-        return UserAuth.getUserByAuthToken(authKey, function (err, user) {
+        UserAuth.changePass(value, token, oldValue, authKey, function(err, result){
             if (err) {
-                return res.serverError({"data": err});
+                return (err instanceof BaseE) ? res.badRequest({"message": err.message})
+                    : res.serverError({"data": err});
             }
-            if (!user) {
-                return res.badRequest({"message": "User not found"});
-            }
-            PasswordEncoder.bcryptCheck(oldValue, user.password, function(err, result) {
-                if(err || !result) {
-                    return res.badRequest({"message": "Old password does not match."});
-                }
-                return User.changePassword(user, value, function (err, result) {
-                    if (err) {
-                        return (err instanceof ValidationE) ? res.badRequest({"message": err.message})
-                            : res.serverError({"details": err});
-                    }
-                    return (!result) ? res.badRequest({"message": "User not found"}) : res.ok();
-                });
-            });
+            // don't check result because it isn't necessary
+            return res.ok();
         });
     },
 
-
     /**
+     * for unauthorizated user: send reset token to email
+     * Next step for changing the password is sending query to /user/changePassword with reset-token
+     * todo can refactor
      * @param req
      * @param res
      */
@@ -183,7 +145,6 @@ module.exports = {
         if(!req.body || !req.body.email ) {
             return res.badRequest({ "message": "Email is required"});
         }
-
         User.update({'email': req.body.email }, {"password_reset_token": hash, "reset_token_created": new Date()})
             .exec(function (err, users) {
                 if (err) {
@@ -198,7 +159,8 @@ module.exports = {
             });
     },
     /**
-     * 
+     * for 1-st stage of signup: check email, if it exsits in db as signed to some user account,
+     * return error message else return "it's ok"
      * @param req
      * @param res
      */
@@ -207,13 +169,12 @@ module.exports = {
             if (err) {
                 return res.badRequest(err);
             }
-            return (!user || !user.length) ? res.ok({"status": "success"}) : res.badRequest({
-                "status": "error",
-                "message": "This email is already registered to a vlife account"
-            });
+            return (!user || !user.length) ? res.ok()
+                : res.badRequest({ "message": "This email is already registered to a vlife account" });
         });
     },
     /**
+     * check exists that phone and send sms with code (for user/verifyPhone action)
      * todo refactor it
      * @param req
      * @param res
@@ -225,9 +186,7 @@ module.exports = {
                 return res.badRequest(err);
             }
             if (user) {
-                return res.badRequest({
-                    "message": "This mobile number is already registered to a vlife account"
-                });
+                return res.badRequest({"message": "This mobile number is already registered to a vlife account"});
             }
             if (noVerify) {
                 return PhoneVerification.create({"phone": req.param('phone'), "code": "0000"}).exec(function(err, result){
@@ -252,7 +211,8 @@ module.exports = {
     },
 
     /**
-     * verificate phone number and save some token for it
+     * verify phone that's mean check code, sent on stage "user/checkPhone", and create special
+     * security key for user/signup action
      * @param req
      * @param res
      */
@@ -275,13 +235,13 @@ module.exports = {
         });
     },
     /**
-     * for auth key
+     * for auth-token, create new auth token if previous token was retired
+     * todo refactor it
      * @param req
      * @param res
      */
     refresh: function (req, res) {
         var token = Auth.extractAuthKey(req);
-        //todo refactor it
         if( ! req.body || ! req.body.refresh_token) {
             return res.badRequest({"message": "refresh_token is required"});
         }
@@ -294,8 +254,7 @@ module.exports = {
             }
             UserAuth.refreshToken(token, req.body.refresh_token, 60 * 60 * 24 * 30 * 1000, function (err, newToken) {
                 if (err) {
-                    return (err instanceof LogicE)
-                        ? res.json(404, {"message": err.message})
+                    return (err instanceof BaseE) ? res.json(404, {"message": err.message})
                         : res.serverError({"data": err});
                 }
                 User.findOne({"id": user.id}).populate("avatar").exec(function(err, user) {

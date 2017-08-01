@@ -1,10 +1,67 @@
 /**
  * Created by decadal on 27.06.17.
  */
+var LogicE = require('../exceptions/Logic');
+var ValidationE = require('../exceptions/Validation');
 
 /**
- * contain all business logic for user authorization
- * @type {{login: module.exports.login, refreshToken: module.exports.refreshToken, getByPasswordResetToken: module.exports.getByPasswordResetToken, changePassByToken: module.exports.changePassByToken, changePassByAuthKey: module.exports.changePassByAuthKey, getUserByAuthToken: module.exports.getUserByAuthToken}}
+ * 
+ * @param token
+ * @param value
+ * @param cb
+ * @returns {*}
+ */
+function changePassByToken(token, value, cb) {
+    return module.exports.getUserByResetToken(token, function (err, user) {
+        if (err) {
+            return cb(err);
+        }
+        if (!user) {
+            return cb(new LogicE("User not found"));
+        }
+        User.changePassword(user, value, function (err, result) {
+            if (err) {
+                return cb(err);
+            }
+            if(!result) {
+                return cb(new LogicE("User not found"));
+            }
+            return User.update({"id": user.id}, {"password_reset_token": null}, function (err, updated) {
+                if (err) {
+                    return cb(err);
+                }
+                return cb();
+            });
+        });
+    });
+}
+
+function changePassByAuthKey(authKey, oldValue, value, cb) {
+    module.exports.getUserByAuthToken(authKey, function (err, user) {
+        if (err) {
+            return cb(err);
+        }
+        if (!user) {
+            return cb(new LogicE("User not found"));
+        }
+        PasswordEncoder.bcryptCheck(oldValue, user.password, function(err, result) {
+            if(err || !result) {
+                return cb(new LogicE("Old password does not match."));
+            }
+            return User.changePassword(user, value, function (err, result) {
+                if (err) {
+                    return cb(err);
+                }
+                return (!result) ? cb(new LogicE("User not found")) 
+                    : cb();
+            });
+        });
+    });
+}
+
+/**
+ * 
+ * @type {{login: module.exports.login, refreshToken: module.exports.refreshToken, getByPasswordResetToken: module.exports.getByPasswordResetToken, getUserByResetToken: module.exports.getUserByResetToken, getUserByAuthToken: module.exports.getUserByAuthToken, changePass: module.exports.changePass}}
  */
 module.exports = {
     login: function(user, time, cb) {
@@ -46,11 +103,7 @@ module.exports = {
                     cb(err, token);
                 });
             });
-
         });
-
-
-
     },
 
     getByPasswordResetToken: function(token, cb) {
@@ -67,23 +120,6 @@ module.exports = {
             return cb(null, result[0]);
         });
     },
-    changePassByToken: function(token, value, cb) {
-        UserAuth.getByPasswordResetToken(token, function(err, user) {
-            if(err) {
-                return cb(err);
-            }
-            User.changePassword(user, value, function (err, changed) {
-                if (err) {
-                    return res.serverError(err);
-                }
-                (changed) ? res.ok({"status":"success"})
-                    : res.badRequest({
-                    "status":"error",
-                    "message" : "Password doesn't changed"
-                });
-            });
-        });
-    },
 
     getUserByResetToken: function(token, cb) {
         var yesterday = new Date();
@@ -93,16 +129,6 @@ module.exports = {
              'reset_token_created': {'>': yesterday}
          }).exec(cb);
     },
-
-    // changePassByAuthKey: function(authKey, value, cb) {
-    //     User.changePassword(req.session.me, value, function (err, changed) {
-    //         (changed) ? res.ok({"status":"success"})
-    //             : res.badRequest({
-    //             "status":"error",
-    //             "message" : "This email is already registered to a vlife account"
-    //         });
-    //     });
-    // }, 
     getUserByAuthToken: function(token, cb, expired) {
         var params = {
             'value': token
@@ -116,6 +142,13 @@ module.exports = {
             }
             return cb(null, (result) ? result.owner : null);
         });
+    },
+
+    changePass: function(value, token, oldValue, authKey, cb) {
+        if (token) {
+            return changePassByToken(token, value, cb);
+        }
+        return changePassByAuthKey(authKey, oldValue, value, cb);
     }
 };
 
