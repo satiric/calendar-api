@@ -281,8 +281,7 @@ function findEmailUsers(emails, cb) {
     });
 }
 
-//todo make cascade
-function sendPhones(phones, user, cb) {
+function findPhoneUsers(phones, cb) {
     if(!phones || !phones.length) {
         return cb();
     }
@@ -291,23 +290,18 @@ function sendPhones(phones, user, cb) {
             return cb(new LogicE("phone '" + phones[i] + "' isn't valid" ));
         }
     }
-
-    var notice = [];
     var phoneIds = phones.map(function(value){
         return { phone: { 'like': '%' + PhoneIdentifier.extract(value) } };
     });
+
     User.find({ or: phoneIds }).exec(function(err, result) {
         if(err) {
             return cb(err);
         }
-        var founeded = (Array.isArray(result)) ?
-            result.map(function(value){
-                return PhoneIdentifier.extract(value.phone);
-            })
-            : [];
-        cascadeSmsSend(phones, founeded, user, 0, cb);
+        return cb(null, result);
     });
 }
+
 
 function changeBlock(user, friends, block, cb) {
 
@@ -718,43 +712,72 @@ module.exports = {
      */
     invite: function(emails, phones, inviter, cb) {
         var results = {};
+        var foundedEmails = [], foundedPhones = [], friendIds = [];
+        emails = emails || [];
+        phones = phones || [];
+        if( (! phones.length) && (! emails.length)) {
+            return cb(new LogicE("Empty emails and phones arrays"));
+        }
+        // firstly find all users, registred in vlife yet
+        // 1. by email
         findEmailUsers(emails, function(err, result) {
             if(err) {
                 return cb(err);
             }
-            var founded = [], friendIds = [];
             if( Array.isArray(result) ) {
+                //1.1 collect all users with enumerated emails
                 result.forEach(function(user){
-                    founded.push(user.email);
+                    foundedEmails.push(user.email);
                     friendIds.push(user.id);
                 });
             }
-            addFriends(inviter.id, friendIds, function(err, friends) {
+            // 2. by phone
+            findPhoneUsers(phones, function(err, result) {
                 if(err) {
                     return cb(err);
                 }
-                results.users = friends || [];
-                cascadeSend(emails, founded, inviter, 0, function(result) {
-                    results.emails  = emails.filter(function(value){
-                            return (founded.indexOf(value) === -1);
-                        }) || [];
-                    var emailRecords = prepareEmailSubscribers(results.emails, inviter.id);
-                    registEmails(emailRecords, function(err, result) {
-                        if(err) {
-                            return cb(err);
+                if( Array.isArray(result) ) {
+                    result.forEach(function(user){
+                        //2.1 collect all users with enumerated phones
+                        foundedPhones.push( PhoneIdentifier.extract(user.phone) );
+                        if(friendIds.indexOf(user.id) === -1) {
+                            friendIds.push(user.id);
                         }
-                        //todo make same with phones
-                        sendPhones(phones, inviter, function(err, r) {
+                    });
+                }
+                // 3. add all users to friends if they exists by enumerated phones and emails
+                addFriends(inviter.id, friendIds, function(err, friends) {
+                    if(err) {
+                        return cb(err);
+                    }
+                    results.users = friends || [];
+                    // 4. send invite by email
+                    cascadeSend(emails, foundedEmails, inviter, 0, function(err, result) {
+                        //ignore errors!
+                        results.emails  = emails.filter(function(value){
+                                return (foundedEmails.indexOf(value) === -1);
+                            }) || [];
+                        var emailRecords = prepareEmailSubscribers(results.emails, inviter.id);
+                        // 4.1 remember each one email that's sent invite
+                        registEmails(emailRecords, function(err, result) {
                             if(err) {
                                 return cb(err);
                             }
-                            results.phones = phones || [];
-                            var phoneRecords = preparePhoneSubscribers(result.phones, inviter.id);
-                            registPhones(phoneRecords, function(err, r) {
-                                if(err) {
-                                    return cb(err);
-                                }
-                                return cb(null, results);
+                            // 5. send invite by phone
+                            cascadeSmsSend(phones, foundedPhones, inviter, 0, function(err, result) {
+                                //ignore errors!
+                                results.phones = phones.filter(function(value){
+                                        return (foundedPhones.indexOf(PhoneIdentifier.extract(value)) === -1);
+                                    }) || [];
+
+                                var phoneRecords = preparePhoneSubscribers(results.phones, inviter.id);
+                                // 5.1 remember each one phone that's sent invite
+                                registPhones(phoneRecords, function(err, r) {
+                                    if(err) {
+                                        return cb(err);
+                                    }
+                                    return cb(null, results);
+                                });
                             });
                         });
                     });

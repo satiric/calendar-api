@@ -73,9 +73,6 @@ module.exports = {
     invite: function (req, res) {
         var emails = req.param('emails');
         var phones = req.param('phones');
-        if( (! phones || ! phones.length) && (! emails || ! emails.length)) {
-            return res.badRequest({"message": "Empty emails and phones arrays"});
-        }
         var token = Auth.extractAuthKey(req);
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
