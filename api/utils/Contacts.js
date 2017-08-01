@@ -3,6 +3,40 @@
  */
 var LogicE = require('../exceptions/Logic');
 
+function preparePhoneSubscribers(phones, userId) {
+    if(!phones) {
+        return [];
+    }
+    var phoneRecords = [];
+    phones.forEach(function(phone) {
+        var phoneId = PhoneIdentifier.extract(phone);
+        if( ! phoneId ) {
+            return;
+        }
+        phoneRecords.push({"id": phoneId, "phone": phone, "user_id": userId});
+    });
+    return phoneRecords;
+}
+
+function prepareEmailSubscribers(emails, userId) {
+    if(!emails) {
+        return [];
+    }
+    var emailRecords = [];
+    emails.forEach(function(email){
+        if(!email || !validateEmail(email)) {
+            return;
+        }
+        emailRecords.push({"email": email, "user_id": userId});
+    });
+    return emailRecords;
+}
+/**
+ *
+ * @param emails
+ * @param cb
+ * @returns {*}
+ */
 function registEmails(emails, cb) {
     if(!emails.length) {
         return cb();
@@ -36,8 +70,13 @@ function registEmails(emails, cb) {
     });
 }
 
+/**
+ *
+ * @param phones
+ * @param cb
+ * @returns {*}
+ */
 function registPhones(phones, cb) {
-
     if(!phones.length) {
         return cb();
     }
@@ -242,8 +281,6 @@ function findEmailUsers(emails, cb) {
     });
 }
 
-
-
 //todo make cascade
 function sendPhones(phones, user, cb) {
     if(!phones || !phones.length) {
@@ -270,7 +307,6 @@ function sendPhones(phones, user, cb) {
             : [];
         cascadeSmsSend(phones, founeded, user, 0, cb);
     });
-
 }
 
 function changeBlock(user, friends, block, cb) {
@@ -482,19 +518,8 @@ module.exports = {
                 return cb(new LogicE("Phones and emails in contacts array must be an array."));
             }
             //make from emails and phones - valid objects for inserting to db
-            emails.forEach(function(email) {
-                if(!email || !validateEmail(email)) {
-                    return;
-                }
-                emailRecords.push({"email": email, "user_id": userId});
-            });
-            phones.forEach(function(phone) {
-                var phoneId = PhoneIdentifier.extract(phone);
-                if( ! phoneId ) {
-                    return;
-                }
-                phoneRecords.push({"id": phoneId, "phone": phone, "user_id": userId});
-            });
+            emailRecords = emailRecords.concat(prepareEmailSubscribers(emails, userId));
+            phoneRecords = phoneRecords.concat(preparePhoneSubscribers(phones, userId));
         });
 
         registContacts(emailRecords, phoneRecords, function(err, friendIds) {
@@ -697,7 +722,6 @@ module.exports = {
             if(err) {
                 return cb(err);
             }
-
             var founded = [], friendIds = [];
             if( Array.isArray(result) ) {
                 result.forEach(function(user){
@@ -710,19 +734,29 @@ module.exports = {
                     return cb(err);
                 }
                 results.users = friends || [];
-
                 cascadeSend(emails, founded, inviter, 0, function(result) {
                     results.emails  = emails.filter(function(value){
                             return (founded.indexOf(value) === -1);
                         }) || [];
-
-                    //todo make same with phones
-                    sendPhones(phones, inviter, function(err, result) {
+                    var emailRecords = prepareEmailSubscribers(results.emails, inviter.id);
+                    registEmails(emailRecords, function(err, result) {
                         if(err) {
                             return cb(err);
                         }
-                        results.phones = phones || [];
-                        return cb(null, results);
+                        //todo make same with phones
+                        sendPhones(phones, inviter, function(err, r) {
+                            if(err) {
+                                return cb(err);
+                            }
+                            results.phones = phones || [];
+                            var phoneRecords = preparePhoneSubscribers(result.phones, inviter.id);
+                            registPhones(phoneRecords, function(err, r) {
+                                if(err) {
+                                    return cb(err);
+                                }
+                                return cb(null, results);
+                            });
+                        });
                     });
                 });
             });

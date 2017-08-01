@@ -321,9 +321,10 @@ function fillInvitedContainer(value, status, type, id ) {
         type: type
     };
 }
+
 /**
- * contain all business logic for user authorization
- * @type {{login: module.exports.login, refreshToken: module.exports.refreshToken, getByPasswordResetToken: module.exports.getByPasswordResetToken, changePassByToken: module.exports.changePassByToken, changePassByAuthKey: module.exports.changePassByAuthKey, getUserByAuthToken: module.exports.getUserByAuthToken}}
+ * 
+ * @type {{create: module.exports.create, update: module.exports.update, detailed: module.exports.detailed}}
  */
 module.exports = {
     create: function(event, userId, cb) {
