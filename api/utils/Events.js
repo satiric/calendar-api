@@ -336,9 +336,43 @@ module.exports = {
      * @param date
      * @param cb
      */
-    // find: function(user, page, pageSize, date, cb) {
-    //
-    // },
+    find: function(user, page, pageSize, date, cb) {
+        var params = {date_start: true};
+        if(date) {
+            params.date_start = {'<=': date.split("T")[0] + " 23:59:59"};
+            params.date_end =  {'>=': date.split("T")[0]  + " 00:00:00"};
+        }
+        EventInvite.find({"user_id": user.id}).populate('event_id', { where:  params}).paginate({page: page, limit: pageSize}).exec(function (err, events) {
+            if(err) {
+                return cb(err);
+            }
+            EventInvite.count({"user_id": user.id}).populate('event_id', { where:  params}).exec(function (err, count) {
+                if(err) {
+                    return cb(err);
+                }
+                var ev = events.map(function(val){
+                    return val.event_id.id;
+                });
+                sails.log(ev);
+                Event.find({"id":ev}).exec(function(err, events){
+                    if(err) {
+                        return cb(err);
+                    }
+                    Event.extendEvent(events, function(err, results){
+                        if(err) {
+                            return cb(err);
+                        }
+                        return cb(null, {
+                            "data": results || [],
+                            "page": page,
+                            "pageSize": pageSize,
+                            "total": count
+                        });
+                    });
+                });
+            });
+        });
+    },
     /**
      *
      * @param event
