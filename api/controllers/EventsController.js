@@ -86,7 +86,7 @@ module.exports = {
         });
     },
 
-    /**
+    /** todo refactor it
      * find from all
      * @param req
      * @param res
@@ -95,8 +95,7 @@ module.exports = {
         var token = Auth.extractAuthKey(req);
         var page = Math.abs(parseInt(req.param('page', 1)));
         var pageSize = Math.abs(parseInt(req.param('pageSize', 10)));
-
-
+        var date = req.param('date');
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
                 return res.serverError({"data": err});
@@ -104,38 +103,15 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
-            EventInvite.find({"user_id": user.id}).paginate({page: page, limit: pageSize}).exec(function (err, events) {
+            require('../utils/Events').find(user, page, pageSize, date, function(err, result){
                 if(err) {
-                    return res.serverError({"data":err});
+                    return res.serverError({"data": err});
                 }
-                EventInvite.count({"user_id": user.id}).exec(function (err, count) {
-                    if(err) {
-                        return res.serverError({"data":err});
-                    }
-                    var ev = events.map(function(val){
-                        return val.event_id;
-                    });
-                    Event.find({"id":ev}).exec(function(err, events){
-                        if(err) {
-                            return res.serverError({"data":err});
-                        }
-                        Event.extendEvent(events, function(err, results){
-                            if(err) {
-                                return res.serverError({"data":err});
-                            }
-                            return res.ok({
-                                "data": results || [],
-                                "page": page,
-                                "pageSize": pageSize,
-                                "total": count
-                            });
-                        });
-                    });
-                });
+                return res.ok(result);
             });
         });
     },
-    /**
+    /** todo refactor it
      * find from all
      * @param req
      * @param res
@@ -226,8 +202,7 @@ module.exports = {
             }
             require('../utils/Events').detailed(eventId, user, function(err, result) {
                 if(err) {
-                    return (err instanceof BaseE) 
-                        ? res.badRequest({ "message": err.message })
+                    return (err instanceof BaseE) ? res.badRequest({ "message": err.message })
                         : res.serverError({ "data": err });
                 }
                 return res.ok({"data": result});
@@ -272,7 +247,7 @@ module.exports = {
     },
 
     /**
-     *
+     * todo refactor it
      * @param req
      * @param res
      */

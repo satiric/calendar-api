@@ -3,6 +3,12 @@
  */
 var LogicE = require('../exceptions/Logic');
 
+/**
+ *
+ * @param phones
+ * @param userId
+ * @returns {Array}
+ */
 function preparePhoneSubscribers(phones, userId) {
     if(!phones) {
         return [];
@@ -18,6 +24,12 @@ function preparePhoneSubscribers(phones, userId) {
     return phoneRecords;
 }
 
+/**
+ *
+ * @param emails
+ * @param userId
+ * @returns {Array}
+ */
 function prepareEmailSubscribers(emails, userId) {
     if(!emails) {
         return [];
@@ -117,8 +129,13 @@ function registPhones(phones, cb) {
     });
 }
 
+/**
+ *
+ * @param emailRecords
+ * @param phoneRecords
+ * @param cb
+ */
 function registContacts(emailRecords, phoneRecords, cb) {
-
     registEmails(emailRecords, function(err, founded) {
         var contacts = [];
         if(err) {
@@ -193,7 +210,16 @@ function registContacts(emailRecords, phoneRecords, cb) {
 //     PhoneContacts.update({ 'or' : phones } , {"blocked":null}).exec(cb);
 // }
 
-
+/**
+ *
+ * @param emails
+ * @param founded
+ * @param user
+ * @param current
+ * @param cb
+ * @param info
+ * @returns {*}
+ */
 function cascadeSend(emails, founded, user, current, cb, info) {
     info = info || [];
     if(current >= emails.length) {
@@ -202,7 +228,6 @@ function cascadeSend(emails, founded, user, current, cb, info) {
     if(!emails[current] || founded.indexOf(emails[current]) !== -1) {
         return cascadeSend(emails, founded, user, current+1, cb, info);
     }
-    //todo make as cascade
     Mailer.sendInviteMessage(user, emails[current], function(err, result) {
         if(err) {
             info.push({
@@ -252,15 +277,29 @@ function cascadeSmsSend(phones, founded, user, current, cb, info) {
     });
 }
 
-
+/**
+ *
+ * @param email
+ * @returns {boolean}
+ */
 function validateEmail(email) {
     return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email);
 }
+/**
+ *
+ * @param phone
+ * @returns {boolean}
+ */
 function validatePhone(phone) {
     return /\+([0-9]){9,13}/.test(phone);
 }
 
-
+/**
+ *
+ * @param emails
+ * @param cb
+ * @returns {*}
+ */
 function findEmailUsers(emails, cb) {
     if(!emails || !emails.length) {
         return cb();
@@ -281,6 +320,12 @@ function findEmailUsers(emails, cb) {
     });
 }
 
+/**
+ *
+ * @param phones
+ * @param cb
+ * @returns {*}
+ */
 function findPhoneUsers(phones, cb) {
     if(!phones || !phones.length) {
         return cb();
@@ -302,7 +347,13 @@ function findPhoneUsers(phones, cb) {
     });
 }
 
-
+/**
+ *
+ * @param user
+ * @param friends
+ * @param block
+ * @param cb
+ */
 function changeBlock(user, friends, block, cb) {
 
     var friendsUser = friends.map(function(friend) {
@@ -334,6 +385,12 @@ function changeBlock(user, friends, block, cb) {
 
 }
 
+/**
+ *
+ * @param userId
+ * @param friendIds
+ * @param cb
+ */
 function addFriends(userId, friendIds, cb) {
     var friends = friendIds.map(function(friendId){
         return {
@@ -369,11 +426,7 @@ function addFriends(userId, friendIds, cb) {
                 }));
             });
         });
-
-
     });
-
-
 }
 //for old logic with contacts
 // function getEmailContacts(userId, cb) {
@@ -453,6 +506,11 @@ function addFriends(userId, friendIds, cb) {
 // });
 
 module.exports = {
+    /**
+     *
+     * @param phones
+     * @param cb
+     */
     registerPhones: function(phones, cb) {
         var phoneIds = phones.map(function(value) {
             return value.id;
@@ -471,6 +529,11 @@ module.exports = {
             });
         });
     },
+    /**
+     *
+     * @param emails
+     * @param cb
+     */
     registerEmails: function(emails, cb) {
         Email.find(emails).exec(function(err, results){
             if(err) {
@@ -503,8 +566,6 @@ module.exports = {
         if(! (userId = parseInt(userId)) ) {
             return cb(new LogicE("userId must be integer."));
         }
-        //todo can split it
-
         contacts.forEach(function(contact) {
             var emails = contact.emails || [];
             var phones = contact.phones || [];

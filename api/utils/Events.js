@@ -327,6 +327,24 @@ function fillInvitedContainer(value, status, type, id ) {
  * @type {{create: module.exports.create, update: module.exports.update, detailed: module.exports.detailed}}
  */
 module.exports = {
+
+    /**
+     *
+     * @param user
+     * @param page
+     * @param pageSize
+     * @param date
+     * @param cb
+     */
+    // find: function(user, page, pageSize, date, cb) {
+    //
+    // },
+    /**
+     *
+     * @param event
+     * @param userId
+     * @param cb
+     */
     create: function(event, userId, cb) {
         User.findOne(userId).exec(function(err, user){
             if(err) {
@@ -351,6 +369,13 @@ module.exports = {
             });
         });
     },
+    /**
+     * 
+     * @param eventId
+     * @param user
+     * @param event
+     * @param cb
+     */
     update: function(eventId, user, event, cb) {
         Event.update({id: eventId, "founder": user.id}, event).exec(function (err, result) {
             if(err) {
@@ -402,6 +427,7 @@ module.exports = {
                 if(err) {
                     return cb(err);
                 }
+                sails.log(invited);
                 var inv = invited.map(function(value){
                     if(value.phone_id) {
                         return fillInvitedContainer(value.phone_id.id, 0, 2);

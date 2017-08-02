@@ -159,7 +159,7 @@ module.exports = {
             });
     },
     /**
-     * for 1-st stage of signup: check email, if it exsits in db as signed to some user account,
+     * for 1-st stage of signup: check email, if it exists in db as signed to some user account,
      * return error message else return "it's ok"
      * @param req
      * @param res
