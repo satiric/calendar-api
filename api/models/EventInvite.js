@@ -23,6 +23,9 @@ module.exports = {
         id: {
             type: "integer",
             primaryKey: true
+        },
+        status: {
+            type: "integer"
         }
     },
 
@@ -62,6 +65,45 @@ module.exports = {
             return cb(null, ei);
         });
     },
+    
+    findEventsByFilter: function (user, filters, cb) {
+        var params = {};
+        if(filters.date) {
+            params.date_start = {'<=': filters.date.split("T")[0] + " 23:59:59"};
+            params.date_end =  {'>=': filters.date.split("T")[0]  + " 00:00:00"};
+        }
+        EventInvite.find({"user_id": user.id}).populate('event_id', { where:  params}).paginate({page: page, limit: pageSize}).exec(function (err, events) {
+            if(err) {
+                return cb(err);
+            }
+            EventInvite.count({"user_id": user.id}).populate('event_id', { where:  params}).exec(function (err, count) {
+                if(err) {
+                    return cb(err);
+                }
+                var ev = events.map(function(val){
+                    return val.event_id.id;
+                });
+                sails.log(ev);
+                Event.find({"id":ev}).exec(function(err, events){
+                    if(err) {
+                        return cb(err);
+                    }
+                    Event.extendEvent(events, function(err, results){
+                        if(err) {
+                            return cb(err);
+                        }
+                        return cb(null, {
+                            "data": results || [],
+                            "page": page,
+                            "pageSize": pageSize,
+                            "total": count
+                        });
+                    });
+                });
+            });
+        });
+        
+    }
 
     // dropFromEvent: function(eventId, userIds, cb) {
     //     var sql = "";
