@@ -101,7 +101,10 @@ module.exports = {
             }
             var friends = req.param('friends');
             if(!Array.isArray(friends)) {
-                return res.badRequest({"message": "friends must be an array"});
+                if(typeof friends !== "number" ) {
+                    return res.badRequest({"message": "friends must be an array or integer"});
+                }
+                friends = [friends];
             }
             require('../utils/Contacts').block(user, friends, function(err, result){
                 if(err) {
@@ -125,7 +128,10 @@ module.exports = {
             }
             var friends = req.param('friends');
             if(!Array.isArray(friends)) {
-                return res.badRequest({"message": "friends must be an array"});
+                if(typeof friends !== "number" ) {
+                    return res.badRequest({"message": "friends must be an array or integer"});
+                }
+                friends = [friends];
             }
             require('../utils/Contacts').unblock(user, friends, function(err, result){
                 if(err) {
@@ -148,7 +154,10 @@ module.exports = {
             }
             var friends = req.param('friends');
             if(!Array.isArray(friends)) {
-                return res.badRequest({"message": "friends must be an array"});
+                if(typeof friends !== "number" ) {
+                    return res.badRequest({"message": "friends must be an array or integer"});
+                }
+                friends = [friends];
             }
             require('../utils/Contacts').destroy(user, friends, function(err, result){
                 if(err) {
