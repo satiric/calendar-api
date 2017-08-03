@@ -334,18 +334,21 @@ function fillInvitedContainer(value, status, type, id ) {
 module.exports = {
 
     /**
-     *
+     * 
      * @param user
      * @param page
      * @param pageSize
+     * @param keyword
      * @param date
      * @param cb
+     * @returns {*}
      */
-    find: function(user, page, pageSize, date, cb) {
-        return Event.getEventsWithDate(user.id, date, page, pageSize, function(err, events, count){
-            var ev = events.map(function(val){
+    find: function(user, page, pageSize, keyword, date, cb) {
+        return Event.getEventsWithDate(user.id, date, keyword, page, pageSize, function(err, events, count){
+
+            var ev = (Array.isArray(events)) ? events.map(function(val){
                 return val.id;
-            });
+            }) : [];
             Event.find({"id":ev}).exec(function(err, events){
                 if(err) {
                     return cb(err);

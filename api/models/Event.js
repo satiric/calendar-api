@@ -195,11 +195,21 @@ types: {
         });
     },
 
-    getEventsWithDate: function(userId, date, page, size, cb) {
+    getEventsWithDate: function(userId, date, keyword, page, size, cb) {
         var params = [userId];
         var countParams = [userId];
-        var query = "SELECT e.* FROM event_invites as ei LEFT JOIN  event as e ON e.id = ei.event_id WHERE ei.user_id = ?";
-        var queryCount = "SELECT count(1) AS cnt FROM event_invites as ei LEFT JOIN  event as e ON e.id = ei.event_id WHERE ei.user_id = ?";
+        sails.log(keyword);
+        var query = "SELECT e.* FROM event_invites as ei LEFT JOIN  event as e ON e.id = ei.event_id WHERE ei.user_id = ? ";
+        var queryCount = "SELECT count(1) AS cnt FROM event_invites as ei LEFT JOIN  event as e ON e.id = ei.event_id WHERE ei.user_id = ? ";
+        if (keyword) {
+            keyword = "%" + keyword + "%";
+            query += "AND (e.title LIKE ? OR e.description LIKE ?)";
+            queryCount += "AND (e.title LIKE ? OR e.description LIKE ?)";
+            params.push(keyword);
+            params.push(keyword);
+            countParams.push(keyword);
+            countParams.push(keyword);
+        }
         if(date) {
             params.push(date.split("T")[0] + " 23:59:59");
             params.push(date.split("T")[0]  + " 00:00:00");
@@ -221,7 +231,7 @@ types: {
                 if(err) {
                     return cb(err);
                 }
-                return cb(err, result, count[0].cnt);
+                return cb(err, result, count[0].cnt || 0);
             });
         });
     }

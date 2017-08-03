@@ -96,6 +96,7 @@ module.exports = {
         var page = Math.abs(parseInt(req.param('page', 1)));
         var pageSize = Math.abs(parseInt(req.param('pageSize', 10)));
         var date = req.param('date');
+        var keyword = req.param('keyword');
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
                 return res.serverError({"data": err});
@@ -103,7 +104,7 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
-            require('../utils/Events').find(user, page, pageSize, date, function(err, result){
+            require('../utils/Events').find(user, page, pageSize, keyword, date, function(err, result){
                 if(err) {
                     return res.serverError({"data": err});
                 }
