@@ -193,5 +193,36 @@ types: {
             });
             return cb(null, events);
         });
+    },
+
+    getEventsWithDate: function(userId, date, page, size, cb) {
+        var params = [userId];
+        var countParams = [userId];
+        var query = "SELECT e.* FROM event_invites as ei LEFT JOIN  event as e ON e.id = ei.event_id WHERE ei.user_id = ?";
+        var queryCount = "SELECT count(1) AS cnt FROM event_invites as ei LEFT JOIN  event as e ON e.id = ei.event_id WHERE ei.user_id = ?";
+        if(date) {
+            params.push(date.split("T")[0] + " 23:59:59");
+            params.push(date.split("T")[0]  + " 00:00:00");
+            countParams.push(date.split("T")[0] + " 23:59:59");
+            countParams.push(date.split("T")[0]  + " 00:00:00");
+            query += " AND e.date_start <= ? AND e.date_end >= ? LIMIT ? OFFSET ?";
+            queryCount += " AND e.date_start <= ? AND e.date_end >= ?";
+        }
+        else {
+            query += " LIMIT ? OFFSET ?";
+        }
+        params.push(size);
+        params.push((page-1) * size);
+        Event.query(query, params, function(err, result){
+            if(err) {
+                return cb(err);
+            }
+            Event.query( queryCount, countParams, function(err, count){
+                if(err) {
+                    return cb(err);
+                }
+                return cb(err, result, count[0].cnt);
+            });
+        });
     }
 };

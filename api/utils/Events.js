@@ -6,6 +6,11 @@ var ValidationE = require('../exceptions/Validation');
 var PermissionE = require('../exceptions/Permission');
 var LogicE = require('../exceptions/Logic');
 
+function getEventByDate(date, page, size, cb) {
+    Event.getEventsByDate(date, page, size, cb);
+}
+
+
 
 function mapUser(list, key) {
     key = key || 'user_id';
@@ -337,37 +342,23 @@ module.exports = {
      * @param cb
      */
     find: function(user, page, pageSize, date, cb) {
-        var params = {date_start: true};
-        if(date) {
-            params.date_start = {'<=': date.split("T")[0] + " 23:59:59"};
-            params.date_end =  {'>=': date.split("T")[0]  + " 00:00:00"};
-        }
-        EventInvite.find({"user_id": user.id}).populate('event_id', { where:  params}).paginate({page: page, limit: pageSize}).exec(function (err, events) {
-            if(err) {
-                return cb(err);
-            }
-            EventInvite.count({"user_id": user.id}).populate('event_id', { where:  params}).exec(function (err, count) {
+        return Event.getEventsWithDate(user.id, date, page, pageSize, function(err, events, count){
+            var ev = events.map(function(val){
+                return val.id;
+            });
+            Event.find({"id":ev}).exec(function(err, events){
                 if(err) {
                     return cb(err);
                 }
-                var ev = events.map(function(val){
-                    return val.event_id.id;
-                });
-                sails.log(ev);
-                Event.find({"id":ev}).exec(function(err, events){
+                Event.extendEvent(events, function(err, results){
                     if(err) {
                         return cb(err);
                     }
-                    Event.extendEvent(events, function(err, results){
-                        if(err) {
-                            return cb(err);
-                        }
-                        return cb(null, {
-                            "data": results || [],
-                            "page": page,
-                            "pageSize": pageSize,
-                            "total": count
-                        });
+                    return cb(null, {
+                        "data": results || [],
+                        "page": page,
+                        "pageSize": pageSize,
+                        "total": count
                     });
                 });
             });
