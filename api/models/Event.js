@@ -215,11 +215,11 @@ types: {
             params.push(date.split("T")[0]  + " 00:00:00");
             countParams.push(date.split("T")[0] + " 23:59:59");
             countParams.push(date.split("T")[0]  + " 00:00:00");
-            query += " AND e.date_start <= ? AND e.date_end >= ? LIMIT ? OFFSET ?";
+            query += " AND e.date_start <= ? AND e.date_end >= ? ORDER BY e.date_start DESC LIMIT ? OFFSET ?";
             queryCount += " AND e.date_start <= ? AND e.date_end >= ?";
         }
         else {
-            query += " LIMIT ? OFFSET ?";
+            query += " ORDER BY e.date_start DESC LIMIT ? OFFSET ?";
         }
         params.push(size);
         params.push((page-1) * size);

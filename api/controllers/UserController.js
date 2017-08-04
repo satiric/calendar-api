@@ -85,9 +85,6 @@ module.exports = {
             if (err) {
                 return res.badRequest({ "message": err.message});
             }
-            if (!result) {
-                return res.badRequest({"message": 'Invalid username/password combination.'});
-            }
             return res.ok({"data":result});
         });
     },

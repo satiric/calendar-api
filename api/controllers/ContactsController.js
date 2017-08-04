@@ -14,7 +14,6 @@ module.exports = {
         rest: false
     },
     /**
-     *
      * @param req
      * @param res
      */
@@ -37,7 +36,7 @@ module.exports = {
     },
 
     /**
-     *
+     * 
      * @param req
      * @param res
      */

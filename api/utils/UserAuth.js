@@ -17,7 +17,7 @@ function changePassByToken(token, value, cb) {
             return cb(err);
         }
         if (!user) {
-            return cb(new LogicE("User not found"));
+            return cb(new LogicE("Link are retired"));
         }
         User.changePassword(user, value, function (err, result) {
             if (err) {

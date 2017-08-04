@@ -1,10 +1,9 @@
 /**
- * UserController
+ * EventsController
  *
- * @description :: Server-side logic for managing users
+ * @description :: Server-side logic for managing Events
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
-var LogicE = require('../exceptions/Logic');
 var ValidationE = require('../exceptions/Validation');
 var PermissionE = require('../exceptions/Permission');
 var BaseE = require('../exceptions/BaseException');
@@ -17,7 +16,9 @@ module.exports = {
         rest: false
     },
     /** todo refactor it
-     * get all events where i am creator
+     * find all events which created by the user
+     * 'user' - means authorized user, identified by auth-token in header.
+     * 'was created' - means the user is founder of the event
      * @param req
      * @param res
      */
@@ -87,7 +88,9 @@ module.exports = {
     },
 
     /** todo refactor it
-     * find from all
+     * find all events that's the user was invited
+     * 'user' - means authorized user, identified by auth-token in header.
+     * 'was invited' - means the user isn't founder of the event, only invited
      * @param req
      * @param res
      */
@@ -153,39 +156,7 @@ module.exports = {
             });
         });
     },
-
-    //
-    // /**
-    //  * find from all
-    //  * @param req
-    //  * @param res
-    //  */
-    // findAll: function (req, res) {
-    //     var token = Auth.extractAuthKey(req);
-    //     var page = Math.abs(parseInt(req.param('page', 1)));
-    //     var pageSize = Math.abs(parseInt(req.param('pageSize', 10)));
-    //     var keyword = req.param('keyword');
-    //     UserAuth.getUserByAuthToken(token, function(err, user) {
-    //         if(err) {
-    //             return res.serverError({"data": err});
-    //         }
-    //         if(!user) {
-    //             return res.badRequest({"message": "User not found"});
-    //         }
-    //         EventInvite.find({"user_id": user.id}).populate('event_id').paginate({page: page, limit: pageSize}).exec(function (err, events) {
-    //             if(err) {
-    //                 return res.serverError({"data":err});
-    //             }
-    //             EventInvite.count({"user_id": user.id}).exec(function (err, count) {
-    //                 if(err) {
-    //                     return res.serverError({"data":err});
-    //                 }
-    //                 return res.ok({"data": events, "page": page, "pageSize": pageSize, "total": count});
-    //             });
-    //         });
-    //     });
-    // },
-
+    
     /**
      *
      * @param req
@@ -307,5 +278,40 @@ module.exports = {
                 });
             });
         });
-    }
+    } //, 
+
+
+    // PAY ATTENTION that action isn't tested, but idea of the action can be useful in future
+
+    // /**
+    //  * find from all
+    //  * @param req
+    //  * @param res
+    //  */
+    // findAll: function (req, res) {
+    //     var token = Auth.extractAuthKey(req);
+    //     var page = Math.abs(parseInt(req.param('page', 1)));
+    //     var pageSize = Math.abs(parseInt(req.param('pageSize', 10)));
+    //     var keyword = req.param('keyword');
+    //     UserAuth.getUserByAuthToken(token, function(err, user) {
+    //         if(err) {
+    //             return res.serverError({"data": err});
+    //         }
+    //         if(!user) {
+    //             return res.badRequest({"message": "User not found"});
+    //         }
+    //         EventInvite.find({"user_id": user.id}).populate('event_id').paginate({page: page, limit: pageSize}).exec(function (err, events) {
+    //             if(err) {
+    //                 return res.serverError({"data":err});
+    //             }
+    //             EventInvite.count({"user_id": user.id}).exec(function (err, count) {
+    //                 if(err) {
+    //                     return res.serverError({"data":err});
+    //                 }
+    //                 return res.ok({"data": events, "page": page, "pageSize": pageSize, "total": count});
+    //             });
+    //         });
+    //     });
+    // },
+
 };

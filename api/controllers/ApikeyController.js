@@ -1,5 +1,5 @@
 /**
- * ApikeyController inst used
+ * ApikeyController isn't used
  *
  * @description :: Server-side logic for managing apikeys
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers

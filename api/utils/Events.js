@@ -45,11 +45,11 @@ function findUserPhone(phones, cb) {
         return cb(null, phones, []);
     }
     //1. get phones for search in Phones
-    phones = phones.map(function(value) {
+    phonesIds = phones.map(function(value) {
         return PhoneIdentifier.extract(value);
     });
     //2. search all users with phones
-    Phone.find({ user_id: {'!': null}, id: phones}).exec(function(err, results){
+    Phone.find({ user_id: {'!': null}, id: phonesIds}).exec(function(err, results){
         if(err) {
             return cb(err);
         }
@@ -130,7 +130,6 @@ function inviteUsers(event, invites, cb) {
                 if(!collectedUsers.length) {
                     return cb(null, invites, []);
                 }
-                sails.log(collectedUsers);
                 EventInvite.create(collectedUsers).exec(function(err, result){
                     if(err) {
                         return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
@@ -198,6 +197,7 @@ function inviteGuests(user, event, invites, cb) {
             if (err) {
                 return cb(err);
             }
+            sails.log(phones);
             sendSms(phones, function(){
                 sendEmail(user, event, emails, function(){
                     var eventInviteGuest = phones.map(function(value) {
@@ -295,6 +295,7 @@ function makeInvite(user, event, invites, cb) {
         if(err) {
             return cb(err);
         }
+        sails.log(notInvited);
         // 2. invite not invited person by phone or email
         inviteGuests(user, event, notInvited, function(err) {
             if(err) {

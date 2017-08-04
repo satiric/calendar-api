@@ -153,19 +153,19 @@ module.exports = {
                 return cb(err);
             }
             if (!user) {
-                err = new Error('Incorrect email or password.');
+                err = new LogicE('This email is not linked to a vlife account.');
                 return cb(err);
             }
             PasswordEncoder.bcryptCheck(pass, user.password, function (err, res) {
                 if (!res) {
-                    err = new Error('Password invalid');
+                    err = new LogicE('Password is invalid');
                 }
                 if(err) {
                     return cb(err);
                 }
                 Auth.login(user, 60 * 60 * 24 * 30 * 1000, function(err, token) {
                     if(err) {
-                        return res.serverError({"status":"error", "details": err});
+                        return cb(err);
                     }
                     return cb(err, {user: user, token: token});
                 });
