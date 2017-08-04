@@ -17,14 +17,11 @@ function changePassByToken(token, value, cb) {
             return cb(err);
         }
         if (!user) {
-            return cb(new LogicE("Link are retired"));
+            return cb(new LogicE("The link has expired"));
         }
         User.changePassword(user, value, function (err, result) {
             if (err) {
                 return cb(err);
-            }
-            if(!result) {
-                return cb(new LogicE("User not found"));
             }
             return User.update({"id": user.id}, {"password_reset_token": null}, function (err, updated) {
                 if (err) {
