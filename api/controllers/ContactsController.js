@@ -64,7 +64,10 @@ module.exports = {
         });
     },
     /**
-     * 
+     * send to emails and phones invite-message, if this emails and phones aren't connected to vlife-users
+     * 'emails and phones' means list of string values, which was sent in request
+     * 'invite' means invite to vlife app, not in event.
+     *
      * @param req
      * @param res
      * @returns {*}

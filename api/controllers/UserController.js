@@ -4,7 +4,6 @@
  * @description :: Server-side logic for managing users
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
-var LogicE = require('../exceptions/Logic');
 var BaseE = require('../exceptions/BaseException');
 var UserAuth = require("../utils/UserAuth");
 
@@ -20,6 +19,9 @@ module.exports = {
      * @param res
      */
     find: function (req, res) {
+        if(!req.param('id')) {
+            return res.badRequest({"message": "Id must be an integer."});
+        }
         User.getPopulated([req.param('id')], function (err, users) {
             if(err) {
                 return res.serverError({"data": err});

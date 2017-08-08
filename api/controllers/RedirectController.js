@@ -9,6 +9,11 @@ module.exports = {
         shortcuts: false,
         rest: false
     },
+    /**
+     * for resetPassword email. Link from action resetPassword linked to this action
+     * @param req
+     * @param res
+     */
     deepLink: function(req, res) {
         res.redirect("vlife://reset?token=" + req.param('token'));
     }
