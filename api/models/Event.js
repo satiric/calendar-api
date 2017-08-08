@@ -199,8 +199,8 @@ types: {
         var params = [userId];
         var countParams = [userId];
         sails.log(keyword);
-        var query = "SELECT e.* FROM event_invites as ei LEFT JOIN  event as e ON e.id = ei.event_id WHERE ei.user_id = ? ";
-        var queryCount = "SELECT count(1) AS cnt FROM event_invites as ei LEFT JOIN  event as e ON e.id = ei.event_id WHERE ei.user_id = ? ";
+        var query = "SELECT e.* FROM event_invites as ei LEFT JOIN  event as e ON e.id = ei.event_id WHERE e.active = 1 AND ei.user_id = ? ";
+        var queryCount = "SELECT count(1) AS cnt FROM event_invites as ei LEFT JOIN  event as e ON e.id = ei.event_id WHERE e.active = 1 AND ei.user_id = ? ";
         if (keyword) {
             keyword = "%" + keyword + "%";
             query += "AND (e.title LIKE ? OR e.description LIKE ?)";
