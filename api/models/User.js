@@ -85,7 +85,7 @@ module.exports = {
     validationMessages: { //hand for i18n & l10n
         email: {
             required: 'Email is required',
-            email: 'Email is not a valid email',
+            email: 'Email is not valid',
             unique: 'This email is already registered to a vlife account'
         },
         name: {
