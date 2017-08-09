@@ -38,7 +38,7 @@ module.exports = {
         userIds = userIds.map(function(value) {
             return value.user_id;
         });
-        User.find({id: userIds}).populate('avatar').exec(function(err, users){
+        User.find({id: userIds}).populate('avatar').sort({name: 'asc'}) .exec(function(err, users){
             if(err) {
                 return cb(err);
             }
