@@ -133,7 +133,7 @@ module.exports = {
                 return res.badRequest({"message": "User not found"});
             }
 
-            EventInvite.find({"event_id":eventId}).paginate({page: page, limit: pageSize}).exec(function(err, result){
+            EventInvite.find({"event_id":eventId}).populate('event_id').paginate({page: page, limit: pageSize}).exec(function(err, result){
                 if(err) {
                     return res.serverError({"data":err});
                 }
@@ -145,8 +145,11 @@ module.exports = {
                         if(err) {
                             return res.serverError({"data":err});
                         }
+                        ei = (ei || []).filter(function(ei) {
+                            return !ei.id || (ei.id !== result[0].event_id.founder);
+                        });
                         return res.ok({
-                            "data": ei || [],
+                            "data": ei,
                             "page": page,
                             "pageSize": pageSize,
                             "total": count

@@ -113,7 +113,6 @@ function inviteUsers(event, invites, cb) {
                     'event_id': event.id
                 };
             });
-            sails.log(collectedUsers);
             // get all already has invites
             EventInvite.find({or:collectedUsers}).exec(function(err, result){
                 //todo make a send notification
@@ -128,7 +127,7 @@ function inviteUsers(event, invites, cb) {
                 }
 
                 collectedUsers = collectedUsers.filter(function(value) {
-                    return (founded.indexOf(value.user_id) === -1);
+                    return (founded.indexOf(value.user_id) === -1) && value.user_id !== event.founder;
                 });
                 if(!collectedUsers.length) {
                     return cb(null, invites, []);
