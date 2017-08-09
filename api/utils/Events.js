@@ -44,6 +44,9 @@ function findUserPhone(phones, cb) {
     if(!Array.isArray(phones)) {
         return cb(null, phones, []);
     }
+    phones = phones.filter(function(phone) {
+        return PhoneIdentifier.extract(phone);
+    });
     //1. get phones for search in Phones
     phonesIds = phones.map(function(value) {
         return PhoneIdentifier.extract(value);
@@ -295,7 +298,6 @@ function makeInvite(user, event, invites, cb) {
         if(err) {
             return cb(err);
         }
-        sails.log(notInvited);
         // 2. invite not invited person by phone or email
         inviteGuests(user, event, notInvited, function(err) {
             if(err) {
