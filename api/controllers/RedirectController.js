@@ -15,7 +15,17 @@ module.exports = {
      * @param res
      */
     deepLink: function(req, res) {
-        res.redirect("vlife://reset?token=" + req.param('token'));
+
+        var token = req.param('token');
+        require('../utils/UserAuth').getUserByResetToken(token, function(err, result){
+            if(err) {
+                return res.send(err.message);
+            }
+            if(!result) {
+                return res.send('The link has expired');
+            }
+            return res.redirect("vlife://reset?token=" + req.param('token'));
+        });
     }
 };
 
