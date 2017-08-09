@@ -2,6 +2,29 @@
  * Created by decadal on 29.06.17.
  */
 
+function eventsWithRepeat(dateStart, dateEnd) {
+    // i hope you stay alive because that isn't worst query in our life.
+    var q = "( " +
+        "(date_start <= ? AND date_end >= ?)" +
+        "OR (" +
+            " (end_repeat IS NULL OR end_repeat > ?) " + // firstly, check that end_repeat doesn't block the event
+            " AND (" + //after that check types of repeat
+                "repeat_type = 2" + // DAILY
+                " OR (repeat_type = 4 AND DAYOFWEEK(date_start) = DAYOFWEEK(?))" + // WEEKLY
+                " OR(repeat_type = 8 AND DAYOFWEEK(date_start) = DAYOFWEEK(?))" +  // FORNIGHT working as weekly
+                " OR (repeat_type = 16 AND DAYOFMONTH(date_start) = DAYOFMONTH(?))" + // MONTHLY
+            " )" +
+        " )" +
+    ")";
+    return {
+        'query': q,
+        // depends of count '?' symbols in the query: the same date used in all placeholders marked as '?',
+        // except the second parameter: dateEnd for comparing with date_end field
+        'params': [dateStart, dateEnd,  dateStart, dateStart, dateStart, dateStart]
+    };
+
+}
+
 module.exports = {
     attributes: {
         title: {
@@ -195,13 +218,17 @@ types: {
         });
     },
 
+
+
+
     getEventsWithDate: function(userId, date, keyword, page, size, cb) {
-        var params = [userId];
-        var countParams = [userId];
-        sails.log(keyword);
-        var query = "SELECT e.* FROM event_invites as ei LEFT JOIN  event as e ON e.id = ei.event_id WHERE e.active = 1 AND ei.user_id = ? ";
-        var queryCount = "SELECT count(1) AS cnt FROM event_invites as ei LEFT JOIN  event as e ON e.id = ei.event_id WHERE e.active = 1 AND ei.user_id = ? ";
+        //two arrays with params for different requests
+        var params = [userId, userId];
+        var countParams = [userId, userId];
+        var query = "SELECT e.* FROM event as e LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?) ";
+        var queryCount = "SELECT count(1) AS cnt FROM event as e LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?) ";
         if (keyword) {
+            //add all parameters for keyword-mode
             keyword = "%" + keyword + "%";
             query += "AND (e.title LIKE ? OR e.description LIKE ?)";
             queryCount += "AND (e.title LIKE ? OR e.description LIKE ?)";
@@ -211,16 +238,15 @@ types: {
             countParams.push(keyword);
         }
         if(date) {
-            params.push(date.split("T")[0] + " 23:59:59");
-            params.push(date.split("T")[0]  + " 00:00:00");
-            countParams.push(date.split("T")[0] + " 23:59:59");
-            countParams.push(date.split("T")[0]  + " 00:00:00");
-            query += " AND e.date_start <= ? AND e.date_end >= ? ORDER BY e.date_start DESC LIMIT ? OFFSET ?";
-            queryCount += " AND e.date_start <= ? AND e.date_end >= ?";
+            var tmp = eventsWithRepeat(date.split("T")[0] + " 23:59:59", date.split("T")[0]  + " 00:00:00");
+            query += " AND " + tmp.query;
+            queryCount += " AND " + tmp.query;
+            params = params.concat(tmp.params);
+            countParams = countParams.concat(tmp.params);
         }
-        else {
-            query += " ORDER BY e.date_start DESC LIMIT ? OFFSET ?";
-        }
+
+        query += " ORDER BY e.date_start DESC LIMIT ? OFFSET ?";
+
         params.push(size);
         params.push((page-1) * size);
         Event.query(query, params, function(err, result){
