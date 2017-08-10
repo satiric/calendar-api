@@ -23,6 +23,9 @@ module.exports = {
         },
         blocked: {
             type: "integer"
+        },
+        removed: {
+            type: "integer"
         }
     },
 
