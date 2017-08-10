@@ -43,16 +43,20 @@ function prepareEmailSubscribers(emails, userId) {
     });
     return emailRecords;
 }
+
 /**
- *
+ * 
  * @param emails
+ * @param asFriend
  * @param cb
  * @returns {*}
  */
-function registEmails(emails, cb) {
+function registEmails(emails, asFriend, cb) {
     if(!emails.length) {
         return cb();
     }
+    asFriend = asFriend || false;
+    
     var emailsList = emails.map(function(value){
         return {email: value.email};
     });
@@ -88,11 +92,11 @@ function registEmails(emails, cb) {
  * @param cb
  * @returns {*}
  */
-function registPhones(phones, cb) {
+function registPhones(phones, asFriend, cb) {
     if(!phones.length) {
         return cb();
     }
-
+    asFriend = asFriend || false;
     var phoneList = phones.map(function(value) {
         return {"id" : value.id};
     });
@@ -136,7 +140,7 @@ function registPhones(phones, cb) {
  * @param cb
  */
 function registContacts(emailRecords, phoneRecords, cb) {
-    registEmails(emailRecords, function(err, founded) {
+    registEmails(emailRecords, false, function(err, founded) {
         var contacts = [];
         if(err) {
             return cb(err);
@@ -148,7 +152,7 @@ function registContacts(emailRecords, phoneRecords, cb) {
                 }
             }
         }
-        registPhones(phoneRecords, function(err, founded) {
+        registPhones(phoneRecords, false, function(err, founded) {
             if(err) {
                 return cb(err);
             }
@@ -403,21 +407,28 @@ function addFriends(userId, friendIds, cb) {
             return cb(err);
         }
         var blocked = [];
+        var removed = [];
         result.forEach(function(friend){
             if(friend.blocked) {
                 blocked.push(friend.user_whom_id);
             }
+            if (friend.removed) {
+                removed.push(friend.user_whom_id);
+            }
         });
-        sails.log(friends);
         Friend.insertIgnore(friends, function(err, result) {
             if(err) {
                 return cb(err);
             }
             //userIds is list of id each one we need to add to friends
+            friendIds = friendIds.filter(function(id){
+                return removed.indexOf(id) === -1;
+            });
             User.find({"id": friendIds}).populate('avatar').exec(function(err, users) {
                 if(err) {
                     return cb(err);
                 }
+
                 return cb(null, users.map(function(user) {
                     //because we create pair user-friend just now and didn't block it
                     user.blocked = +(blocked.indexOf(user.id) !== -1);
@@ -596,7 +607,7 @@ module.exports = {
      */
     find: function(user, cb) {
 
-        Friend.find({user_who_id: user.id}, function(err, friends) {
+        Friend.find({user_who_id: user.id, removed:  { '!' : '1' } }, function(err, friends) {
             if(err) {
                 return cb(err);
             }
@@ -734,7 +745,7 @@ module.exports = {
                 'user_whom_id': friend
             };
         });
-        Friend.destroy({or:friendsUser}).exec(cb);
+        Friend.update({or:friendsUser}, {'removed': 1}).exec(cb);
         // if(emails.length) {
         //     emails = emails.map(function(value) {
         //         return {
@@ -813,6 +824,7 @@ module.exports = {
                     }
                     results.users = friends || [];
                     // 4. send invite by email
+                    
                     cascadeSend(emails, foundedEmails, inviter, 0, function(err, result) {
                         //ignore errors!
                         results.emails  = emails.filter(function(value){
@@ -820,7 +832,7 @@ module.exports = {
                             }) || [];
                         var emailRecords = prepareEmailSubscribers(results.emails, inviter.id);
                         // 4.1 remember each one email that's sent invite
-                        registEmails(emailRecords, function(err, result) {
+                        registEmails(emailRecords, true, function(err, result) {
                             if(err) {
                                 return cb(err);
                             }
@@ -833,7 +845,7 @@ module.exports = {
 
                                 var phoneRecords = preparePhoneSubscribers(results.phones, inviter.id);
                                 // 5.1 remember each one phone that's sent invite
-                                registPhones(phoneRecords, function(err, r) {
+                                registPhones(phoneRecords, true, function(err, r) {
                                     if(err) {
                                         return cb(err);
                                     }
