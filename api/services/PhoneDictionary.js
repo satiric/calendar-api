@@ -2,7 +2,6 @@
  * Created by decadal on 11.08.17.
  * TODO MAKE AS child of phone library (node_modules/phone)
  */
-'use stricts';
 
 var iso3166_data = [
     // if no country is given, default to USA. DO NOT move this position
