@@ -6,11 +6,6 @@ var ValidationE = require('../exceptions/Validation');
 var PermissionE = require('../exceptions/Permission');
 var LogicE = require('../exceptions/Logic');
 
-function getEventByDate(date, page, size, cb) {
-    Event.getEventsByDate(date, page, size, cb);
-}
-
-
 
 function mapUser(list, key) {
     key = key || 'user_id';
@@ -338,16 +333,12 @@ module.exports = {
     /**
      * 
      * @param user
-     * @param page
-     * @param pageSize
-     * @param keyword
-     * @param date
+     * @param params
      * @param cb
      * @returns {*}
      */
-    find: function(user, page, pageSize, keyword, date, cb) {
-        return Event.getEventsWithDate(user.id, date, keyword, page, pageSize, function(err, events, count){
-
+    find: function(user, params, cb) {
+        return Event.getEventsByConfig(user.id, params, function(err, events, count, countPers, countWork){
             var ev = (Array.isArray(events)) ? events.map(function(val){
                 return val.id;
             }) : [];
@@ -359,11 +350,16 @@ module.exports = {
                     if(err) {
                         return cb(err);
                     }
+                    var mainPercent = (!count) ? 0 : (countWork / count)*100;
                     return cb(null, {
                         "data": results || [],
-                        "page": page,
-                        "pageSize": pageSize,
-                        "total": count
+                        "page": params.page,
+                        "pageSize": params.pageSize,
+                        "total": count,
+                        "percentage": {
+                            work: (mainPercent) ? mainPercent.toFixed(2) : 0,
+                            personal: (results) ? (100 - mainPercent).toFixed(2) : 0
+                        }
                     });
                 });
             });

@@ -23,11 +23,12 @@ module.exports = {
      * @param res
      */
     findMy: function (req, res) {
+
         var token = Auth.extractAuthKey(req);
-        var date = req.param('date');
         var page = Math.abs(parseInt(req.param('page', 1)));
         var pageSize = Math.abs(parseInt(req.param('pageSize', 10)));
-        var keyWord = req.param('keyword');
+        var date = req.param('date');
+        var keyword = req.param('keyword');
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
                 return res.serverError({"data": err});
@@ -35,56 +36,81 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
-            var params = {"founder": user.id, 'active':true};
-            if( keyWord ) {
-                params.or = [
-                    { title : { 'like': '%'+keyWord+'%' } },
-                    { description : { 'like': '%'+keyWord+'%' } }
-                ];
-            }
-            if(date) {
-                params.date_start = {'<=': date.split("T")[0] + " 23:59:59"};
-                params.date_end =  {'>=': date.split("T")[0]  + " 00:00:00"};
-            }
-            Event.find(params).sort({date_start: 'desc'}).paginate({page: page, limit: pageSize}).exec(function (err, events) {
+            require('../utils/Events').find(user, {
+                'page': page, 'pageSize': pageSize, 'keyword': keyword, 'date': date,
+                'type': Event.MY_EVENTS
+            }, function(err, result){
                 if(err) {
-                    return res.serverError({"data":err});
+                    return res.serverError({"data": err});
                 }
-                Event.count(params).exec(function (err, count) {
-                    if(err) {
-                        return res.serverError({"data":err});
-                    }
-                    params.sphere = 0;
-                    Event.count(params).exec(function (err, countWork) {
-                        if(err) {
-                            return res.serverError({"data":err});
-                        }
-                        params.sphere = 1;
-                        Event.count(params).exec(function (err, countPers) {
-                            if(err) {
-                                return res.serverError({"data":err});
-                            }
-                            Event.extendEvent(events, function(err, results){
-                                if(err) {
-                                    return res.serverError({"data":err});
-                                }
-                                var mainPercent = (!count) ? 0 : (countWork / count)*100;
-                                return res.ok({
-                                    "data": results || [] ,
-                                    "page": page,
-                                    "pageSize": pageSize,
-                                    "total": count,
-                                    percentage: {
-                                        personal: mainPercent.toFixed(2),
-                                        work: (results) ? (100 - mainPercent).toFixed(2) : 0
-                                    }
-                                });
-                            });
-                        });
-                    });
-                });
+                return res.ok(result);
             });
         });
+
+
+
+        // var token = Auth.extractAuthKey(req);
+        // var date = req.param('date');
+        // var page = Math.abs(parseInt(req.param('page', 1)));
+        // var pageSize = Math.abs(parseInt(req.param('pageSize', 10)));
+        // var keyWord = req.param('keyword');
+        // UserAuth.getUserByAuthToken(token, function(err, user) {
+        //     if(err) {
+        //         return res.serverError({"data": err});
+        //     }
+        //     if(!user) {
+        //         return res.badRequest({"message": "User not found"});
+        //     }
+        //     var params = {"founder": user.id, 'active':true};
+        //     if( keyWord ) {
+        //         params.or = [
+        //             { title : { 'like': '%'+keyWord+'%' } },
+        //             { description : { 'like': '%'+keyWord+'%' } }
+        //         ];
+        //     }
+        //     if(date) {
+        //         params.date_start = {'<=': date.split("T")[0] + " 23:59:59"};
+        //         params.date_end =  {'>=': date.split("T")[0]  + " 00:00:00"};
+        //     }
+        //     Event.find(params).sort({date_start: 'desc'}).paginate({page: page, limit: pageSize}).exec(function (err, events) {
+        //         if(err) {
+        //             return res.serverError({"data":err});
+        //         }
+        //         Event.count(params).exec(function (err, count) {
+        //             if(err) {
+        //                 return res.serverError({"data":err});
+        //             }
+        //             params.sphere = 0;
+        //             Event.count(params).exec(function (err, countWork) {
+        //                 if(err) {
+        //                     return res.serverError({"data":err});
+        //                 }
+        //                 params.sphere = 1;
+        //                 Event.count(params).exec(function (err, countPers) {
+        //                     if(err) {
+        //                         return res.serverError({"data":err});
+        //                     }
+        //                     Event.extendEvent(events, function(err, results){
+        //                         if(err) {
+        //                             return res.serverError({"data":err});
+        //                         }
+        //                         var mainPercent = (!count) ? 0 : (countWork / count)*100;
+        //                         return res.ok({
+        //                             "data": results || [] ,
+        //                             "page": page,
+        //                             "pageSize": pageSize,
+        //                             "total": count,
+        //                             percentage: {
+        //                                 personal: mainPercent.toFixed(2),
+        //                                 work: (results) ? (100 - mainPercent).toFixed(2) : 0
+        //                             }
+        //                         });
+        //                     });
+        //                 });
+        //             });
+        //         });
+        //     });
+        // });
     },
 
     /** todo refactor it
@@ -100,6 +126,8 @@ module.exports = {
         var pageSize = Math.abs(parseInt(req.param('pageSize', 10)));
         var date = req.param('date');
         var keyword = req.param('keyword');
+        var type = +(req.param('type', Event.ALL_EVENTS)); 
+        var acceptedOnly = req.param('acceptedOnly');
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
                 return res.serverError({"data": err});
@@ -107,7 +135,10 @@ module.exports = {
             if(!user) {
                 return res.badRequest({"message": "User not found"});
             }
-            require('../utils/Events').find(user, page, pageSize, keyword, date, function(err, result){
+            require('../utils/Events').find(user, {
+                'page': page, 'pageSize': pageSize, 'keyword': keyword, 'date': date, 
+                'type': type, 'acceptOnly': acceptedOnly
+            }, function(err, result){
                 if(err) {
                     return res.serverError({"data": err});
                 }

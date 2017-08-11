@@ -26,6 +26,9 @@ function eventsWithRepeat(dateStart, dateEnd) {
 }
 
 module.exports = {
+    MY_EVENTS: 1, 
+    NOT_MY_EVENTS: 2, 
+    ALL_EVENTS: 3, 
     attributes: {
         title: {
             type: "string",
@@ -217,16 +220,51 @@ types: {
             return cb(null, events);
         });
     },
+    getMyEvents: function(userId) {
+        return {
+            'query': ' WHERE e.active = 1 AND (e.founder = ?) ',
+            'params': [userId]
+        };
+    },
+    
+    getAllEvents: function(userId, acceptOnly) {
+        var acceptPart = (acceptOnly) ? ' AND ei.status = 1 ' : '';
+        return {
+            "query": " LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?) " + acceptPart,
+            'params': [userId, userId]
+        };
+    }, 
+    
+    getNotMyEvents: function(userId, acceptOnly) {
 
+        var acceptPart = (acceptOnly) ? ' AND ei.status = 1 ' : '';
+        return {
+            "query": " LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND ei.user_id = ? " + acceptPart,
+            'params': [userId]
+        };
+    },
+    getPartByType: function(type, userId, acceptOnly) {
+        switch(type) {
+            case Event.MY_EVENTS : return Event.getMyEvents(userId);
+            case Event.NOT_MY_EVENTS : return Event.getNotMyEvents(userId, acceptOnly);
+            case Event.ALL_EVENTS : return Event.getAllEvents(userId, acceptOnly);
+            default: return null;
+        }
+    },
 
-
-
-    getEventsWithDate: function(userId, date, keyword, page, size, cb) {
-        //two arrays with params for different requests
-        var params = [userId, userId];
-        var countParams = [userId, userId];
-        var query = "SELECT e.* FROM event as e LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?) ";
-        var queryCount = "SELECT count(1) AS cnt FROM event as e LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?) ";
+    getEventsByConfig: function(userId, config, cb) {
+        var type = config.type || Event.ALL_EVENTS;
+        var date = config.date || null; 
+        var keyword = config.keyword || null; 
+        var page = config.page || 1; 
+        var size = config.size || 10;
+     //   var acceptOnly = config.acceptOnly || false;
+        
+        var tmpParts = Event.getPartByType(type, userId, config.acceptOnly);
+        var params = tmpParts.params;
+        var countParams = tmpParts.params;
+        var query = "SELECT e.* FROM event as e " + tmpParts.query; //LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?) 
+        var queryCount = "SELECT count(1) AS cnt FROM event as e " + tmpParts.query; //  LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?) 
         if (keyword) {
             //add all parameters for keyword-mode
             keyword = "%" + keyword + "%";
@@ -257,7 +295,14 @@ types: {
                 if(err) {
                     return cb(err);
                 }
-                return cb(err, result, count[0].cnt || 0);
+                var totalCount = count[0].cnt || 0;
+                Event.query( queryCount + " AND e.sphere = 1", countParams, function(err, count){
+                    if(err) {
+                        return cb(err);
+                    }
+                    var countWork = count[0].cnt || 0;
+                    return cb(err, result, totalCount, (totalCount - countWork), countWork);
+                });
             });
         });
     }

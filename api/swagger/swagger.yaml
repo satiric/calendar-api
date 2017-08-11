@@ -1083,6 +1083,7 @@ paths:
     # binds a127 app logic to a route
     x-swagger-router-controller: EventsController
     get:
+      deprecated: true
       tags: 
       - event
       description: Get events, created by authorized user
@@ -1157,13 +1158,26 @@ paths:
         - $ref: "#/parameters/vlife-key"
         - $ref: "#/parameters/auth-token-required"
         - in: query
-          name: "page"
-          description: page, default 1
-          type: integer
+          name: "keyword"
+          description: for search by keyword in title and description for events
+          type: string
         - in: query
           name: "pageSize"
           description: pagesize, default 10
           type: integer
+        - in: query
+          name: "date"
+          description: dat for
+          type: string
+          format: datetime
+        - in: query
+          name: type
+          type: integer
+          description: "1 - only my events, equal to myEvents method. 2 - only not my events (which i'm invited). 3 - all events. DEFAULT presets as 3"
+        - in: query
+          name: acceptedOnly
+          type: integer
+          description: "if type is 1, has no effect. If type is 2 or 3, select only events which i did accept the invitation"
       responses:
         "200":
           description: Success
