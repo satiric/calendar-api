@@ -62,7 +62,7 @@ module.exports = {
         },
         end_repeat: {
             type: "datetime",
-            defaults: null
+            defaultsTo: null
       //      isISOdatetime: true
         },
         location: {
