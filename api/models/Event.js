@@ -269,8 +269,8 @@ types: {
         if (keyword) {
             //add all parameters for keyword-mode
             keyword = "%" + keyword + "%";
-            query += "AND (e.title LIKE ? OR e.description LIKE ?)";
-            queryCount += "AND (e.title LIKE ? OR e.description LIKE ?)";
+            query += " AND (e.title LIKE ? OR e.description LIKE ?) ";
+            queryCount += " AND (e.title LIKE ? OR e.description LIKE ?) ";
             params.push(keyword);
             params.push(keyword);
             countParams.push(keyword);
