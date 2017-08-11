@@ -1151,6 +1151,10 @@ paths:
           description: for search by keyword in title and description for events
           type: string
         - in: query
+          name: "page"
+          description: page, default 1
+          type: integer
+        - in: query
           name: "pageSize"
           description: pagesize, default 10
           type: integer
