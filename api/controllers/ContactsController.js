@@ -46,6 +46,7 @@ module.exports = {
             return res.badRequest({"message": "body of request must be an array"});
         }
         var token = Auth.extractAuthKey(req);
+     //   var mcc = req.headers.mcc || '';
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
                 return res.serverError({"data": err});

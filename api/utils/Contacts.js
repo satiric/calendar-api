@@ -389,13 +389,30 @@ function changeBlock(user, friends, block, cb) {
 
 }
 
+
+function forceUpdateFriends(userId, removed, force, cb) {
+
+    if(!force || !removed || !removed.length) {
+        return cb();
+    }
+    var friendsIds =  removed.map(function(friendId){
+        return {
+            'user_who_id': userId,
+            'user_whom_id': friendId
+        };
+    });
+
+    Friend.update({or: friendsIds}, {"removed": 0}).exec(cb);
+}
+
 /**
  *
  * @param userId
  * @param friendIds
+ * @param force
  * @param cb
  */
-function addFriends(userId, friendIds, cb) {
+function addFriends(userId, friendIds, force, cb) {
     var friends = friendIds.map(function(friendId){
         return {
             'user_who_id': userId,
@@ -420,22 +437,28 @@ function addFriends(userId, friendIds, cb) {
             if(err) {
                 return cb(err);
             }
-            //userIds is list of id each one we need to add to friends
-            friendIds = friendIds.filter(function(id){
-                return removed.indexOf(id) === -1;
-            });
-            User.find({"id": friendIds}).populate('avatar').exec(function(err, users) {
+            forceUpdateFriends(userId, removed, force, function(err, result) {
                 if(err) {
                     return cb(err);
                 }
+                //userIds is list of id each one we need to add to friends
+                if(!force) {
+                    friendIds = friendIds.filter(function(id){
+                        return removed.indexOf(id) === -1;
+                    });
+                }
+                User.find({"id": friendIds}).populate('avatar').exec(function(err, users) {
+                    if(err) {
+                        return cb(err);
+                    }
 
-                return cb(null, users.map(function(user) {
-                    //because we create pair user-friend just now and didn't block it
-                    user.blocked = +(blocked.indexOf(user.id) !== -1);
-
-                    return user;
-                }));
-            });
+                    return cb(null, users.map(function(user) {
+                        //because we create pair user-friend just now and didn't block it
+                        user.blocked = +(blocked.indexOf(user.id) !== -1);
+                        return user;
+                    }));
+                });
+            } );
         });
     });
 }
@@ -596,7 +619,7 @@ module.exports = {
                 return cb(null, []);
             }
             sails.log(friendIds);
-            addFriends(userId, friendIds, cb);
+            addFriends(userId, friendIds, false, cb);
         });
     },
 
@@ -818,7 +841,7 @@ module.exports = {
                     });
                 }
                 // 3. add all users to friends if they exists by enumerated phones and emails
-                addFriends(inviter.id, friendIds, function(err, friends) {
+                addFriends(inviter.id, friendIds, true, function(err, friends) {
                     if(err) {
                         return cb(err);
                     }
