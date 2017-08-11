@@ -49,6 +49,13 @@ parameters:
     description: Authorization token, binded to unique user.
     type: string
     required: true
+    
+  mcc: 
+    in: header
+    name: "mcc"
+    description: MCC code.
+    type: string
+    
 definitions:
 
   AuthTokenReadable:
@@ -1279,6 +1286,7 @@ paths:
       parameters:
         - $ref: "#/parameters/vlife-key"
         - $ref: "#/parameters/auth-token-required"
+        - $ref: "#/parameters/mcc"
         - name: body
           in: body
           description: "Body with emails and phones for invite"

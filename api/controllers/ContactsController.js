@@ -76,12 +76,15 @@ module.exports = {
     invite: function (req, res) {
         var emails = req.param('emails');
         var phones = req.param('phones');
+        var mcc = req.headers.mcc || '';
+        sails.log("MCC :"+ mcc);
+        
         var token = Auth.extractAuthKey(req);
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
                 return res.serverError({"data": err});
             }
-            require('../utils/Contacts').invite( emails, phones, user, function(err, result) {
+            require('../utils/Contacts').invite( emails, phones, user, mcc,  function(err, result) {
                 if(err) {
                     return (err instanceof LogicE) ? res.badRequest({"message": err.message})
                         : res.serverError({"data": err});

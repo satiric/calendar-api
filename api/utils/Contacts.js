@@ -3,6 +3,43 @@
  */
 var LogicE = require('../exceptions/Logic');
 
+function inviteByPhone(phones, foundedPhones, inviter, mcc, cb) {
+
+    var countryCode = '';
+    if(mcc) {
+        var code = require('mcc-mnc-list').filter({'mcc':mcc});
+        sails.log("FILTER MCC LIST: ");
+        sails.log(code);
+        if(code[0]) {
+            countryCode = code[0].countryCode;
+        }
+    }
+
+    if(!countryCode) {
+        sails.log('unable to detect country by mcc. Try to detect country by inviter');
+
+
+        let detectedInviterPhone = PhoneDictionary(inviter.phone, '');
+        sails.log(detectedInviterPhone);
+        sails.log(inviter.phone);
+        countryCode = detectedInviterPhone[1];
+    }
+
+    var PNF = require('google-libphonenumber').PhoneNumberFormat;
+    var phoneUtil = require('google-libphonenumber').PhoneNumberUtil.getInstance();
+    if (countryCode ) {
+        sails.log('country code is defined---: '+countryCode);
+        sails.log(phones);
+        phones = phones.map(function(phone) {
+            return (phone.indexOf('+') === -1 ) ? phoneUtil.format(phoneUtil.parse(phone, countryCode), PNF.INTERNATIONAL) 
+                : phone;
+        });
+        sails.log(phones);
+    }
+    sails.log('----end');
+    cascadeSmsSend(phones, foundedPhones, inviter, 0, cb);
+}
+
 /**
  *
  * @param phones
@@ -295,7 +332,7 @@ function validateEmail(email) {
  * @returns {boolean}
  */
 function validatePhone(phone) {
-    return /\+([0-9]){9,13}/.test(phone);
+    return PhoneIdentifier.extract(phone); ///\+([0-9]){9,13}/.test(phone);
 }
 
 /**
@@ -803,9 +840,11 @@ module.exports = {
      * @param emails
      * @param phones
      * @param inviter
+     * @param mcc
      * @param cb
+     * @returns {*}
      */
-    invite: function(emails, phones, inviter, cb) {
+    invite: function(emails, phones, inviter, mcc, cb) {
         var results = {};
         var foundedEmails = [], foundedPhones = [], friendIds = [];
         emails = emails || [];
@@ -860,7 +899,7 @@ module.exports = {
                                 return cb(err);
                             }
                             // 5. send invite by phone
-                            cascadeSmsSend(phones, foundedPhones, inviter, 0, function(err, result) {
+                            inviteByPhone(phones, foundedPhones, inviter, mcc, function(err, res){
                                 //ignore errors!
                                 results.phones = phones.filter(function(value){
                                         return (foundedPhones.indexOf(PhoneIdentifier.extract(value)) === -1);
@@ -875,6 +914,7 @@ module.exports = {
                                     return cb(null, results);
                                 });
                             });
+
                         });
                     });
                 });
