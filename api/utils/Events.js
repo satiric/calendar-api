@@ -403,6 +403,10 @@ module.exports = {
      * @param cb
      */
     update: function(eventId, user, event, cb) {
+        //thanks to ios 
+        if(typeof event.end_repeat !== 'undefined' &&  !event.end_repeat  ) {
+            event.end_repeat = null;
+        }
         Event.update({id: eventId, "founder": user.id}, event).exec(function (err, result) {
             if(err) {
                 return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
