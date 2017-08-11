@@ -510,24 +510,6 @@ definitions:
             items: 
               type: string
         
-      
-  EventResponse: 
-    required: 
-      - data
-      - page 
-      - pageSize
-      - total
-    properties:
-      data:
-        type: array
-        items: 
-          "$ref": "#/definitions/Event"
-      page: 
-        type: integer
-      pageSize:
-        type: integer
-      total:
-        type: integer
 
   EventResponseWithStat: 
     required: 
@@ -1182,7 +1164,7 @@ paths:
         "200":
           description: Success
           schema:
-            "$ref": "#/definitions/EventResponse"
+            "$ref": "#/definitions/EventResponseWithStat"
         # responses may fall through to errors
         default:
           description: Error
