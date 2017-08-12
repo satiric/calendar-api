@@ -262,8 +262,8 @@ types: {
      //   var acceptOnly = config.acceptOnly || false;
         
         var tmpParts = Event.getPartByType(type, userId, config.acceptOnly);
-        var params = tmpParts.params;
-        var countParams = tmpParts.params;
+        var params = tmpParts.params.slice();
+        var countParams = tmpParts.params.slice();
         var query = "SELECT e.* FROM event as e " + tmpParts.query; //LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?) 
         var queryCount = "SELECT count(1) AS cnt FROM event as e " + tmpParts.query; //  LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?) 
         if (keyword) {
