@@ -342,6 +342,10 @@ module.exports = {
             var ev = (Array.isArray(events)) ? events.map(function(val){
                 return val.id;
             }) : [];
+            var countMembers = {};
+            for(var i = 0, size = events.length; i < size; i++) {
+                countMembers[events[i].id] = events[i].count_members;
+            }
             Event.find({"id":ev}).sort({"date_start": "desc"}).exec(function(err, events){
                 if(err) {
                     return cb(err);
@@ -351,6 +355,10 @@ module.exports = {
                         return cb(err);
                     }
                     var mainPercent = (!count) ? 0 : (countWork / count)*100;
+                    results = results.map(function(r){
+                        r.count_members = countMembers[r.id];
+                        return r;
+                    });
                     return cb(null, {
                         "data": results || [],
                         "page": params.page,
