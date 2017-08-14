@@ -385,7 +385,10 @@ definitions:
         description: google place id or other text for place identification
       active: 
         type: boolean
-        description: Status for the event. Default is true. 
+        description: Status for the event. Default is true.
+      count_members: 
+        type: integer
+        description: "count of members"
   
   EventDetailResponse:
     type: object
