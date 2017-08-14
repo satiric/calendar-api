@@ -127,17 +127,27 @@ function inviteUsers(event, invites, cb) {
                 if(!collectedUsers.length) {
                     return cb(null, invites, []);
                 }
-                EventInvite.create(collectedUsers).exec(function(err, result){
+                var invitedIds = mapUser(collectedUsers);
+
+                User.find({'id': invitedIds}).exec(function(err, foundedUsers){
                     if(err) {
-                        return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
+                        return cb(err);
                     }
+                    invitedIds = foundedUsers.map(function(user) {
+                        return user.id;
+                    });
+                    collectedUsers = collectedUsers.filter(function(val) {
+                        return invitedIds.indexOf(val.user_id) !== -1;
+                    });
+                    EventInvite.create(collectedUsers).exec(function(err, result){
+                        if(err) {
+                            return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
+                        }
                     //array with id, status and value for user
-                    var invitedIds = mapUser(collectedUsers);
-                    User.find({'id': invitedIds}).exec(function(err, result){
                         if(err) {
                             return cb(err);
                         }
-                        var invitedExtract = result.map(function(value){
+                        var invitedExtract = foundedUsers.map(function(value){
                             return {
                                 'id': value.id,
                                 'status': 0,
