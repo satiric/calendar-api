@@ -54,7 +54,7 @@ parameters:
     in: header
     name: "mcc"
     description: MCC code.
-    type: string
+    type: integer
     
 definitions:
 
