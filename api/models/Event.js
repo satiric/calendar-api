@@ -351,7 +351,7 @@ types: {
         var tmpParts = Event.getPartByType(type, userId, config.acceptOnly);
         var params = tmpParts.params.slice();
         var countParams = tmpParts.params.slice();
-        var query = "SELECT e.*, (SELECT COUNT(1) FROM event_invites where event_id = e.id) AS count_members FROM event as e " + tmpParts.query; //LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?)
+        var query = "SELECT e.*, (SELECT COUNT(1)+1 FROM event_invites where event_id = e.id) AS count_members FROM event as e " + tmpParts.query; //LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?)
         var queryCount = "SELECT count(1) AS cnt FROM event as e " + tmpParts.query; //  LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?) 
         if (keyword) {
             //add all parameters for keyword-mode
