@@ -355,6 +355,7 @@ module.exports = {
                     if(err) {
                         return cb(err);
                     }
+                    results = results || [];
                     var mainPercent = (!count) ? 0 : (countWork / count)*100;
                     results = results.map(function(r){
                         r.count_members = countMembers[r.id];
