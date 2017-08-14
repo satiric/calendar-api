@@ -153,9 +153,11 @@ function inviteUsers(event, invites, cb) {
     });
 }
 
-function sendSms(phones, cb){
+function sendSms(user, event, phones, cb){
     if(phones.length) {
-        return Twilio.sendMultiMessage("Hi!", phones, function(){
+        var msg = "User " + user.name + " " + user.second_name + " invites you to Event '" + event.title + "', ";
+        msg += event.date_start + ". Click here to RSVP in vlife - 1st ever Calendar-Chat app!";
+        return Twilio.sendMultiMessage(msg, phones, function(){
             return cb();
         });
     }
@@ -194,8 +196,7 @@ function inviteGuests(user, event, invites, cb) {
             if (err) {
                 return cb(err);
             }
-            sails.log(phones);
-            sendSms(phones, function(){
+            sendSms(user, event, phones, function(){
                 sendEmail(user, event, emails, function(){
                     var eventInviteGuest = phones.map(function(value) {
                         return {"phone_id": PhoneIdentifier.extract(value), "event_id": event.id };
@@ -464,7 +465,6 @@ module.exports = {
                 if(err) {
                     return cb(err);
                 }
-                sails.log(invited);
                 var inv = invited.map(function(value){
                     if(value.phone_id) {
                         return fillInvitedContainer(value.phone_id.id, 0, 2);
