@@ -50,14 +50,18 @@ function buildQueryMonthly(date) {
  * @returns {{query: string, params: *[]}}
  */
 function buildQueryFornight(date) {
-    var q =  "IF( " +
+    var q =  "(IF( " +
         "DAYOFMONTH(date_start) <= DAYOFMONTH(date_end)," +
         "DAYOFMONTH(?) >= DAYOFMONTH(date_start) AND DAYOFMONTH(?) <= DAYOFMONTH(date_end), " +
         "DAYOFMONTH(?) >= DAYOFMONTH(date_start) OR DAYOFMONTH(?) <= DAYOFMONTH(date_end) " +
-        ")";
+        ") OR IF(" +
+        "DAYOFMONTH(DATE_ADD(date_start, INTERVAL 14 DAY)) <= DAYOFMONTH(DATE_ADD(date_end, INTERVAL 14 DAY))," +
+        "DAYOFMONTH(?) >= DAYOFMONTH(DATE_ADD(date_start, INTERVAL 14 DAY)) AND DAYOFMONTH(?) <= DAYOFMONTH(DATE_ADD(date_end, INTERVAL 14 DAY)), " +
+        "DAYOFMONTH(?) >= DAYOFMONTH(DATE_ADD(date_start, INTERVAL 14 DAY)) OR DAYOFMONTH(?) <= DAYOFMONTH(DATE_ADD(date_end, INTERVAL 14 DAY)) " +
+        "))";
     return {
         'query' : q,
-        'params' : [date, date, date, date]
+        'params' : [date, date, date, date, date, date, date, date]
     };
 }
 
