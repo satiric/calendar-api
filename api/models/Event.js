@@ -10,7 +10,7 @@
  */
 function buildQueryWeekly(iter, date) {
     // all values from repeat_options
-    var days = [1, 2, 4, 8, 18, 32, 64];
+    var days = [1, 2, 4, 8, 16, 32, 64];
     // mysql DAYOFWEEK function return 2 for monday, 1 for sunday etc.
     var dayOfWeek = [2, 3, 4, 5, 6, 7, 1];
     var totalCount = 7;
@@ -84,7 +84,7 @@ function eventsWithRepeat(dateStart, dateEnd) {
         "(date_start <= ? AND date_end >= ?)" +
         "OR (" +
             " date_end < ? " +
-            " AND (end_repeat IS NULL OR end_repeat >= ?) " + // firstly, check that end_repeat doesn't block the event
+            " AND (end_repeat IS NULL OR end_repeat > DATE_ADD(?, INTERVAL 1 DAY)) " + // firstly, check that end_repeat doesn't block the event
             " AND (" + //after that check types of repeat
                 "repeat_type = 2" + // DAILY
                 " OR (repeat_type = 4 AND (" + //WEEKLY
