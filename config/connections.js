@@ -48,7 +48,7 @@ module.exports.connections = {
     password  : 'jytjaptv222',
     database  : 'vlife',
     // Optional
-    charset   : 'utf8'
+    charset   : 'utf8mb4'
     // collation : 'utf8_swedish_ci'
   },
   testMysqlServer: {
