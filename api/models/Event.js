@@ -2,25 +2,113 @@
  * Created by decadal on 29.06.17.
  */
 
+/**
+ *
+ * @param iter
+ * @param date
+ * @returns {{query: string, params: *[]}}
+ */
+function buildQueryWeekly(iter, date) {
+    // all values from repeat_options
+    var days = [1, 2, 4, 8, 18, 32, 64];
+    // mysql DAYOFWEEK function return 2 for monday, 1 for sunday etc.
+    var dayOfWeek = [2, 3, 4, 5, 6, 7, 1];
+    var totalCount = 7;
+    var q =  " (repeat_option & "+ days[iter] + " = " + days[iter] + " AND (" +
+        "IF ( " +
+            "( " + dayOfWeek[iter] + "+ DATEDIFF(date_end, date_start) > " + totalCount + "), " + // condition
+            "( " + dayOfWeek[iter] + " <= DAYOFWEEK(?) OR  DAYOFWEEK(?) <= ( " + dayOfWeek[iter] +" - " + totalCount + " + DATEDIFF(date_end, date_start)) ), " + // if true
+            "( " + dayOfWeek[iter] + " <= DAYOFWEEK(?) AND  DAYOFWEEK(?) <= ( " + dayOfWeek[iter] + " + DATEDIFF(date_end, date_start)) ) " + // else
+        ") " +
+    "))" + ((iter < days.length - 1) ? " OR " : "");
+    return {
+        "query": q,
+        "params": [date, date, date, date] //4 question marks
+    };
+}
+
+/**
+ *
+ * @param date
+ * @returns {{query: string, params: *[]}}
+ */
+function buildQueryMonthly(date) {
+    var q =  "IF( " +
+        "DAYOFMONTH(date_start) <= DAYOFMONTH(date_end)," +
+        "DAYOFMONTH(?) >= DAYOFMONTH(date_start) AND DAYOFMONTH(?) <= DAYOFMONTH(date_end), " +
+        "DAYOFMONTH(?) >= DAYOFMONTH(date_start) OR DAYOFMONTH(?) <= DAYOFMONTH(date_end) " +
+    ")";
+    return {
+        'query' : q,
+        'params' : [date, date, date, date]
+    };
+}
+
+/**
+ *
+ * @param date
+ * @returns {{query: string, params: *[]}}
+ */
+function buildQueryFornight(date) {
+    var q =  "IF( " +
+        "DAYOFMONTH(date_start) <= DAYOFMONTH(date_end)," +
+        "DAYOFMONTH(?) >= DAYOFMONTH(date_start) AND DAYOFMONTH(?) <= DAYOFMONTH(date_end), " +
+        "DAYOFMONTH(?) >= DAYOFMONTH(date_start) OR DAYOFMONTH(?) <= DAYOFMONTH(date_end) " +
+        ")";
+    return {
+        'query' : q,
+        'params' : [date, date, date, date]
+    };
+}
+
+
+
 function eventsWithRepeat(dateStart, dateEnd) {
     // i hope you stay alive because that isn't worst query in our life.
+    var partOfWeeklyQuery = "";
+    var params = [dateStart, dateEnd, dateStart, dateStart]; // for first 4 questions mark in query before the part of weekly query
+    var tmp;
+    for (var i = 0; i < 7; i++) {
+        tmp = buildQueryWeekly(i, dateStart);
+        partOfWeeklyQuery += tmp.query;
+        params = params.concat(tmp.params);
+    }
+    tmp = buildQueryFornight(dateStart);
+    var partOfFornight = tmp.query;
+    params = params.concat(tmp.params);
+
+    tmp = buildQueryMonthly(dateStart);
+    var partOfMonthly = tmp.query;
+    params = params.concat(tmp.params);
     var q = "( " +
         "(date_start <= ? AND date_end >= ?)" +
         "OR (" +
-            " (end_repeat IS NULL OR end_repeat > ?) " + // firstly, check that end_repeat doesn't block the event
+            " date_end < ? " +
+            " AND (end_repeat IS NULL OR end_repeat > ?) " + // firstly, check that end_repeat doesn't block the event
             " AND (" + //after that check types of repeat
                 "repeat_type = 2" + // DAILY
-                " OR (repeat_type = 4 AND DAYOFWEEK(date_start) = DAYOFWEEK(?))" + // WEEKLY
-                " OR(repeat_type = 8 AND DAYOFWEEK(date_start) = DAYOFWEEK(?))" +  // FORNIGHT working as weekly
-                " OR (repeat_type = 16 AND DAYOFMONTH(date_start) = DAYOFMONTH(?))" + // MONTHLY
+                " OR (repeat_type = 4 AND (" + //WEEKLY
+                        partOfWeeklyQuery +
+                    ")" +
+                " ) " +
+               // " OR (repeat_type = 4 AND DAYOFWEEK(date_start) = DAYOFWEEK(?))" + // WEEKLY without options
+                " OR (repeat_type = 8 AND (" +// FORNIGHT working as weekly
+                        partOfFornight +
+                    ")" +
+                ")" +
+                " OR (repeat_type = 16 AND (" + // MONTHLY
+                        partOfMonthly +
+                    ")" +
+                ")" +
             " )" +
         " )" +
     ")";
+ //  params.push(dateStart);
     return {
         'query': q,
         // depends of count '?' symbols in the query: the same date used in all placeholders marked as '?',
         // except the second parameter: dateEnd for comparing with date_end field
-        'params': [dateStart, dateEnd,  dateStart, dateStart, dateStart, dateStart]
+        'params': params
     };
 
 }
