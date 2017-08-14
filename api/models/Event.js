@@ -380,6 +380,7 @@ types: {
             if(err) {
                 return cb(err);
             }
+            sails.log(result);
             Event.query( queryCount, countParams, function(err, count){
                 if(err) {
                     return cb(err);

@@ -342,7 +342,7 @@ module.exports = {
             var ev = (Array.isArray(events)) ? events.map(function(val){
                 return val.id;
             }) : [];
-            Event.find({"id":ev}).exec(function(err, events){
+            Event.find({"id":ev}).sort({"date_start": "desc"}).exec(function(err, events){
                 if(err) {
                     return cb(err);
                 }
