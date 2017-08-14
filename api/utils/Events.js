@@ -423,7 +423,6 @@ module.exports = {
                     return cb(err);
                 }
                 var droppedInvites = event.dropped_invites;
-                sails.log(droppedInvites);
                 if(droppedInvites) {
                     return dropInvites(droppedInvites, result[0], function(err){
                         if(err) {

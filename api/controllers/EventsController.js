@@ -23,7 +23,6 @@ module.exports = {
      * @param res
      */
     findMy: function (req, res) {
-
         var token = Auth.extractAuthKey(req);
         var page = Math.abs(parseInt(req.param('page', 1)));
         var pageSize = Math.abs(parseInt(req.param('pageSize', 10)));

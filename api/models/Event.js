@@ -346,9 +346,8 @@ types: {
         var date = config.date || null; 
         var keyword = config.keyword || null; 
         var page = config.page || 1; 
-        var size = config.size || 10;
+        var size = config.pageSize || 10;
      //   var acceptOnly = config.acceptOnly || false;
-        
         var tmpParts = Event.getPartByType(type, userId, config.acceptOnly);
         var params = tmpParts.params.slice();
         var countParams = tmpParts.params.slice();
@@ -380,7 +379,6 @@ types: {
             if(err) {
                 return cb(err);
             }
-            sails.log(result);
             Event.query( queryCount, countParams, function(err, count){
                 if(err) {
                     return cb(err);
