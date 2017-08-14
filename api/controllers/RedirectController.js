@@ -22,7 +22,7 @@ module.exports = {
                 return res.send(err.message);
             }
             if(!result) {
-                return res.send('<h1>The link has expired</h1>');
+                return res.send('<h1>This link is over 24 hours old and has expired</h1>');
             }
             return res.redirect("vlife://reset?token=" + req.param('token'));
         });
