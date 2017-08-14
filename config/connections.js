@@ -48,8 +48,8 @@ module.exports.connections = {
     password  : 'jytjaptv222',
     database  : 'vlife',
     // Optional
-    charset   : 'utf8mb4'
-    // collation : 'utf8_swedish_ci'
+    charset   : 'utf8mb4',
+    collation : 'utf8mb4_bin'
   },
   testMysqlServer: {
     adapter: 'sails-mysql',
