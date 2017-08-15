@@ -323,8 +323,8 @@ types: {
     getAllEvents: function(userId, acceptOnly) {
         var acceptPart = (acceptOnly) ? ' AND ei.status = 1 ' : '';
         return {
-            "query": " LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?) " + acceptPart,
-            'params': [userId, userId]
+            "query": " LEFT JOIN event_invites as ei ON e.id = ei.event_id AND ei.user_id = ? WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?) " + acceptPart,
+            'params': [userId, userId, userId]
         };
     }, 
     
@@ -355,8 +355,8 @@ types: {
         var tmpParts = Event.getPartByType(type, userId, config.acceptOnly);
         var params = tmpParts.params.slice();
         var countParams = tmpParts.params.slice();
-        var query = "SELECT e.*, (SELECT COUNT(1)+1 FROM event_invites where event_id = e.id) AS count_members FROM event as e " + tmpParts.query; //LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?)
-        var queryCount = "SELECT count(1) AS cnt FROM event as e " + tmpParts.query; //  LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?) 
+        var query = "SELECT e.*, DATEDIFF(e.date_end, e.date_start) as duration, (SELECT COUNT(1)+1 FROM event_invites where event_id = e.id) AS count_members FROM event as e " + tmpParts.query; //LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?)
+        var queryCount = "SELECT count(1) AS cnt FROM event as e " + tmpParts.query; //  LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?)
         if (keyword) {
             //add all parameters for keyword-mode
             keyword = "%" + keyword + "%";
@@ -392,6 +392,7 @@ types: {
                     if(err) {
                         return cb(err);
                     }
+                    result = result || [];
                     var countWork = count[0].cnt || 0;
                     return cb(err, result, totalCount, (totalCount - countWork), countWork);
                 });

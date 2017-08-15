@@ -6,6 +6,163 @@ var ValidationE = require('../exceptions/Validation');
 var PermissionE = require('../exceptions/Permission');
 var LogicE = require('../exceptions/Logic');
 
+function getDaily(current, old) {
+    var newDate = current;
+    newDate.setHours(old.getHours());
+    newDate.setMinutes(old.getMinutes());
+    newDate.setSeconds(old.getSeconds());
+    return newDate;
+}
+
+function defineMonth(currentDate, dateStart) {
+
+    var month;
+    if (currentDate.getDate() < dateStart.getDate())  {
+        month = currentDate.getUTCMonth() - 1;
+        if(month < 0) {
+            month = 11;
+        }
+    }
+    else {
+        month = currentDate.getUTCMonth();
+    }
+    return month;
+}
+
+function getDateEnd(currentDate, dateEnd, duration){
+    var tmpDate = new Date(currentDate.getTime());
+    tmpDate.setDate(currentDate.getDate() + duration);
+    return getDaily(tmpDate, dateEnd);
+}
+
+
+function getFullFornightDate(currentDate, dateStart, dateEnd, duration) {
+    var newDateStart, newDateEnd;
+    var tmpDate;
+
+    if(dateStart.getDate() <= dateEnd.getDate()) {
+        //if solid month
+        if(currentDate.getDate() >= dateStart.getDate() && currentDate.getDate() <= dateEnd.getDate()) {
+            tmpDate = new Date(currentDate.getTime());
+            tmpDate.setDate(dateStart.getDate());
+            newDateStart = getDaily(tmpDate, dateStart);
+            newDateEnd = getDateEnd(tmpDate, dateEnd, duration);
+        }
+    }
+    else {
+        //if two month
+        if(currentDate.getDate() >= dateStart.getDate() || currentDate.getDate() <= dateEnd.getDate()) {
+            tmpDate = new Date(currentDate.getTime());
+            tmpDate.setDate(dateStart.getDate());
+            newDateStart = getDaily(tmpDate, dateStart);
+            newDateEnd = getDateEnd(tmpDate, dateEnd, duration);
+        }
+    }
+
+    return {
+        start: newDateStart,
+        end: newDateEnd
+    };
+}
+
+
+
+function getWeeklyObj(current, dayOfWeek, dateStart, dateEnd, duration) {
+    var result = {};
+    var tmpDate = new Date(current.getTime());
+    sails.log("current:");
+    sails.log(current);
+    tmpDate.setDate(tmpDate.getDate() - (tmpDate.getDay() - dayOfWeek) );
+    sails.log("tmpDate:");
+    sails.log(tmpDate);
+    result.start = getDaily(tmpDate, dateStart);
+    result.end = getDateEnd(tmpDate, dateEnd, duration);
+    return result;
+}
+
+function getWeekly(current, dateStart, dateEnd, repeatOptions, duration) {
+
+    // all values from repeat_options
+    var days = [1, 2, 4, 8, 16, 32, 64];
+    // js GET DAY function return 1 for monday, 0 for sunday etc
+    var dayOfWeek = [1, 2, 3, 4, 5, 6, 0];
+    var maxDay = 6;
+    var result = {start: null, end: null};
+    var founded = 0;
+
+    days.forEach(function(day, iter) {
+        /*jslint bitwise: true */
+        if( founded || (repeatOptions & day) !== day) {
+            return;
+        }
+        // if period consist of 2 week (part of first and part of second)
+        if(dayOfWeek[iter] + duration > maxDay) {
+            sails.log("dayOfWeek[iter] + duration > maxDay");
+            // first week: [ ----- START -- ] second week: [ - END ------]
+            // if current date there     ^^                  ^
+            // then we get it period as date_start and date_end for event.
+            if (dayOfWeek[iter] < current.getDay() ||  current.getDay() <= (dayOfWeek[iter] - maxDay + duration) ) {
+                founded = 1;
+                result = getWeeklyObj(current, dayOfWeek[iter], dateStart, dateEnd, duration);
+                return;
+            }
+        }
+        else {
+            //          week: [ -- START --- END --]
+            // if current date there     ^^^
+            if( dayOfWeek[iter] <= current.getDay() && current.getDay() <=  dayOfWeek[iter] + duration) {
+                founded = 1;
+                result = getWeeklyObj(current, dayOfWeek[iter], dateStart, dateEnd, duration);
+                return;
+            }
+        }
+    });
+    return result;
+}
+
+
+function detectDateStart(currentDate, event) {
+    var newDateStart = new Date(), newDateEnd = new Date();
+    var dateStart = new Date(event.date_start), dateEnd = new Date(event.date_end);
+    var tmpDate, dateObj;
+    switch(event.repeat_type) {
+        case 2: //daily
+            newDateStart = getDaily(currentDate, dateStart);
+            newDateEnd = getDateEnd(currentDate, dateEnd, event.duration);
+            break;
+        case 4: //weekly
+            dateObj = getWeekly(currentDate, dateStart, dateEnd, event.repeat_option, event.duration);
+            newDateStart = dateObj.start;
+            newDateEnd = dateObj.end;
+            break;
+        case 8:  //fornight
+            dateObj = getFullFornightDate(currentDate, dateStart, dateEnd, event.duration);
+            sails.log(dateObj);
+            if(!dateObj.start || ! dateObj.end) {
+                var tmpStartDate = new Date(dateStart.getTime());
+                var tmpEndDate = new Date(dateEnd.getTime());
+                tmpStartDate.setDate(dateStart.getDate() + 14);
+                tmpEndDate.setDate(dateStart.getDate() + 14);
+                dateObj = getFullFornightDate(currentDate, tmpStartDate, tmpEndDate, event.duration);
+            }
+            newDateStart = dateObj.start;
+            newDateEnd = dateObj.end;
+            break;
+        case 16: // monthly
+            //copy the current date
+            tmpDate = new Date( currentDate.getTime() );
+            //preset defined month
+            tmpDate.setMonth( defineMonth(currentDate, dateStart) );
+            newDateStart = getDaily(tmpDate, dateStart);
+            newDateEnd = getDateEnd(tmpDate, dateEnd, event.duration);
+            break;
+    }
+
+    return {
+        date_start: newDateStart,
+        date_end: newDateEnd
+    };
+}
 
 function mapUser(list, key) {
     key = key || 'user_id';
@@ -350,17 +507,24 @@ module.exports = {
      */
     find: function(user, params, cb) {
         return Event.getEventsByConfig(user.id, params, function(err, events, count, countPers, countWork){
+            if(err) {
+                return cb(err);
+            }
             var ev = (Array.isArray(events)) ? events.map(function(val){
                 return val.id;
             }) : [];
+
             var countMembers = {};
+            var duration = {};
             for(var i = 0, size = events.length; i < size; i++) {
                 countMembers[events[i].id] = events[i].count_members;
+                duration[events[i].id] = events[i].duration;
             }
             Event.find({"id":ev}).sort({"date_start": "desc"}).exec(function(err, events){
                 if(err) {
                     return cb(err);
                 }
+
                 Event.extendEvent(events, function(err, results){
                     if(err) {
                         return cb(err);
@@ -368,7 +532,21 @@ module.exports = {
                     results = results || [];
                     var mainPercent = (!count) ? 0 : (countWork / count)*100;
                     results = results.map(function(r){
+                        r.repeated = 0;
                         r.count_members = countMembers[r.id];
+                        r.duration = duration[r.id];
+                        if (params.date) {
+                            var curDate = new Date(params.date);
+                            var dateEnd = new Date(r.date_end);
+
+                            if (curDate.getTime() > dateEnd.getTime() ) {
+                                var tmp = detectDateStart(curDate, r);
+                                r.repeated = 1;
+                                r.mapped_date_start = tmp.date_start;
+                                r.mapped_date_end = tmp.date_end;
+                            }
+                        }
+
                         return r;
                     });
                     return cb(null, {
