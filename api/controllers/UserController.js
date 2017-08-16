@@ -228,7 +228,7 @@ module.exports = {
                 return res.serverError({"data": err});
             }
             if(!result || !result.length) {
-                return res.badRequest({"message": "Code or phone number is invalid"});
+                return res.badRequest({"message": "Verification Code is invalid"});
             }
             return res.ok({"data": {"security_key":secKey } });
         });

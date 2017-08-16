@@ -92,21 +92,29 @@ function registEmails(emails, asFriend, cb) {
     if(!emails.length) {
         return cb();
     }
-    asFriend = asFriend || false;
+   // asFriend = asFriend || false;
     
     var emailsList = emails.map(function(value){
         return {email: value.email};
     });
+    sails.log(emailsList);
     //1. find emails from contact in dictionary
     Email.find(emailsList).exec(function(err, results){
         if(err) {
             return cb(err);
         }
+        sails.log(results);
+        results = results.map(function(obj){
+            obj.email = obj.email.toLowerCase();
+            return obj;
+        });
         //if founded - we must check exists records
         var founded = results;
         var notFouneded = emailsList.filter(function(val) {
-            return !(_.find(results, { 'email':val.email }));
+            return !(_.find(results, { 'email':val.email.toLowerCase() }));
         });
+        sails.log('--');
+        sails.log(notFouneded);
         //at first - create emails that not founded
         Email.create(notFouneded).exec(function(err, result) {
             if(err) {
@@ -351,7 +359,7 @@ function findEmailUsers(emails, cb) {
         }
     }
     var prepEmails = emails.map(function(value) {
-        return {"email": value};
+        return {"email": value.toLowerCase()};
     });
     User.find({or: prepEmails }).exec(function(err, result) {
         if(err) {
