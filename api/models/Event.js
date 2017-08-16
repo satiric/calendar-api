@@ -2,6 +2,14 @@
  * Created by decadal on 29.06.17.
  */
 
+function getTimeZoneByOffset(offset) {
+    var result = parseInt(offset / 60);
+    var sign = (result < 0 ) ? "-" : "+";
+
+
+    result = sign + result + ":00";
+    return result;
+}
 /**
  *
  * @param iter
@@ -16,11 +24,11 @@ function buildQueryWeekly(iter, date) {
     var totalCount = 7;
     var q =  " (repeat_option & "+ days[iter] + " = " + days[iter] + " AND (" +
         "IF ( " +
-            "( " + dayOfWeek[iter] + "+ DATEDIFF(date_end, date_start) > " + totalCount + "), " + // condition
-            "( " + dayOfWeek[iter] + " <= DAYOFWEEK(?) OR  DAYOFWEEK(?) <= ( " + dayOfWeek[iter] +" - " + totalCount + " + DATEDIFF(date_end, date_start)) ), " + // if true
-            "( " + dayOfWeek[iter] + " <= DAYOFWEEK(?) AND  DAYOFWEEK(?) <= ( " + dayOfWeek[iter] + " + DATEDIFF(date_end, date_start)) ) " + // else
+        "( " + dayOfWeek[iter] + "+ DATEDIFF(DATE_ADD(e.date_end, INTERVAL " + Event.tzOffset + " MINUTE), DATE_ADD(date_start, INTERVAL " + Event.tzOffset + " MINUTE)) > " + totalCount + "), " + // condition
+        "( " + dayOfWeek[iter] + " <= DAYOFWEEK(?) OR  DAYOFWEEK(?) <= ( " + dayOfWeek[iter] +" - " + totalCount + " + DATEDIFF(DATE_ADD(e.date_end, INTERVAL " + Event.tzOffset + " MINUTE), DATE_ADD(date_start, INTERVAL " + Event.tzOffset + " MINUTE))) ), " + // if true
+        "( " + dayOfWeek[iter] + " <= DAYOFWEEK(?) AND  DAYOFWEEK(?) <= ( " + dayOfWeek[iter] + " + DATEDIFF(DATE_ADD(e.date_end, INTERVAL " + Event.tzOffset + " MINUTE), DATE_ADD(date_start, INTERVAL " + Event.tzOffset + " MINUTE))) ) " + // else
         ") " +
-    "))" + ((iter < days.length - 1) ? " OR " : "");
+        "))" + ((iter < days.length - 1) ? " OR " : "");
     return {
         "query": q,
         "params": [date, date, date, date] //4 question marks
@@ -34,10 +42,10 @@ function buildQueryWeekly(iter, date) {
  */
 function buildQueryMonthly(date) {
     var q =  "IF( " +
-        "DAYOFMONTH(date_start) <= DAYOFMONTH(date_end)," +
-        "DAYOFMONTH(?) >= DAYOFMONTH(date_start) AND DAYOFMONTH(?) <= DAYOFMONTH(date_end), " +
-        "DAYOFMONTH(?) >= DAYOFMONTH(date_start) OR DAYOFMONTH(?) <= DAYOFMONTH(date_end) " +
-    ")";
+        "DAYOFMONTH(DATE_ADD(date_start, INTERVAL " + Event.tzOffset + " MINUTE)) <= DAYOFMONTH(DATE_ADD(e.date_end, INTERVAL " + Event.tzOffset + " MINUTE))," +
+        "DAYOFMONTH(?) >= DAYOFMONTH(DATE_ADD(date_start, INTERVAL " + Event.tzOffset + " MINUTE)) AND DAYOFMONTH(?) <= DAYOFMONTH(DATE_ADD(e.date_end, INTERVAL " + Event.tzOffset + " MINUTE)), " +
+        "DAYOFMONTH(?) >= DAYOFMONTH(DATE_ADD(date_start, INTERVAL " + Event.tzOffset + " MINUTE)) OR DAYOFMONTH(?) <= DAYOFMONTH(DATE_ADD(e.date_end, INTERVAL " + Event.tzOffset + " MINUTE)) " +
+        ")";
     return {
         'query' : q,
         'params' : [date, date, date, date]
@@ -51,13 +59,13 @@ function buildQueryMonthly(date) {
  */
 function buildQueryFornight(date) {
     var q =  "(IF( " +
-        "DAYOFMONTH(date_start) <= DAYOFMONTH(date_end)," +
-        "DAYOFMONTH(?) >= DAYOFMONTH(date_start) AND DAYOFMONTH(?) <= DAYOFMONTH(date_end), " +
-        "DAYOFMONTH(?) >= DAYOFMONTH(date_start) OR DAYOFMONTH(?) <= DAYOFMONTH(date_end) " +
+        "DAYOFMONTH(DATE_ADD(date_start, INTERVAL " + Event.tzOffset + " MINUTE)) <= DAYOFMONTH(DATE_ADD(e.date_end, INTERVAL " + Event.tzOffset + " MINUTE))," +
+        "DAYOFMONTH(?) >= DAYOFMONTH(DATE_ADD(date_start, INTERVAL " + Event.tzOffset + " MINUTE)) AND DAYOFMONTH(?) <= DAYOFMONTH(DATE_ADD(e.date_end, INTERVAL " + Event.tzOffset + " MINUTE)), " +
+        "DAYOFMONTH(?) >= DAYOFMONTH(DATE_ADD(date_start, INTERVAL " + Event.tzOffset + " MINUTE)) OR DAYOFMONTH(?) <= DAYOFMONTH(DATE_ADD(e.date_end, INTERVAL " + Event.tzOffset + " MINUTE)) " +
         ") OR IF(" +
-        "DAYOFMONTH(DATE_ADD(date_start, INTERVAL 14 DAY)) <= DAYOFMONTH(DATE_ADD(date_end, INTERVAL 14 DAY))," +
-        "DAYOFMONTH(?) >= DAYOFMONTH(DATE_ADD(date_start, INTERVAL 14 DAY)) AND DAYOFMONTH(?) <= DAYOFMONTH(DATE_ADD(date_end, INTERVAL 14 DAY)), " +
-        "DAYOFMONTH(?) >= DAYOFMONTH(DATE_ADD(date_start, INTERVAL 14 DAY)) OR DAYOFMONTH(?) <= DAYOFMONTH(DATE_ADD(date_end, INTERVAL 14 DAY)) " +
+        "DAYOFMONTH(DATE_ADD(DATE_ADD(date_start, INTERVAL " + Event.tzOffset + " MINUTE), INTERVAL 14 DAY)) <= DAYOFMONTH(DATE_ADD(DATE_ADD(e.date_end, INTERVAL " + Event.tzOffset + " MINUTE), INTERVAL 14 DAY))," +
+        "DAYOFMONTH(?) >= DAYOFMONTH(DATE_ADD(DATE_ADD(date_start, INTERVAL " + Event.tzOffset + " MINUTE), INTERVAL 14 DAY)) AND DAYOFMONTH(?) <= DAYOFMONTH(DATE_ADD(DATE_ADD(e.date_end, INTERVAL " + Event.tzOffset + " MINUTE), INTERVAL 14 DAY)), " +
+        "DAYOFMONTH(?) >= DAYOFMONTH(DATE_ADD(DATE_ADD(date_start, INTERVAL " + Event.tzOffset + " MINUTE), INTERVAL 14 DAY)) OR DAYOFMONTH(?) <= DAYOFMONTH(DATE_ADD(DATE_ADD(e.date_end, INTERVAL " + Event.tzOffset + " MINUTE), INTERVAL 14 DAY)) " +
         "))";
     return {
         'query' : q,
@@ -85,29 +93,29 @@ function eventsWithRepeat(dateStart, dateEnd) {
     var partOfMonthly = tmp.query;
     params = params.concat(tmp.params);
     var q = "( " +
-        "(date_start <= ? AND date_end >= ?)" +
+        "(DATE_ADD(date_start, INTERVAL " + Event.tzOffset + " MINUTE) <= ? AND DATE_ADD(e.date_end, INTERVAL " + Event.tzOffset + " MINUTE) >= ?)" +
         "OR (" +
-            " date_end < ? " +
-            " AND (end_repeat IS NULL OR date(end_repeat) >= date(?) ) " + // firstly, check that end_repeat doesn't block the event
-            " AND (" + //after that check types of repeat
-                "repeat_type = 2" + // DAILY
-                " OR (repeat_type = 4 AND (" + //WEEKLY
-                        partOfWeeklyQuery +
-                    ")" +
-                " ) " +
-               // " OR (repeat_type = 4 AND DAYOFWEEK(date_start) = DAYOFWEEK(?))" + // WEEKLY without options
-                " OR (repeat_type = 8 AND (" +// FORNIGHT working as weekly
-                        partOfFornight +
-                    ")" +
-                ")" +
-                " OR (repeat_type = 16 AND (" + // MONTHLY
-                        partOfMonthly +
-                    ")" +
-                ")" +
-            " )" +
+        " DATE_ADD(e.date_end, INTERVAL " + Event.tzOffset + " MINUTE) < ? " +
+        " AND (end_repeat IS NULL OR date(end_repeat) >= date(?) ) " + // firstly, check that end_repeat doesn't block the event
+        " AND (" + //after that check types of repeat
+        "repeat_type = 2" + // DAILY
+        " OR (repeat_type = 4 AND (" + //WEEKLY
+        partOfWeeklyQuery +
+        ")" +
+        " ) " +
+        // " OR (repeat_type = 4 AND DAYOFWEEK(date_start) = DAYOFWEEK(?))" + // WEEKLY without options
+        " OR (repeat_type = 8 AND (" +// FORNIGHT working as weekly
+        partOfFornight +
+        ")" +
+        ")" +
+        " OR (repeat_type = 16 AND (" + // MONTHLY
+        partOfMonthly +
+        ")" +
+        ")" +
         " )" +
-    ")";
- //  params.push(dateStart);
+        " )" +
+        ")";
+    //  params.push(dateStart);
     return {
         'query': q,
         // depends of count '?' symbols in the query: the same date used in all placeholders marked as '?',
@@ -117,10 +125,18 @@ function eventsWithRepeat(dateStart, dateEnd) {
 
 }
 
+function execAddReq(req, cb) {
+    if(!req) {
+        return cb();
+    }
+    Event.query(req, [], cb);
+}
+
 module.exports = {
-    MY_EVENTS: 1, 
-    NOT_MY_EVENTS: 2, 
-    ALL_EVENTS: 3, 
+    MY_EVENTS: 1,
+    NOT_MY_EVENTS: 2,
+    ALL_EVENTS: 3,
+    tzOffset: 0,
     attributes: {
         title: {
             type: "string",
@@ -131,22 +147,22 @@ module.exports = {
         sphere: {
             type: "integer",
             isSphere: true
-           // enum: ['Personal', 'Work']
+            // enum: ['Personal', 'Work']
         },
         date_start: {
             required: true,
             type: "datetime",
-   //         isISOdatetime: true
+            //         isISOdatetime: true
         },
         date_end: {
             required: true,
             type: "datetime",
-      //      isISOdatetime: true
+            //      isISOdatetime: true
         },
         repeat_type: {
             type: "integer",
             isRepeatType: true
-      //      enum: ['Never', 'Day', 'Week', 'Fortnight', 'Month']
+            //      enum: ['Never', 'Day', 'Week', 'Fortnight', 'Month']
         },
         repeat_option: {
             type: "integer",
@@ -155,7 +171,7 @@ module.exports = {
         end_repeat: {
             type: "datetime",
             defaultsTo: null
-      //      isISOdatetime: true
+            //      isISOdatetime: true
         },
         location: {
             type: "string",
@@ -180,26 +196,26 @@ module.exports = {
 
 // Custom types / validation rules
 // (available for use in this model's attribute definitions above)
-types: {
-    trimSpaces: function (value) {
-        var oldLen = value.length;
-        value = value.trim();
-        return (value.length === oldLen);
+    types: {
+        trimSpaces: function (value) {
+            var oldLen = value.length;
+            value = value.trim();
+            return (value.length === oldLen);
+        },
+        isSphere: function (value) {
+            return (value === 1 || value === 0);
+        },
+        isRepeatType: function (value) {
+            var available = [1,2,4,8,16];
+            return (available.indexOf(value) !== -1);
+        },
+        isRepeatOption: function (value) {
+            return value < 128;
+        }
+        // isISOdatetime: function (value) {
+        //     return /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(?:(\.\d+([+-][0-2]\d:[0-5]\d|Z))|)/.test(value.toISOString());
+        // }
     },
-    isSphere: function (value) {
-        return (value === 1 || value === 0);
-    },
-    isRepeatType: function (value) {
-        var available = [1,2,4,8,16];
-        return (available.indexOf(value) !== -1);
-    },
-    isRepeatOption: function (value) {
-        return value < 128;
-    }
-    // isISOdatetime: function (value) {
-    //     return /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(?:(\.\d+([+-][0-2]\d:[0-5]\d|Z))|)/.test(value.toISOString());
-    // }
-},
 
     validationMessages: { //hand for i18n & l10n
         date_start: {
@@ -262,7 +278,7 @@ types: {
         }
         next();
     },
-    
+
     isoDate: function(date) {
         return /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(?:(\.\d+([+-][0-2]\d:[0-5]\d|Z))|)/.test(date);
     },
@@ -288,7 +304,7 @@ types: {
     },
 
     /**
-     * select userInfo and avatar for each founder 
+     * select userInfo and avatar for each founder
      * @param events
      * @param cb
      */
@@ -319,15 +335,15 @@ types: {
             'params': [userId]
         };
     },
-    
+
     getAllEvents: function(userId, acceptOnly) {
         var acceptPart = (acceptOnly) ? ' AND ei.status = 1 ' : '';
         return {
             "query": " LEFT JOIN event_invites as ei ON e.id = ei.event_id AND ei.user_id = ? WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?) " + acceptPart,
             'params': [userId, userId, userId]
         };
-    }, 
-    
+    },
+
     getNotMyEvents: function(userId, acceptOnly) {
 
         var acceptPart = (acceptOnly) ? ' AND ei.status = 1 ' : '';
@@ -344,19 +360,33 @@ types: {
             default: return null;
         }
     },
-
+    findWithMap: function(ids, cb) {
+        var query = "SELECT id, title, sphere, repeat_type, repeat_option, location, description, " +
+            "reminds, active, founder, end_repeat, createdAt, updatedAt, " +
+            "DATE_ADD(date_start, INTERVAL " + Event.tzOffset + " MINUTE) AS date_start," +
+            "DATE_ADD(date_end, INTERVAL " + Event.tzOffset + " MINUTE) AS date_end " +
+            "FROM event WHERE id IN (" + ids.join() + ") ORDER BY date_start DESC";
+        sails.log(query);
+        Event.query(query, [], cb);
+    },
     getEventsByConfig: function(userId, config, cb) {
         var type = config.type || Event.ALL_EVENTS;
-        var date = config.date || null; 
-        var keyword = config.keyword || null; 
-        var page = config.page || 1; 
+        var date = config.date || null;
+        var keyword = config.keyword || null;
+        var page = config.page || 1;
         var size = config.pageSize || 10;
-     //   var acceptOnly = config.acceptOnly || false;
+        //   var acceptOnly = config.acceptOnly || false;
         var tmpParts = Event.getPartByType(type, userId, config.acceptOnly);
         var params = tmpParts.params.slice();
         var countParams = tmpParts.params.slice();
-        var query = "SELECT e.*, DATEDIFF(e.date_end, e.date_start) as duration, (SELECT COUNT(1)+1 FROM event_invites where event_id = e.id) AS count_members FROM event as e " + tmpParts.query; //LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?)
+
+        var query = "SELECT e.id, e.title, e.sphere, e.repeat_type, e.repeat_option, e.end_repeat, e.location, " +
+            "e.description, e.reminds, e.active, e.founder, e.createdAt, e.updatedAt, " +
+            "DATE_ADD(e.date_start, INTERVAL " + Event.tzOffset + " MINUTE) AS date_start_r," +
+            "DATE_ADD(e.date_end, INTERVAL " + Event.tzOffset + " MINUTE) AS date_end_r," +
+            "DATEDIFF(date_end, date_start) as duration, (SELECT COUNT(1)+1 FROM event_invites where event_id = e.id) AS count_members FROM event as e " + tmpParts.query; //LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?)
         var queryCount = "SELECT count(1) AS cnt FROM event as e " + tmpParts.query; //  LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?)
+
         if (keyword) {
             //add all parameters for keyword-mode
             keyword = "%" + keyword + "%";

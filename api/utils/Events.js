@@ -506,6 +506,11 @@ module.exports = {
      * @returns {*}
      */
     find: function(user, params, cb) {
+        var date = params.date;
+        if(date) {
+            Event.tzOffset = require('moment').parseZone(date).utcOffset();
+        }
+
         return Event.getEventsByConfig(user.id, params, function(err, events, count, countPers, countWork){
             if(err) {
                 return cb(err);
@@ -520,7 +525,7 @@ module.exports = {
                 countMembers[events[i].id] = events[i].count_members;
                 duration[events[i].id] = events[i].duration;
             }
-            Event.find({"id":ev}).sort({"date_start": "desc"}).exec(function(err, events){
+            Event.findWithMap(ev, function(err, events){
                 if(err) {
                     return cb(err);
                 }
@@ -537,13 +542,11 @@ module.exports = {
                         r.duration = duration[r.id];
                         if (params.date) {
                             var curDate = new Date(params.date);
-                            var dateEnd = new Date(r.date_end);
-
-                            if (curDate.getTime() > dateEnd.getTime() ) {
+                            if (r.repeat_type) {
                                 var tmp = detectDateStart(curDate, r);
                                 r.repeated = 1;
-                                r.mapped_date_start = tmp.date_start;
-                                r.mapped_date_end = tmp.date_end;
+                                r.date_start = tmp.date_start;
+                                r.date_end = tmp.date_end;
                             }
                         }
 
