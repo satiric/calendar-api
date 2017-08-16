@@ -141,7 +141,7 @@ module.exports = {
         title: {
             type: "string",
             required: true,
-            maxLength: 25,
+            maxLength: 50,
             trimSpaces: true
         },
         sphere: {
@@ -179,7 +179,7 @@ module.exports = {
         },
         description: {
             type: "string",
-            maxLength: 200
+            maxLength: 500
         },
         reminds: {
             type: "integer"

@@ -97,7 +97,6 @@ function registEmails(emails, asFriend, cb) {
     var emailsList = emails.map(function(value){
         return {email: value.email};
     });
-    sails.log(emailsList);
     //1. find emails from contact in dictionary
     Email.find(emailsList).exec(function(err, results){
         if(err) {
@@ -113,8 +112,6 @@ function registEmails(emails, asFriend, cb) {
         var notFouneded = emailsList.filter(function(val) {
             return !(_.find(results, { 'email':val.email.toLowerCase() }));
         });
-        sails.log('--');
-        sails.log(notFouneded);
         //at first - create emails that not founded
         Email.create(notFouneded).exec(function(err, result) {
             if(err) {
