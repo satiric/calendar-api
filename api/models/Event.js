@@ -361,12 +361,14 @@ module.exports = {
         }
     },
     findWithMap: function(ids, cb) {
+        if(!ids || !ids.length) {
+            return cb(null, []);
+        }
         var query = "SELECT id, title, sphere, repeat_type, repeat_option, location, description, " +
             "reminds, active, founder, end_repeat, createdAt, updatedAt, " +
             "DATE_ADD(date_start, INTERVAL " + Event.tzOffset + " MINUTE) AS date_start," +
             "DATE_ADD(date_end, INTERVAL " + Event.tzOffset + " MINUTE) AS date_end " +
             "FROM event WHERE id IN (" + ids.join() + ") ORDER BY date_start DESC";
-        sails.log(query);
         Event.query(query, [], cb);
     },
     getEventsByConfig: function(userId, config, cb) {
