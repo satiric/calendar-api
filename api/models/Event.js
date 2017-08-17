@@ -5,8 +5,6 @@
 function getTimeZoneByOffset(offset) {
     var result = parseInt(offset / 60);
     var sign = (result < 0 ) ? "-" : "+";
-
-
     result = sign + result + ":00";
     return result;
 }
@@ -364,11 +362,12 @@ module.exports = {
         if(!ids || !ids.length) {
             return cb(null, []);
         }
+        sails.log("--Timezone offset: --");
         sails.log(Event.tzOffset);
         var query = "SELECT id, title, sphere, repeat_type, repeat_option, location, description, " +
-            "reminds, active, founder, end_repeat, createdAt, updatedAt, " +
-            "DATE_ADD(date_start, INTERVAL " + Event.tzOffset + " MINUTE) AS date_start," +
-            "DATE_ADD(date_end, INTERVAL " + Event.tzOffset + " MINUTE) AS date_end " +
+            "reminds, active, founder, end_repeat, createdAt, updatedAt, date_start, date_end, " +
+            "DATE_ADD(date_start, INTERVAL " + Event.tzOffset + " MINUTE) AS date_start_r, " +
+            "DATE_ADD(date_end, INTERVAL " + Event.tzOffset + " MINUTE) AS date_end_r " +
             "FROM event WHERE id IN (" + ids.join() + ") ORDER BY date_start DESC";
         Event.query(query, [], cb);
     },
@@ -387,7 +386,7 @@ module.exports = {
             "e.description, e.reminds, e.active, e.founder, e.createdAt, e.updatedAt, " +
             "DATE_ADD(e.date_start, INTERVAL " + Event.tzOffset + " MINUTE) AS date_start_r," +
             "DATE_ADD(e.date_end, INTERVAL " + Event.tzOffset + " MINUTE) AS date_end_r," +
-            "DATEDIFF(date_end, date_start) as duration, (SELECT COUNT(1)+1 FROM event_invites where event_id = e.id) AS count_members FROM event as e " + tmpParts.query; //LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?)
+            "DATEDIFF(DATE_ADD(e.date_end, INTERVAL " + Event.tzOffset + " MINUTE), DATE_ADD(e.date_start, INTERVAL " + Event.tzOffset + " MINUTE) ) as duration, (SELECT COUNT(1)+1 FROM event_invites where event_id = e.id) AS count_members FROM event as e " + tmpParts.query; //LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?)
         var queryCount = "SELECT count(1) AS cnt FROM event as e " + tmpParts.query; //  LEFT JOIN event_invites as ei ON e.id = ei.event_id WHERE e.active = 1 AND (ei.user_id = ? or e.founder = ?)
 
         if (keyword) {

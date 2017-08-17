@@ -31,6 +31,7 @@ function defineMonth(currentDate, dateStart) {
 
 function getDateEnd(currentDate, dateEnd, duration) {
     var tmpDate = new Date(currentDate.getTime());
+    sails.log(duration);
     tmpDate.setDate(currentDate.getDate() + duration);
     return getDaily(tmpDate, dateEnd);
 }
@@ -122,12 +123,15 @@ function getWeekly(current, dateStart, dateEnd, repeatOptions, duration) {
 
 function detectDateStart(currentDate, event) {
     var newDateStart = new Date(), newDateEnd = new Date();
-    var dateStart = new Date(event.date_start), dateEnd = new Date(event.date_end);
+    var dateStart = new Date(event.date_start_r), dateEnd = new Date(event.date_end_r);
     var tmpDate, dateObj;
     switch (event.repeat_type) {
         case 2: //daily
             newDateStart = getDaily(currentDate, dateStart);
+
             newDateEnd = getDateEnd(currentDate, dateEnd, event.duration);
+            sails.log(newDateStart);
+            sails.log(newDateEnd);
             break;
         case 4: //weekly
             dateObj = getWeekly(currentDate, dateStart, dateEnd, event.repeat_option, event.duration);
@@ -547,14 +551,15 @@ module.exports = {
                         r.duration = duration[r.id];
                         if (params.date) {
                             var curDate = new Date(params.date);
-                            if (r.repeat_type > 1) {
+                            if (r.repeat_type > 1 && (new Date(params.date)).getTime() > (new Date(r.date_end_r)).getTime() ) {
                                 var tmp = detectDateStart(curDate, r);
                                 r.repeated = 1;
-                                r.date_start = tmp.date_start;
-                                r.date_end = tmp.date_end;
+                                r.date_start = new Date(tmp.date_start.getTime() - Event.tzOffset*60*1000);
+                                r.date_end = new Date(tmp.date_end.getTime() - Event.tzOffset*60*1000);
                             }
                         }
-
+                        delete r.date_start_r;
+                        delete r.date_end_r;
                         return r;
                     });
                     return cb(null, {
