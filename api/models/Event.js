@@ -364,6 +364,7 @@ module.exports = {
         if(!ids || !ids.length) {
             return cb(null, []);
         }
+        sails.log(Event.tzOffset);
         var query = "SELECT id, title, sphere, repeat_type, repeat_option, location, description, " +
             "reminds, active, founder, end_repeat, createdAt, updatedAt, " +
             "DATE_ADD(date_start, INTERVAL " + Event.tzOffset + " MINUTE) AS date_start," +

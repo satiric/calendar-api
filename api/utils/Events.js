@@ -547,7 +547,7 @@ module.exports = {
                         r.duration = duration[r.id];
                         if (params.date) {
                             var curDate = new Date(params.date);
-                            if (r.repeat_type) {
+                            if (r.repeat_type > 1) {
                                 var tmp = detectDateStart(curDate, r);
                                 r.repeated = 1;
                                 r.date_start = tmp.date_start;

@@ -389,6 +389,9 @@ definitions:
       count_members: 
         type: integer
         description: "count of members"
+      repeated: 
+        type: integer
+        description: flag is repeated event or original
   
   EventDetailResponse:
     type: object
