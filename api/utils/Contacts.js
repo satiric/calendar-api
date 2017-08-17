@@ -4,40 +4,10 @@
 var LogicE = require('../exceptions/Logic');
 
 function inviteByPhone(phones, foundedPhones, inviter, mcc, cb) {
-
-    var countryCode = '';
-    if(mcc) {
-        var code = require('mcc-mnc-list').filter({'mcc':mcc});
-        sails.log("FILTER MCC LIST: ");
-        sails.log(code);
-        if(code[0]) {
-            countryCode = code[0].countryCode;
-        }
-    }
-
-    if(!countryCode) {
-        sails.log('unable to detect country by mcc. Try to detect country by inviter');
-
-
-        let detectedInviterPhone = PhoneDictionary(inviter.phone, '');
-        sails.log(detectedInviterPhone);
-        sails.log(inviter.phone);
-        countryCode = detectedInviterPhone[1];
-    }
-
-    var PNF = require('google-libphonenumber').PhoneNumberFormat;
-    var phoneUtil = require('google-libphonenumber').PhoneNumberUtil.getInstance();
-    if (countryCode ) {
-        sails.log('country code is defined---: '+countryCode);
-        sails.log(phones);
-        phones = phones.map(function(phone) {
-            return (phone.indexOf('+') === -1 ) ? phoneUtil.format(phoneUtil.parse(phone, countryCode), PNF.INTERNATIONAL) 
-                : phone;
-        });
-        sails.log(phones);
-    }
-    sails.log('----end');
-    cascadeSmsSend(phones, foundedPhones, inviter, 0, cb);
+    
+    module.exports.detectPhones(phones, mcc, inviter, function(err, mappedPhones) {
+        cascadeSmsSend(mappedPhones, foundedPhones, inviter, 0, cb);
+    });
 }
 
 /**
@@ -582,6 +552,39 @@ function addFriends(userId, friendIds, force, cb) {
 // });
 
 module.exports = {
+    detectPhones: function(phones, mcc, inviter, cb) {
+
+        var countryCode = '';
+        if(mcc) {
+            var code = require('mcc-mnc-list').filter({'mcc':mcc});
+            sails.log("FILTER MCC LIST: ");
+            sails.log(code);
+            if(code[0]) {
+                countryCode = code[0].countryCode;
+            }
+        }
+
+        if(!countryCode) {
+            sails.log('unable to detect country by mcc. Try to detect country by inviter');
+            let detectedInviterPhone = PhoneDictionary(inviter.phone, '');
+            sails.log(detectedInviterPhone);
+            sails.log(inviter.phone);
+            countryCode = detectedInviterPhone[1];
+        }
+
+        var PNF = require('google-libphonenumber').PhoneNumberFormat;
+        var phoneUtil = require('google-libphonenumber').PhoneNumberUtil.getInstance();
+        if (countryCode ) {
+            sails.log('country code is defined---: '+countryCode);
+            phones = phones.map(function(phone) {
+                return (phone.indexOf('+') === -1 ) ? phoneUtil.format(phoneUtil.parse(phone, countryCode), PNF.INTERNATIONAL)
+                    : phone;
+            });
+            sails.log(phones);
+        }
+        return cb(null, phones);
+    },
+    
     /**
      *
      * @param phones

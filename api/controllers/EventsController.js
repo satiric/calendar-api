@@ -222,6 +222,9 @@ module.exports = {
      */
     create: function (req, res) {
         var token = Auth.extractAuthKey(req);
+        var mcc = req.headers.mcc || '';
+        sails.log("MCC :"+ mcc);
+
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
                 return res.serverError({"data": err});
@@ -237,7 +240,7 @@ module.exports = {
                 (req.body.end_repeat && !Event.isoDate(req.body.end_repeat) )) {
                 return res.badRequest({"message": "Incorrect type for date. Is required ISO format"});
             }
-            require('../utils/Events').create(req.body, user.id, function(err, result) {
+            require('../utils/Events').create(req.body, user.id, mcc, function(err, result) {
                 if(err) {
                     return (err instanceof ValidationE) ? res.badRequest({"message": err.message}) : res.serverError({"data":err});
                 }
@@ -259,6 +262,8 @@ module.exports = {
     update: function (req, res) {
         var token = Auth.extractAuthKey(req);
         var eventId = req.param('id');
+        var mcc = req.headers.mcc || '';
+        sails.log("MCC :"+ mcc);
         UserAuth.getUserByAuthToken(token, function(err, user) {
             if(err) {
                 return res.serverError({"data": err});
@@ -282,7 +287,7 @@ module.exports = {
                     (req.body.end_repeat && !Event.isoDate(req.body.end_repeat) )) {
                     return res.badRequest({"message": "Incorrect type for date. Is required ISO format"});
                 }
-                require("../utils/Events").update(eventId, user, req.body, function(err, result) {
+                require("../utils/Events").update(eventId, user, req.body, mcc, function(err, result) {
                     if(err) {
                         if (err instanceof PermissionE) {
                             return res.json(403, {"status": "error","message": err.message});

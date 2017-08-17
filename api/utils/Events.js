@@ -17,9 +17,9 @@ function getDaily(current, old) {
 function defineMonth(currentDate, dateStart) {
 
     var month;
-    if (currentDate.getDate() < dateStart.getDate())  {
+    if (currentDate.getDate() < dateStart.getDate()) {
         month = currentDate.getUTCMonth() - 1;
-        if(month < 0) {
+        if (month < 0) {
             month = 11;
         }
     }
@@ -29,7 +29,7 @@ function defineMonth(currentDate, dateStart) {
     return month;
 }
 
-function getDateEnd(currentDate, dateEnd, duration){
+function getDateEnd(currentDate, dateEnd, duration) {
     var tmpDate = new Date(currentDate.getTime());
     tmpDate.setDate(currentDate.getDate() + duration);
     return getDaily(tmpDate, dateEnd);
@@ -40,9 +40,9 @@ function getFullFornightDate(currentDate, dateStart, dateEnd, duration) {
     var newDateStart, newDateEnd;
     var tmpDate;
 
-    if(dateStart.getDate() <= dateEnd.getDate()) {
+    if (dateStart.getDate() <= dateEnd.getDate()) {
         //if solid month
-        if(currentDate.getDate() >= dateStart.getDate() && currentDate.getDate() <= dateEnd.getDate()) {
+        if (currentDate.getDate() >= dateStart.getDate() && currentDate.getDate() <= dateEnd.getDate()) {
             tmpDate = new Date(currentDate.getTime());
             tmpDate.setDate(dateStart.getDate());
             newDateStart = getDaily(tmpDate, dateStart);
@@ -51,7 +51,7 @@ function getFullFornightDate(currentDate, dateStart, dateEnd, duration) {
     }
     else {
         //if two month
-        if(currentDate.getDate() >= dateStart.getDate() || currentDate.getDate() <= dateEnd.getDate()) {
+        if (currentDate.getDate() >= dateStart.getDate() || currentDate.getDate() <= dateEnd.getDate()) {
             tmpDate = new Date(currentDate.getTime());
             tmpDate.setDate(dateStart.getDate());
             newDateStart = getDaily(tmpDate, dateStart);
@@ -66,13 +66,12 @@ function getFullFornightDate(currentDate, dateStart, dateEnd, duration) {
 }
 
 
-
 function getWeeklyObj(current, dayOfWeek, dateStart, dateEnd, duration) {
     var result = {};
     var tmpDate = new Date(current.getTime());
     sails.log("current:");
     sails.log(current);
-    tmpDate.setDate(tmpDate.getDate() - (tmpDate.getDay() - dayOfWeek) );
+    tmpDate.setDate(tmpDate.getDate() - (tmpDate.getDay() - dayOfWeek));
     sails.log("tmpDate:");
     sails.log(tmpDate);
     result.start = getDaily(tmpDate, dateStart);
@@ -90,18 +89,18 @@ function getWeekly(current, dateStart, dateEnd, repeatOptions, duration) {
     var result = {start: null, end: null};
     var founded = 0;
 
-    days.forEach(function(day, iter) {
+    days.forEach(function (day, iter) {
         /*jslint bitwise: true */
-        if( founded || (repeatOptions & day) !== day) {
+        if (founded || (repeatOptions & day) !== day) {
             return;
         }
         // if period consist of 2 week (part of first and part of second)
-        if(dayOfWeek[iter] + duration > maxDay) {
+        if (dayOfWeek[iter] + duration > maxDay) {
             sails.log("dayOfWeek[iter] + duration > maxDay");
             // first week: [ ----- START -- ] second week: [ - END ------]
             // if current date there     ^^                  ^
             // then we get it period as date_start and date_end for event.
-            if (dayOfWeek[iter] < current.getDay() ||  current.getDay() <= (dayOfWeek[iter] - maxDay + duration) ) {
+            if (dayOfWeek[iter] < current.getDay() || current.getDay() <= (dayOfWeek[iter] - maxDay + duration)) {
                 founded = 1;
                 result = getWeeklyObj(current, dayOfWeek[iter], dateStart, dateEnd, duration);
                 return;
@@ -110,7 +109,7 @@ function getWeekly(current, dateStart, dateEnd, repeatOptions, duration) {
         else {
             //          week: [ -- START --- END --]
             // if current date there     ^^^
-            if( dayOfWeek[iter] <= current.getDay() && current.getDay() <=  dayOfWeek[iter] + duration) {
+            if (dayOfWeek[iter] <= current.getDay() && current.getDay() <= dayOfWeek[iter] + duration) {
                 founded = 1;
                 result = getWeeklyObj(current, dayOfWeek[iter], dateStart, dateEnd, duration);
                 return;
@@ -125,7 +124,7 @@ function detectDateStart(currentDate, event) {
     var newDateStart = new Date(), newDateEnd = new Date();
     var dateStart = new Date(event.date_start), dateEnd = new Date(event.date_end);
     var tmpDate, dateObj;
-    switch(event.repeat_type) {
+    switch (event.repeat_type) {
         case 2: //daily
             newDateStart = getDaily(currentDate, dateStart);
             newDateEnd = getDateEnd(currentDate, dateEnd, event.duration);
@@ -138,7 +137,7 @@ function detectDateStart(currentDate, event) {
         case 8:  //fornight
             dateObj = getFullFornightDate(currentDate, dateStart, dateEnd, event.duration);
             sails.log(dateObj);
-            if(!dateObj.start || ! dateObj.end) {
+            if (!dateObj.start || !dateObj.end) {
                 var tmpStartDate = new Date(dateStart.getTime());
                 var tmpEndDate = new Date(dateEnd.getTime());
                 tmpStartDate.setDate(dateStart.getDate() + 14);
@@ -150,9 +149,9 @@ function detectDateStart(currentDate, event) {
             break;
         case 16: // monthly
             //copy the current date
-            tmpDate = new Date( currentDate.getTime() );
+            tmpDate = new Date(currentDate.getTime());
             //preset defined month
-            tmpDate.setMonth( defineMonth(currentDate, dateStart) );
+            tmpDate.setMonth(defineMonth(currentDate, dateStart));
             newDateStart = getDaily(tmpDate, dateStart);
             newDateEnd = getDateEnd(tmpDate, dateEnd, event.duration);
             break;
@@ -166,46 +165,46 @@ function detectDateStart(currentDate, event) {
 
 function mapUser(list, key) {
     key = key || 'user_id';
-    return list.map(function(value) {
+    return list.map(function (value) {
         return value[key];
     });
 }
 
 function filterPhones(invitedPhoneRecords, phones) {
-    var phoneList = invitedPhoneRecords.map(function(value){
+    var phoneList = invitedPhoneRecords.map(function (value) {
         return value.id;
     });
-    return phones.filter(function(value){
+    return phones.filter(function (value) {
         return phoneList.indexOf(PhoneIdentifier.extract(value)) === -1;
     });
 }
 function filterEmails(invitedEmailRecords, emails) {
-    var emailList = invitedEmailRecords.map(function(value){
+    var emailList = invitedEmailRecords.map(function (value) {
         return value.email;
     });
-    if(!emails || !emails.length) {
+    if (!emails || !emails.length) {
         return [];
     }
-    return emails.filter(function(value){
+    return emails.filter(function (value) {
         return emailList.indexOf(value) === -1;
     });
 }
 
 function findUserPhone(phones, cb) {
 
-    if(!Array.isArray(phones)) {
+    if (!Array.isArray(phones)) {
         return cb(null, phones, []);
     }
-    phones = phones.filter(function(phone) {
+    phones = phones.filter(function (phone) {
         return PhoneIdentifier.extract(phone);
     });
     //1. get phones for search in Phones
-    phonesIds = phones.map(function(value) {
+    phonesIds = phones.map(function (value) {
         return PhoneIdentifier.extract(value);
     });
     //2. search all users with phones
-    Phone.find({ user_id: {'!': null}, id: phonesIds}).exec(function(err, results){
-        if(err) {
+    Phone.find({user_id: {'!': null}, id: phonesIds}).exec(function (err, results) {
+        if (err) {
             return cb(err);
         }
         //3. filter founded phones
@@ -214,15 +213,14 @@ function findUserPhone(phones, cb) {
 }
 
 
-
 function findUserEmail(emails, cb) {
 
-    if(!Array.isArray(emails)) {
+    if (!Array.isArray(emails)) {
         return cb(null, emails, []);
     }
     //1. search emails
     User.find({email: emails}).exec(function (err, results) {
-        if(err) {
+        if (err) {
             return cb(err);
         }
         //2. filter invited emails
@@ -241,70 +239,70 @@ function inviteUsers(event, invites, cb) {
 
     var collectedUsers = invites.users || [];
 
-    if(!invites) {
+    if (!invites) {
         return cb(null, [], []);
     }
     // firstly find all users what can related with this phones
-    findUserPhone((invites.phones || []), function(err, phones, users) {
-        if(err) {
+    findUserPhone((invites.phones || []), function (err, phones, users) {
+        if (err) {
             return cb(err);
         }
         //filtred phones without each one which related to users
         invites.phones = phones;
         collectedUsers = collectedUsers.concat(users);
         // same for emails
-        findUserEmail((invites.emails || []), function(err, emails, users){
-            if(err) {
+        findUserEmail((invites.emails || []), function (err, emails, users) {
+            if (err) {
                 return cb(err);
             }
             collectedUsers = collectedUsers.concat(users);
             invites.emails = emails;
-            collectedUsers = collectedUsers.map(function(userId) {
+            collectedUsers = collectedUsers.map(function (userId) {
                 return {
                     'user_id': userId,
                     'event_id': event.id
                 };
             });
             // get all already has invites
-            EventInvite.find({or:collectedUsers}).exec(function(err, result){
+            EventInvite.find({or: collectedUsers}).exec(function (err, result) {
                 //todo make a send notification
-                if(err) {
+                if (err) {
                     return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
                 }
                 var founded = [];
-                if(result) {
-                    founded = result.map(function(value){
+                if (result) {
+                    founded = result.map(function (value) {
                         return value.user_id;
                     });
                 }
 
-                collectedUsers = collectedUsers.filter(function(value) {
+                collectedUsers = collectedUsers.filter(function (value) {
                     return (founded.indexOf(value.user_id) === -1) && value.user_id !== event.founder;
                 });
-                if(!collectedUsers.length) {
+                if (!collectedUsers.length) {
                     return cb(null, invites, []);
                 }
                 var invitedIds = mapUser(collectedUsers);
 
-                User.find({'id': invitedIds}).exec(function(err, foundedUsers){
-                    if(err) {
+                User.find({'id': invitedIds}).exec(function (err, foundedUsers) {
+                    if (err) {
                         return cb(err);
                     }
-                    invitedIds = foundedUsers.map(function(user) {
+                    invitedIds = foundedUsers.map(function (user) {
                         return user.id;
                     });
-                    collectedUsers = collectedUsers.filter(function(val) {
+                    collectedUsers = collectedUsers.filter(function (val) {
                         return invitedIds.indexOf(val.user_id) !== -1;
                     });
-                    EventInvite.create(collectedUsers).exec(function(err, result){
-                        if(err) {
+                    EventInvite.create(collectedUsers).exec(function (err, result) {
+                        if (err) {
                             return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
                         }
-                    //array with id, status and value for user
-                        if(err) {
+                        //array with id, status and value for user
+                        if (err) {
                             return cb(err);
                         }
-                        var invitedExtract = foundedUsers.map(function(value){
+                        var invitedExtract = foundedUsers.map(function (value) {
                             return {
                                 'id': value.id,
                                 'status': 0,
@@ -320,21 +318,25 @@ function inviteUsers(event, invites, cb) {
     });
 }
 
-function sendSms(user, event, phones, cb){
-    if(phones.length) {
+function sendSms(user, event, phones, mcc, cb) {
+    if (!phones.length) {
+        return cb();
+    }
+
+    require('./Contacts').detectPhones(phones, mcc, user, function (err, mappedPhones) {
         var msg = "User " + user.name + " " + user.second_name + " invites you to Event '" + event.title + "', ";
         msg += event.date_start + ". Click here to RSVP in vlife - 1st ever Calendar-Chat app!";
-        return Twilio.sendMultiMessage(msg, phones, function(){
+        return Twilio.sendMultiMessage(msg, mappedPhones, function () {
             return cb();
         });
-    }
-    return cb();
+    });
 }
 
 function sendEmail(user, event, emails, cb) {
-    if(emails.length) {
-        emails.forEach(function(element){
-            Mailer.sendInviteToEventMessage(user, event, element, function(){});
+    if (emails.length) {
+        emails.forEach(function (element) {
+            Mailer.sendInviteToEventMessage(user, event, element, function () {
+            });
         });
     }
     return cb();
@@ -346,37 +348,38 @@ function sendEmail(user, event, emails, cb) {
  * @param user
  * @param event
  * @param invites
+ * @param mcc
  * @param cb
  */
-function inviteGuests(user, event, invites, cb) {
+function inviteGuests(user, event, invites, mcc, cb) {
     var emails = invites.emails || [];
     var phones = invites.phones || [];
 
-    require('./Contacts').registerPhones(phones.map(function(value){
-        return {'id':PhoneIdentifier.extract(value), 'phone': value};
-    }), function(err){
-        if(err) {
+    require('./Contacts').registerPhones(phones.map(function (value) {
+        return {'id': PhoneIdentifier.extract(value), 'phone': value};
+    }), function (err) {
+        if (err) {
             return cb(err);
         }
 
-        require('./Contacts').registerEmails(emails, function(err) {
+        require('./Contacts').registerEmails(emails, function (err) {
             if (err) {
                 return cb(err);
             }
-            sendSms(user, event, phones, function(){
-                sendEmail(user, event, emails, function(){
-                    var eventInviteGuest = phones.map(function(value) {
-                        return {"phone_id": PhoneIdentifier.extract(value), "event_id": event.id };
+            sendSms(user, event, phones, mcc, function () {
+                sendEmail(user, event, emails, function () {
+                    var eventInviteGuest = phones.map(function (value) {
+                        return {"phone_id": PhoneIdentifier.extract(value), "event_id": event.id};
                     });
 
                     eventInviteGuest = eventInviteGuest.concat(
-                        emails.map(function(value) {
-                            return {"email": value, "event_id": event.id };
+                        emails.map(function (value) {
+                            return {"email": value, "event_id": event.id};
                         })
                     );
 
-                    EventInvite.create(eventInviteGuest).exec(function(err, result){
-                        if(err) {
+                    EventInvite.create(eventInviteGuest).exec(function (err, result) {
+                        if (err) {
                             return cb(err);
                         }
                         return cb(null, result);
@@ -388,7 +391,7 @@ function inviteGuests(user, event, invites, cb) {
 }
 
 function generalDropInvite(criteria, cb) {
-    EventInvite.destroy({or:criteria}).exec(function(err) {
+    EventInvite.destroy({or: criteria}).exec(function (err) {
         if (err) {
             return cb(err);
         }
@@ -398,9 +401,9 @@ function generalDropInvite(criteria, cb) {
 
 
 function dropUser(users, event, cb) {
-    if(users && users.length) {
-        var dropUInvite = users.map(function(v) {
-            return {'user_id': v, 'event_id':event.id};
+    if (users && users.length) {
+        var dropUInvite = users.map(function (v) {
+            return {'user_id': v, 'event_id': event.id};
         });
         return generalDropInvite(dropUInvite, cb);
     }
@@ -410,9 +413,9 @@ function dropUser(users, event, cb) {
 }
 
 function dropEmail(emails, event, cb) {
-    if(emails && emails.length) {
-        var dropEInvite = emails.map(function(v) {
-            return {'email': v, 'event_id':event.id};
+    if (emails && emails.length) {
+        var dropEInvite = emails.map(function (v) {
+            return {'email': v, 'event_id': event.id};
         });
         return generalDropInvite(dropEInvite, cb);
     }
@@ -422,9 +425,9 @@ function dropEmail(emails, event, cb) {
 }
 
 function dropPhone(phones, event, cb) {
-    if(phones && phones.length) {
-        var dropPInvite = phones.map(function(v) {
-            return {'phone_id': PhoneIdentifier.extract(v), 'event_id':event.id};
+    if (phones && phones.length) {
+        var dropPInvite = phones.map(function (v) {
+            return {'phone_id': PhoneIdentifier.extract(v), 'event_id': event.id};
         });
         return generalDropInvite(dropPInvite, cb);
     }
@@ -434,46 +437,48 @@ function dropPhone(phones, event, cb) {
 }
 
 function dropInvites(invites, event, cb) {
-    dropUser(invites.users, event, function(){
-        dropEmail(invites.emails, event, function(){
-            dropPhone(invites.phones, event, function(){
+    dropUser(invites.users, event, function () {
+        dropEmail(invites.emails, event, function () {
+            dropPhone(invites.phones, event, function () {
                 return cb();
             });
         });
     });
 }
 
+
 /**
  *
  * @param user
  * @param event
  * @param invites
+ * @param mcc
  * @param cb
  * @returns {*}
  */
-function makeInvite(user, event, invites, cb) {
+function makeInvite(user, event, invites, mcc, cb) {
     // 1. inviteUsers
-    if(!invites) {
+    if (!invites) {
         return cb();
     }
-    inviteUsers(event, invites, function(err, notInvited, invitedUsers){
-        if(err) {
+    inviteUsers(event, invites, function (err, notInvited, invitedUsers) {
+        if (err) {
             return cb(err);
         }
         // 2. invite not invited person by phone or email
-        inviteGuests(user, event, notInvited, function(err) {
-            if(err) {
+        inviteGuests(user, event, notInvited, mcc, function (err) {
+            if (err) {
                 return cb(err);
             }
             event.invited = invitedUsers;
-            if(invites && invites.phones &&  invites.phones.length) {
-                event.invited = event.invited.concat(invites.phones.map(function(value){
-                    return {id:null, value: value, status: 0, type: 2};
+            if (invites && invites.phones && invites.phones.length) {
+                event.invited = event.invited.concat(invites.phones.map(function (value) {
+                    return {id: null, value: value, status: 0, type: 2};
                 }));
             }
-            if(invites && invites.emails &&  invites.emails.length) {
-                event.invited = event.invited.concat(invites.emails.map(function(value){
-                    return {id:null, value: value, status: 0, type: 3};
+            if (invites && invites.emails && invites.emails.length) {
+                event.invited = event.invited.concat(invites.emails.map(function (value) {
+                    return {id: null, value: value, status: 0, type: 3};
                 }));
             }
             return cb(null, event);
@@ -482,7 +487,7 @@ function makeInvite(user, event, invites, cb) {
 }
 
 
-function fillInvitedContainer(value, status, type, id ) {
+function fillInvitedContainer(value, status, type, id) {
     id = id || null;
     return {
         id: id,
@@ -493,50 +498,50 @@ function fillInvitedContainer(value, status, type, id ) {
 }
 
 /**
- * 
+ *
  * @type {{create: module.exports.create, update: module.exports.update, detailed: module.exports.detailed}}
  */
 module.exports = {
 
     /**
-     * 
+     *
      * @param user
      * @param params
      * @param cb
      * @returns {*}
      */
-    find: function(user, params, cb) {
+    find: function (user, params, cb) {
         var date = params.date;
-        if(date) {
+        if (date) {
             Event.tzOffset = require('moment').parseZone(date).utcOffset();
         }
 
-        return Event.getEventsByConfig(user.id, params, function(err, events, count, countPers, countWork){
-            if(err) {
+        return Event.getEventsByConfig(user.id, params, function (err, events, count, countPers, countWork) {
+            if (err) {
                 return cb(err);
             }
-            var ev = (Array.isArray(events)) ? events.map(function(val){
+            var ev = (Array.isArray(events)) ? events.map(function (val) {
                 return val.id;
             }) : [];
 
             var countMembers = {};
             var duration = {};
-            for(var i = 0, size = events.length; i < size; i++) {
+            for (var i = 0, size = events.length; i < size; i++) {
                 countMembers[events[i].id] = events[i].count_members;
                 duration[events[i].id] = events[i].duration;
             }
-            Event.findWithMap(ev, function(err, events){
-                if(err) {
+            Event.findWithMap(ev, function (err, events) {
+                if (err) {
                     return cb(err);
                 }
 
-                Event.extendEvent(events, function(err, results){
-                    if(err) {
+                Event.extendEvent(events, function (err, results) {
+                    if (err) {
                         return cb(err);
                     }
                     results = results || [];
-                    var mainPercent = (!count) ? 0 : (countWork / count)*100;
-                    results = results.map(function(r){
+                    var mainPercent = (!count) ? 0 : (countWork / count) * 100;
+                    results = results.map(function (r) {
                         r.repeated = 0;
                         r.count_members = countMembers[r.id];
                         r.duration = duration[r.id];
@@ -566,67 +571,71 @@ module.exports = {
             });
         });
     },
+
     /**
      *
      * @param event
      * @param userId
+     * @param mcc
      * @param cb
      */
-    create: function(event, userId, cb) {
-        User.findOne(userId).exec(function(err, user){
-            if(err) {
+    create: function (event, userId, mcc, cb) {
+        User.findOne(userId).exec(function (err, user) {
+            if (err) {
                 return cb(err);
             }
-            if(!user) {
+            if (!user) {
                 return cb(new LogicE("Founder for event isn't found"));
             }
             event.founder = userId;
             // 1. create event
             Event.create(event).exec(function (err, result) {
-                if(err) {
+                if (err) {
                     return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
                 }
-                if(!event.invites) {
+                if (!event.invites) {
                     return cb(null, result);
                 }
-                if(!result) {
+                if (!result) {
                     return cb(new LogicE("error wasn't created"));
                 }
-                makeInvite(user, result, event.invites, cb);
+                makeInvite(user, result, event.invites, mcc, cb);
             });
         });
     },
+
     /**
-     * 
+     *
      * @param eventId
      * @param user
      * @param event
+     * @param mcc
      * @param cb
      */
-    update: function(eventId, user, event, cb) {
+    update: function (eventId, user, event, mcc, cb) {
         //thanks to ios 
-        if(typeof event.end_repeat !== 'undefined' &&  !event.end_repeat  ) {
+        if (typeof event.end_repeat !== 'undefined' && !event.end_repeat) {
             event.end_repeat = null;
         }
         Event.update({id: eventId, "founder": user.id}, event).exec(function (err, result) {
-            if(err) {
+            if (err) {
                 return (err.Errors) ? cb(new ValidationE(err)) : cb(err);
             }
-            if( !result || !result.length) {
+            if (!result || !result.length) {
                 return cb(new PermissionE("Permission denied"));
             }
 
-            if(!event.invites && !event.dropped_invites) {
+            if (!event.invites && !event.dropped_invites) {
                 return cb(null, result);
             }
-            makeInvite(user, result[0], event.invites, function(err){
-                if(err) {
+            makeInvite(user, result[0], event.invites, mcc, function (err) {
+                if (err) {
                     return cb(err);
                 }
                 var droppedInvites = event.dropped_invites;
-                if(droppedInvites) {
-                    return dropInvites(droppedInvites, result[0], function(err){
-                        if(err) {
+                if (droppedInvites) {
+                    return dropInvites(droppedInvites, result[0], function (err) {
+                        if (err) {
                             return cb(err);
                         }
                         return cb(null, result[0]);
@@ -645,23 +654,23 @@ module.exports = {
      * @param user
      * @param cb
      */
-    detailed: function(eventId, user, cb) {
+    detailed: function (eventId, user, cb) {
         Event.findOne(eventId).exec(function (err, event) {
-            if(err) {
+            if (err) {
                 return cb(err);
             }
-            if(!event) {
-                return cb( new LogicE("Event not exist") );
+            if (!event) {
+                return cb(new LogicE("Event not exist"));
             }
-            EventInvite.find({'event_id': eventId }).populate('user_id').populate('phone_id').exec(function(err, invited){
-                if(err) {
+            EventInvite.find({'event_id': eventId}).populate('user_id').populate('phone_id').exec(function (err, invited) {
+                if (err) {
                     return cb(err);
                 }
-                var inv = invited.map(function(value){
-                    if(value.phone_id) {
+                var inv = invited.map(function (value) {
+                    if (value.phone_id) {
                         return fillInvitedContainer(value.phone_id.id, 0, 2);
                     }
-                    if(value.email) {
+                    if (value.email) {
                         return fillInvitedContainer(value.email, 0, 3);
                     }
                     //todo check it
@@ -669,12 +678,12 @@ module.exports = {
                         value.user_id.name + " " + value.user_id.second_name, //value
                         value.status, 1, value.user_id.id);
                 });
-                Event.extendEvent([event], function(err, event){
-                    if(err) {
+                Event.extendEvent([event], function (err, event) {
+                    if (err) {
                         return cb(err);
                     }
-                    if(!event || !event[0]) {
-                        return cb( new LogicE("Event not exist while extending") );
+                    if (!event || !event[0]) {
+                        return cb(new LogicE("Event not exist while extending"));
                     }
                     var response = event[0];
                     response.invited = inv;
