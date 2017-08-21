@@ -15,10 +15,9 @@ var options = {
 
 module.exports = {
     get: function (placeId, cb) {
-        'use strict';
         options.path += placeId;
         var str = "";
-        var req = http.request(options, function(res) {
+        http.request(options, function(res) {
             res.setEncoding('utf8');
             res.on('data', function (chunk) {
                 str += chunk;
