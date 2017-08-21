@@ -75,6 +75,12 @@ module.exports = {
      */
     invite: function (req, res) {
         var emails = req.param('emails');
+        if(emails && Array.isArray(emails)) {
+            emails = emails.map(function(e) {
+                return e.toLowerCase();
+            });
+
+        }
         var phones = req.param('phones');
         var mcc = req.headers.mcc || '';
         sails.log("MCC :"+ mcc);

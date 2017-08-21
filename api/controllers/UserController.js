@@ -164,7 +164,8 @@ module.exports = {
      * @param res
      */
     checkEmail: function (req, res) {
-        User.find({'email': req.param('email')}).exec(function (err, user) {
+        var email = req.param('email');
+        User.find({'email': email.toLowerCase()}).exec(function (err, user) {
             if (err) {
                 return res.badRequest(err);
             }

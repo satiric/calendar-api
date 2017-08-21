@@ -75,6 +75,7 @@ function checkSecurityKey(key, phone, cb) {
  * @param cb
  */
 function signupUser(data, cb) {
+    data.email = data.email.toLowerCase();
     User.create(data).exec(function (err, user) {
         if (err) {
             return (err.Errors)
