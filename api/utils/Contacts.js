@@ -112,6 +112,7 @@ function registPhones(phones, asFriend, cb) {
     var phoneList = phones.map(function(value) {
         return {"id" : value.id};
     });
+    sails.log(phoneList);
     //1. find phones from contact in dictionary
     Phone.find(phoneList).exec(function(err, results){
         if(err) {
@@ -129,16 +130,18 @@ function registPhones(phones, asFriend, cb) {
                 'phone': val.phone
             };
         });
+        sails.log(notFouneded);
         //at first - create phones that not founded
         Phone.create(notFouneded).exec(function(err, result) {
-            if(err) {
-                return cb(err);
-            }
+            // if(err) {
+            //     return cb(err);
+            // }
+
             //at second - subcribe to all
             PhoneContacts.batchInsert(phones, function(err, result){
-                if(err) {
-                    return cb(err);
-                }
+                // if(err) {
+                //     return cb(err);
+                // }
                 return cb(null,founded);
             });
         });
