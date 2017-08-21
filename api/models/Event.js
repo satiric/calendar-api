@@ -8,6 +8,19 @@ function getTimeZoneByOffset(offset) {
     result = sign + result + ":00";
     return result;
 }
+
+
+function fillByGooglePlaceId(values, cb) {
+    var id = values.googlePlaceId;
+    GooglePlaces.get(id, function(err, result) {
+        if(!result) {
+            return cb();
+        }
+        values.latitude = result.result.geometry.location.lat;
+        values.longitude = result.result.geometry.location.lng;
+        return cb();
+    });
+}
 /**
  *
  * @param iter
@@ -188,9 +201,20 @@ module.exports = {
         },
         founder: {
             model: 'User'
+        },
+        googlePlaceId : {
+            type: "string"
+        },
+        fullAddress : {
+            type: "string"
+        },
+        latitude : {
+            type: "float"
+        },
+        longitude : {
+            type: "float"
         }
     },
-
 
 // Custom types / validation rules
 // (available for use in this model's attribute definitions above)
@@ -268,13 +292,23 @@ module.exports = {
         if(!values.end_repeat) {
             values.end_repeat = null;
         }
-        next();
+        if(values.googlePlaceId) {
+            fillByGooglePlaceId(values, next);
+        }
+        else {
+            next();
+        }
     },
     beforeUpdate: function (values, next) {
         if(values.description){
             values.description = values.description.trim();
         }
-        next();
+        if(values.googlePlaceId) {
+            fillByGooglePlaceId(values, next);
+        }
+        else {
+            next();
+        }
     },
 
     isoDate: function(date) {
@@ -364,7 +398,7 @@ module.exports = {
         }
         sails.log("--Timezone offset: --");
         sails.log(Event.tzOffset);
-        var query = "SELECT id, title, sphere, repeat_type, repeat_option, location, description, " +
+        var query = "SELECT id, longitude, latitude, googlePlaceId, fullAddress, title, sphere, repeat_type, repeat_option, location, description, " +
             "reminds, active, founder, end_repeat, createdAt, updatedAt, date_start, date_end, " +
             "DATE_ADD(date_start, INTERVAL " + Event.tzOffset + " MINUTE) AS date_start_r, " +
             "DATE_ADD(date_end, INTERVAL " + Event.tzOffset + " MINUTE) AS date_end_r " +

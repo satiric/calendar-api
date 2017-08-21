@@ -70,11 +70,7 @@ function getFullFornightDate(currentDate, dateStart, dateEnd, duration) {
 function getWeeklyObj(current, dayOfWeek, dateStart, dateEnd, duration) {
     var result = {};
     var tmpDate = new Date(current.getTime());
-    sails.log("current:");
-    sails.log(current);
     tmpDate.setDate(tmpDate.getDate() - (tmpDate.getDay() - dayOfWeek));
-    sails.log("tmpDate:");
-    sails.log(tmpDate);
     result.start = getDaily(tmpDate, dateStart);
     result.end = getDateEnd(tmpDate, dateEnd, duration);
     return result;
@@ -128,10 +124,7 @@ function detectDateStart(currentDate, event) {
     switch (event.repeat_type) {
         case 2: //daily
             newDateStart = getDaily(currentDate, dateStart);
-
             newDateEnd = getDateEnd(currentDate, dateEnd, event.duration);
-            sails.log(newDateStart);
-            sails.log(newDateEnd);
             break;
         case 4: //weekly
             dateObj = getWeekly(currentDate, dateStart, dateEnd, event.repeat_option, event.duration);
@@ -140,7 +133,6 @@ function detectDateStart(currentDate, event) {
             break;
         case 8:  //fornight
             dateObj = getFullFornightDate(currentDate, dateStart, dateEnd, event.duration);
-            sails.log(dateObj);
             if (!dateObj.start || !dateObj.end) {
                 var tmpStartDate = new Date(dateStart.getTime());
                 var tmpEndDate = new Date(dateEnd.getTime());
@@ -175,9 +167,11 @@ function mapUser(list, key) {
 }
 
 function filterPhones(invitedPhoneRecords, phones) {
+
     var phoneList = invitedPhoneRecords.map(function (value) {
         return value.id;
     });
+    phones = phones || [];
     return phones.filter(function (value) {
         return phoneList.indexOf(PhoneIdentifier.extract(value)) === -1;
     });
@@ -485,6 +479,12 @@ function makeInvite(user, event, invites, mcc, cb) {
                     return {id: null, value: value, status: 0, type: 3};
                 }));
             }
+            event.location = {
+                googlePlaceId : event.googlePlaceId,
+                latitude: event.latitude,
+                longitude: event.longitude,
+                fullAddress: event.fullAddress
+            };
             return cb(null, event);
         });
     });
@@ -558,12 +558,20 @@ module.exports = {
                                 r.date_end = new Date(tmp.date_end.getTime() - Event.tzOffset*60*1000);
                             }
                         }
+                        r.location = {
+                            googlePlaceId : r.googlePlaceId,
+                            latitude: r.latitude,
+                            longitude: r.longitude,
+                            fullAddress: r.fullAddress
+                        };
                         delete r.date_start_r;
                         delete r.date_end_r;
+                        
                         return r;
                     });
+                    results = results || [];
                     return cb(null, {
-                        "data": results || [],
+                        "data": results,
                         "page": params.page,
                         "pageSize": params.pageSize,
                         "total": count,
@@ -604,6 +612,7 @@ module.exports = {
                 if (!result) {
                     return cb(new LogicE("error wasn't created"));
                 }
+
                 makeInvite(user, result, event.invites, mcc, cb);
             });
         });
@@ -692,6 +701,12 @@ module.exports = {
                     }
                     var response = event[0];
                     response.invited = inv;
+                    response.location = {
+                        googlePlaceId : response.googlePlaceId,
+                        latitude: response.latitude,
+                        longitude: response.longitude,
+                        fullAddress: response.fullAddress
+                    };
                     return cb(null, response);
                 });
             });

@@ -381,8 +381,21 @@ definitions:
         type: integer
         description: Reminds before x seconds.
       location: 
-        type: string
-        description: google place id or other text for place identification
+        type: object
+        description: object with location info
+        properties: 
+          googlePlaceId: 
+            type: string
+          latitude: 
+            type: number
+            format: float
+          longitude: 
+            type: number
+            format: float
+          fullAddress: 
+            type: string
+            description: just text with full address
+          
       active: 
         type: boolean
         description: Status for the event. Default is true.

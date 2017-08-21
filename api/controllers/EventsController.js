@@ -244,11 +244,21 @@ module.exports = {
                 if(err) {
                     return (err instanceof ValidationE) ? res.badRequest({"message": err.message}) : res.serverError({"data":err});
                 }
+
+                result.location = {
+                    googlePlaceId : result.googlePlaceId,
+                    latitude: result.latitude,
+                    longitude: result.longitude,
+                    fullAddress: result.fullAddress
+                };
                 Event.extendEvent([result], function(err, event){
                     if(err) {
                         return res.serverError({"data":err});
                     }
-                    return res.ok({"data": event[0]});
+
+                    var r = event[0];
+                    r.location = result.location;
+                    return res.ok({"data": r});
                 });
             });
         });
@@ -310,6 +320,9 @@ module.exports = {
                                 return res.serverError({"data":err});
                             }
                             var response = (event) ? event[0] : null;
+                            if(response) {
+                                response.location = (resultEvent) ? resultEvent.location : null;
+                            }
                             return res.ok({"data": response});
                         });
                     });
