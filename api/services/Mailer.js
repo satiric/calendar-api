@@ -69,7 +69,7 @@ module.exports = {
             Name: user.name,
             SecondName: user.second_name,
             EventTitle: event.title || 'EventTitle',
-            EventLocation: event.location || '',
+            EventLocation: event.fullAddress || '', //event.location || '',
             EventDate: event.date_start
         }, {
             to: email,

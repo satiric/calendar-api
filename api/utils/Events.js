@@ -558,12 +558,6 @@ module.exports = {
                                 r.date_end = new Date(tmp.date_end.getTime() - Event.tzOffset*60*1000);
                             }
                         }
-                        r.location = {
-                            googlePlaceId : r.googlePlaceId,
-                            latitude: r.latitude,
-                            longitude: r.longitude,
-                            fullAddress: r.fullAddress
-                        };
                         delete r.date_start_r;
                         delete r.date_end_r;
                         

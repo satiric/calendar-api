@@ -9,6 +9,18 @@ function getTimeZoneByOffset(offset) {
     return result;
 }
 
+function mapLocation(values){
+    if(values.location) {
+        if(values.location.googlePlaceId) {
+            values.googlePlaceId = values.location.googlePlaceId;
+        }
+        if(values.location.fullAddress) {
+            values.fullAddress = values.location.fullAddress;
+        }
+    }
+    return values;
+}
+
 
 function fillByGooglePlaceId(values, cb) {
     var id = values.googlePlaceId;
@@ -16,8 +28,11 @@ function fillByGooglePlaceId(values, cb) {
         if(!result) {
             return cb();
         }
-        values.latitude = result.result.geometry.location.lat;
-        values.longitude = result.result.geometry.location.lng;
+        if(result.result && result.result.geometry && result.result.geometry.location ) {
+            values.latitude = result.result.geometry.location.lat;
+            values.longitude = result.result.geometry.location.lng;
+        }
+
         return cb();
     });
 }
@@ -184,10 +199,6 @@ module.exports = {
             defaultsTo: null
             //      isISOdatetime: true
         },
-        location: {
-            type: "string",
-            trimSpaces: true
-        },
         description: {
             type: "string",
             maxLength: 500
@@ -264,9 +275,6 @@ module.exports = {
         },
         repeat_option: {
             isRepeatOption: "repeat_option must be less than 128"
-        },
-        location: {
-            trimSpaces: "location shouldn't contain spaces in front or end of string"
         }
 
         // second_name: {
@@ -292,6 +300,7 @@ module.exports = {
         if(!values.end_repeat) {
             values.end_repeat = null;
         }
+        values = mapLocation(values);
         if(values.googlePlaceId) {
             fillByGooglePlaceId(values, next);
         }
@@ -303,6 +312,8 @@ module.exports = {
         if(values.description){
             values.description = values.description.trim();
         }
+        values = mapLocation(values);
+
         if(values.googlePlaceId) {
             fillByGooglePlaceId(values, next);
         }
@@ -356,6 +367,16 @@ module.exports = {
                 value.founder = users.find(function (element){
                     return element.id === id;
                 });
+                value.location = {
+                    "googlePlaceId": value.googlePlaceId,
+                    "latitude": value.latitude,
+                    "longitude": value.longitude,
+                    "fullAddress": value.fullAddress
+                };
+                delete value.googlePlaceId;
+                delete value.latitude;
+                delete value.longitude;
+                delete value.fullAddress;
                 return value;
             });
             return cb(null, events);
@@ -416,7 +437,7 @@ module.exports = {
         var params = tmpParts.params.slice();
         var countParams = tmpParts.params.slice();
 
-        var query = "SELECT e.id, e.title, e.sphere, e.repeat_type, e.repeat_option, e.end_repeat, e.location, " +
+        var query = "SELECT e.longitude, e.latitude, e.googlePlaceId, e.fullAddress, e.id, e.title, e.sphere, e.repeat_type, e.repeat_option, e.end_repeat, " +
             "e.description, e.reminds, e.active, e.founder, e.createdAt, e.updatedAt, " +
             "DATE_ADD(e.date_start, INTERVAL " + Event.tzOffset + " MINUTE) AS date_start_r," +
             "DATE_ADD(e.date_end, INTERVAL " + Event.tzOffset + " MINUTE) AS date_end_r," +
