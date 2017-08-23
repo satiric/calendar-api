@@ -674,7 +674,7 @@ module.exports = {
                 if (err) {
                     return cb(err);
                 }
-                var inv = invited.map(function (value) {
+                invited.forEach(function (value) {
                     if (value.phone_id) {
                         return fillInvitedContainer(value.phone_id.id, 0, 2);
                     }
@@ -693,8 +693,7 @@ module.exports = {
                     if (!event || !event[0]) {
                         return cb(new LogicE("Event not exist while extending"));
                     }
-                    var response = event[0];
-                    return cb(null, response);
+                    return cb(null, event[0]);
                 });
             });
         });
