@@ -694,13 +694,6 @@ module.exports = {
                         return cb(new LogicE("Event not exist while extending"));
                     }
                     var response = event[0];
-                    response.invited = inv;
-                    response.location = {
-                        googlePlaceId : response.googlePlaceId,
-                        latitude: response.latitude,
-                        longitude: response.longitude,
-                        fullAddress: response.fullAddress
-                    };
                     return cb(null, response);
                 });
             });
