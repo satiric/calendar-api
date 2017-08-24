@@ -8,14 +8,14 @@ var http = require('https');
 var options = {
     host: 'maps.googleapis.com',
     port: '443',
-    path: '/maps/api/place/details/json?key=' + sails.config.constants.googlePlacesKey + "&placeid=",
     method: 'GET'
 };
 
 
 module.exports = {
     get: function (placeId, cb) {
-        options.path += placeId;
+        options.path = '/maps/api/place/details/json?key=' + sails.config.constants.googlePlacesKey + "&placeid=" + placeId;
+        sails.log(options);
         var str = "";
         http.request(options, function(res) {
             res.setEncoding('utf8');
@@ -23,6 +23,7 @@ module.exports = {
                 str += chunk;
             });
             res.on('end', function(){
+                sails.log(str);
                 return cb(null, JSON.parse(str));
             });
         }).end();
