@@ -340,10 +340,10 @@ module.exports = {
         if(event.end_repeat) {
             var endRepeat = (new Date(event.end_repeat)).getTime();
             if (endRepeat < dateEnd) {
-                return "end_repeat must be more than date_end";
+                return "Until Date cannot be before Start Date";
             }
         }
-        return undefined; //todo remove?
+
     },
 
     /**

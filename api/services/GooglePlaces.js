@@ -15,7 +15,6 @@ var options = {
 module.exports = {
     get: function (placeId, cb) {
         options.path = '/maps/api/place/details/json?key=' + sails.config.constants.googlePlacesKey + "&placeid=" + placeId;
-        sails.log(options);
         var str = "";
         http.request(options, function(res) {
             res.setEncoding('utf8');
@@ -23,7 +22,6 @@ module.exports = {
                 str += chunk;
             });
             res.on('end', function(){
-                sails.log(str);
                 return cb(null, JSON.parse(str));
             });
         }).end();
