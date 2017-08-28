@@ -1327,17 +1327,20 @@ paths:
           description: "Body with emails and phones for invite"
           required: true
           schema: 
-            type: object
-            properties: 
-              emails: 
-                type: array
-                description: "array of emails"
-                items: 
-                  type: string
-              phones: 
-                type: array
-                items: 
-                  type: string
+            type: array
+            items: 
+              type: object
+              properties: 
+                emails: 
+                  type: array
+                  description: "array of emails"
+                  items: 
+                    type: string
+                phones: 
+                  type: array
+                  description: "array of phones"
+                  items: 
+                    type: string
       responses:
         "200":
           description: Success
@@ -1368,18 +1371,20 @@ paths:
           description: "Contacts"
           required: true
           schema: 
-            type: object
-            properties: 
-              emails: 
-                type: array
-                description: "array of emails"
-                items: 
-                  type: string
-              phones: 
-                type: array
-                description: "array of phones"
-                items: 
-                  type: string
+            type: array
+            items: 
+              type: object
+              properties: 
+                emails: 
+                  type: array
+                  description: "array of emails"
+                  items: 
+                    type: string
+                phones: 
+                  type: array
+                  description: "array of phones"
+                  items: 
+                    type: string
                   
       responses:
         "200":

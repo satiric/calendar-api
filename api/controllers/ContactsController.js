@@ -74,14 +74,10 @@ module.exports = {
      * @returns {*}
      */
     invite: function (req, res) {
-        var emails = req.param('emails');
-        if(emails && Array.isArray(emails)) {
-            emails = emails.map(function(e) {
-                return e.toLowerCase();
-            });
-
+        var invites = req.body;
+        if(!Array.isArray(invites)) {
+            return res.badRequest({"message": "body of request must be an array"});
         }
-        var phones = req.param('phones');
         var mcc = req.headers.mcc || '';
         sails.log("MCC :"+ mcc);
         
@@ -90,7 +86,7 @@ module.exports = {
             if(err) {
                 return res.serverError({"data": err});
             }
-            require('../utils/Contacts').invite( emails, phones, user, mcc,  function(err, result) {
+            require('../utils/Contacts').invite( invites, user, mcc,  function(err, result) {
                 if(err) {
                     return (err instanceof LogicE) ? res.badRequest({"message": err.message})
                         : res.serverError({"data": err});
