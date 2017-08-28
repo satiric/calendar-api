@@ -90,12 +90,13 @@ function extractPhonesAndEmails(invites) {
     });
 
     invites.forEach(function(inv) {
+        function toLower(email) {
+            return email.toLowerCase();
+        }
         for(let i = 0; i < keys.length; i++) {
            if( inv[ keys[i] ] && Array.isArray( inv[keys[i]] ) ) {
                if( keys[i] === 'emails' ) {
-                   inv[ keys[i] ] = inv[ keys[i] ].map(function(email){
-                       return email.toLowerCase();
-                   });
+                   inv[ keys[i] ] = inv[ keys[i] ].map(toLower);
                }
                result[ keys[i] ] = result[ keys[i] ].concat( inv[keys[i]] );
            }
