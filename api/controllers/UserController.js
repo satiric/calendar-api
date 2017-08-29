@@ -198,7 +198,7 @@ module.exports = {
             }
             User.sendMessage(req.param('phone'), function (err, result) {
                 if (err) {
-                    return res.badRequest(err);
+                    return res.badRequest({"message": err.message});
                 }
                 PhoneVerification.create({"phone": req.param('phone'), "code": result}).exec(function(err, result){
                     if (err) {
