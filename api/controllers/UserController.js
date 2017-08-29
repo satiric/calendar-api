@@ -181,7 +181,11 @@ module.exports = {
      */
     checkPhone: function (req, res) {
         var noVerify = req.param('noVerify');
-        User.findOne({'phone': req.param('phone')}).exec(function (err, user) {
+        var phone = req.param('phone');
+        if(! /\+([0-9]){9,13}/.test(phone)){
+            return res.badRequest({"message":"The phone number has to be entered in international format. For example: +1 (555) 555 5555"});
+        }
+        User.findOne({'phone': phone}).exec(function (err, user) {
             if (err) {
                 return res.badRequest(err);
             }

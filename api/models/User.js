@@ -174,9 +174,6 @@ module.exports = {
         // Create a user
     },
     sendMessage: function (phone, cb) {
-        if(! /\+([0-9]){9,13}/.test(phone)){
-            return cb(new ValidationE("The phone number has to be entered in international format. For example: +1 (555) 555 5555"));
-        }
         var firstPart = _.random(10, 99);
         var secondPart = _.random(10, 99);
 
