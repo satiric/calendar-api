@@ -8,15 +8,14 @@ var from = '+14159935359';
 module.exports = {
     sendMessage: function (message, phone, cb) {
         'use strict';
-        return cb();
-        // var Twilio = require('twilio'),
-      //      client = new Twilio(accountSid, authToken);
+        var Twilio = require('twilio'),
+           client = new Twilio(accountSid, authToken);
 
-        // client.messages.create({
-        //     body: message,
-        //     to: phone,  // Text this number
-        //     from: from // From a valid Twilio number
-        // }, cb);
+        client.messages.create({
+            body: message,
+            to: phone,  // Text this number
+            from: from // From a valid Twilio number
+        }, cb);
     },
     sendMultiMessage: function (message, phones, cb) {
         message = message || "";
