@@ -322,7 +322,7 @@ function sendSms(user, event, phones, mcc, cb) {
     }
 
     require('./Contacts').detectPhones(phones, mcc, user, function (err, mappedPhones) {
-        var msg = "User " + user.name + " " + user.second_name + " invites you to Event '" + event.title + "', ";
+        var msg = user.name + " " + user.second_name + " invites you to '" + event.title + "', ";
         msg += event.date_start + ". Click here to RSVP in vlife - 1st ever Calendar-Chat app!";
         return Twilio.sendMultiMessage(msg, mappedPhones, function () {
             return cb();
