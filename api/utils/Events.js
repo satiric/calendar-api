@@ -359,7 +359,9 @@ function inviteGuests(user, event, invites, mcc, cb) {
         if (err) {
             return cb(err);
         }
-
+        emails = emails.map(function(e) {
+            return e.toLowerCase();
+        });
         require('./Contacts').registerEmails(emails, function (err) {
             if (err) {
                 return cb(err);
