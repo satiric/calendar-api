@@ -674,7 +674,7 @@ module.exports = {
                 if (err) {
                     return cb(err);
                 }
-                invited.forEach(function (value) {
+                event.invited = invited.map(function (value) {
                     if (value.phone_id) {
                         return fillInvitedContainer(value.phone_id.id, 0, 2);
                     }
@@ -686,7 +686,6 @@ module.exports = {
                         value.user_id.name + " " + value.user_id.second_name, //value
                         value.status, 1, value.user_id.id);
                 });
-                event.invited = invited;
                 Event.extendEvent([event], function (err, event) {
                     if (err) {
                         return cb(err);
