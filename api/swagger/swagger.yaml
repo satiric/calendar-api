@@ -200,6 +200,12 @@ definitions:
         format: date-time
       avatar: 
         "$ref": "#/definitions/File"
+      calendar_tutorial_passed: 
+        type: integer
+        description: flag setted if user pass the calendar tutorial
+      tutorial_passed: 
+        type: integer
+        description: flag setted if user pass the tutorial
 
   UserEditable:
     type: object

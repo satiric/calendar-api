@@ -59,6 +59,12 @@ module.exports = {
             collection: 'Event',
             via: 'founder'
         },
+        calendar_tutorial_passed: {
+            type: "integer"
+        },
+        tutorial_passed: {
+            type: "integer"
+        },
         // phoneContacts: {
         //     collection: 'Phone',
         //     via: 'subscribers',
