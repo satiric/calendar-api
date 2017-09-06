@@ -249,7 +249,11 @@ function inviteUsers(event, invites, cb) {
         invites.phones = phones;
         collectedUsers = collectedUsers.concat(users);
         // same for emails
-        findUserEmail((invites.emails || []), function (err, emails, users) {
+        var e = (invites.emails || []);
+        e = e.map(function(elem) {
+            return elem.toLowerCase();
+        });
+        findUserEmail(e, function (err, emails, users) {
             if (err) {
                 return cb(err);
             }
