@@ -85,7 +85,7 @@ module.exports = {
     updateProfile: function(user, toUpdate, cb) {
 
         var paramsObj = {};
-        var keys = ["name", "second_name", "avatar", "phone", "email", "tutorial_passed", "calendar_tutorial_passed"];
+        var keys = ["name", "second_name", "avatar", "phone", "email", "contacts_tutorial_passed", "calendar_tutorial_passed"];
         //todo if phone or email - change ids
         for (var i = 0, size = keys.length; i < size; i++) {
             if(keys[i] in toUpdate) {

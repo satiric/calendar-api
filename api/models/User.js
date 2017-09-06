@@ -62,7 +62,7 @@ module.exports = {
         calendar_tutorial_passed: {
             type: "integer"
         },
-        tutorial_passed: {
+        contacts_tutorial_passed: {
             type: "integer"
         },
         // phoneContacts: {
