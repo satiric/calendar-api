@@ -256,6 +256,7 @@ module.exports = {
 
     /**
      * todo refactor it
+     * NOTE THAT DATE REQUEST IGNORE THE TIME, CHECK ONLY DATE
      * @param req
      * @param res
      */

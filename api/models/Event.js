@@ -455,6 +455,7 @@ module.exports = {
             countParams.push(keyword);
         }
         if(date) {
+            
             var tmp = eventsWithRepeat(date.split("T")[0] + " 23:59:59", date.split("T")[0]  + " 00:00:00");
             query += " AND " + tmp.query;
             queryCount += " AND " + tmp.query;

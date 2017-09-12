@@ -40,10 +40,11 @@ function getDateEnd(currentDate, dateEnd, duration) {
 function getFullFornightDate(currentDate, dateStart, dateEnd, duration) {
     var newDateStart, newDateEnd;
     var tmpDate;
-
     if (dateStart.getDate() <= dateEnd.getDate()) {
         //if solid month
         if (currentDate.getDate() >= dateStart.getDate() && currentDate.getDate() <= dateEnd.getDate()) {
+
+            sails.log('++++++');
             tmpDate = new Date(currentDate.getTime());
             tmpDate.setDate(dateStart.getDate());
             newDateStart = getDaily(tmpDate, dateStart);
@@ -118,9 +119,12 @@ function getWeekly(current, dateStart, dateEnd, repeatOptions, duration) {
 
 
 function detectDateStart(currentDate, event) {
+    sails.log('currentDate:' + currentDate);
     var newDateStart = new Date(), newDateEnd = new Date();
     var dateStart = new Date(event.date_start_r), dateEnd = new Date(event.date_end_r);
     var tmpDate, dateObj;
+
+
     switch (event.repeat_type) {
         case 2: //daily
             newDateStart = getDaily(currentDate, dateStart);
@@ -132,6 +136,7 @@ function detectDateStart(currentDate, event) {
             newDateEnd = dateObj.end;
             break;
         case 8:  //fornight
+
             dateObj = getFullFornightDate(currentDate, dateStart, dateEnd, event.duration);
             if (!dateObj.start || !dateObj.end) {
                 var tmpStartDate = new Date(dateStart.getTime());
@@ -152,6 +157,7 @@ function detectDateStart(currentDate, event) {
             newDateEnd = getDateEnd(tmpDate, dateEnd, event.duration);
             break;
     }
+
 
     return {
         date_start: newDateStart,
@@ -556,7 +562,9 @@ module.exports = {
                         r.count_members = countMembers[r.id];
                         r.duration = duration[r.id];
                         if (params.date) {
-                            var curDate = new Date(params.date);
+
+                            var curDate = new Date(params.date.split('+')[0]);
+
                             if (r.repeat_type > 1 && (new Date(params.date)).getTime() > (new Date(r.date_end_r)).getTime() ) {
                                 var tmp = detectDateStart(curDate, r);
                                 r.repeated = 1;
