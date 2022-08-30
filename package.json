@@ -27,7 +27,7 @@
     "mcc-mnc-list": "^1.0.74",
     "mmmagic": "^0.4.5",
     "moment": "^2.18.1",
-    "moment-timezone": "^0.5.13",
+    "moment-timezone": "^0.5.35",
     "phone": "^1.0.10",
     "randomstring": "^1.1.5",
     "rc": "1.0.1",
